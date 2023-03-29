@@ -8,7 +8,7 @@
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
-    "prettier": "prettier --write '**/*.tsx'"
+    "prettier": "prettier --write \"**/*.{ts, tsx}\""
   },
   "dependencies": {
     "@clerk/nextjs": "^4.11.14",
@@ -40,7 +40,7 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "postcss": "^8.4.21",
-    "prettier": "^2.8.6",
+    "prettier": "^2.8.7",
     "prettier-plugin-tailwindcss": "^0.2.5",
     "prisma": "^4.11.0",
     "tailwindcss": "^3.2.7",
