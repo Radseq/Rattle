@@ -1,9 +1,10 @@
-import { SignIn, SignInButton, SignOutButton, SignUp, useUser } from "@clerk/nextjs"
+import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs"
 import { type NextPage } from "next"
 import Head from "next/head"
 import Image from "next/image"
 import Link from "next/link"
-import { use } from "react"
+import { Trends } from "~/components/homePage/Trends"
+import { Trend } from "~/components/homePage/types"
 
 import { api } from "~/utils/api"
 
@@ -48,6 +49,18 @@ const NavigationBar = () => {
 	)
 }
 
+const TrendsSection = () => {
+	const trends: Trend[] = [{ categoryName: "Poland", name: "Mentzen", categoryRegional: true, tweetCount: 200 }]
+	return (
+		<div>
+			<Trends items={trends} />
+			<Link className="p-2 text-lg text-sky-500" href={"/trends"}>
+				Show more
+			</Link>
+		</div>
+	)
+}
+
 const Home: NextPage = () => {
 	const user = useUser()
 
@@ -64,6 +77,7 @@ const Home: NextPage = () => {
 								border-gray-200 p-4 sm:w-full md:w-2/3"
 				>
 					<NavigationBar />
+					<TrendsSection />
 				</div>
 				<div
 					className="hidden w-full flex-grow-0 rounded-lg border-2 border-gray-200 
