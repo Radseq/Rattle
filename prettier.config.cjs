@@ -5,7 +5,7 @@ const config = {
   tabWidth: 4,
   useTabs: true,
   semi: false,
-  printWidth: 140
+  printWidth: 100
 };
 
 module.exports = config;
