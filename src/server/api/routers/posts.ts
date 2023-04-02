@@ -3,9 +3,13 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
 
-export const postRouter = createTRPCRouter({
-	getByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const posts = await ctx.prisma.post.findMany({ where: { authorId: input }, take: 10 })
+export const postsRouter = createTRPCRouter({
+	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+		const posts = await ctx.prisma.post.findMany({
+			where: { authorId: input },
+			orderBy: { createdAt: "desc" },
+			take: 10,
+		})
 
 		const author = await clerkClient.users.getUser(input)
 
