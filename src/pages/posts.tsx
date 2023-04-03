@@ -3,13 +3,13 @@ import { type NextPage } from "next"
 import { Layout } from "~/components/Layout"
 import { PostItem } from "~/components/postsPage/PostItem"
 
-import { api, RouterOutputs } from "~/utils/api"
+import { api } from "~/utils/api"
 
 const Posts: NextPage = () => {
 	const { user } = useUser()
 
 	if (!user) {
-		return <div>"Please login again"</div>
+		return <div>Please login again</div>
 	}
 
 	const { data } = api.posts.getAllByAuthorId.useQuery(user.id)
@@ -20,7 +20,7 @@ const Posts: NextPage = () => {
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
 				<ul className="pl-2">
 					{data?.map((postsWithUser) => (
-						<PostItem postWithUser={postsWithUser} />
+						<PostItem key={postsWithUser.post.id} postWithUser={postsWithUser} />
 					))}
 				</ul>
 			</div>

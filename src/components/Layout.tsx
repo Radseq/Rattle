@@ -1,5 +1,5 @@
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs"
-import { FC, ReactElement } from "react"
+import type { FC, ReactElement } from "react"
 import { NavigationBar } from "./homePage/NavigationBar"
 
 export const Layout: FC<{ children?: ReactElement }> = ({ children }) => {

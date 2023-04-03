@@ -1,5 +1,5 @@
-import { FC } from "react"
-import { PostWithUser } from "./types"
+import type { FC } from "react"
+import type { PostWithUser } from "./types"
 import Image from "next/image"
 import Link from "next/link"
 

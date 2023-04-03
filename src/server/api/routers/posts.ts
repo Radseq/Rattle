@@ -16,7 +16,7 @@ export const postsRouter = createTRPCRouter({
 		if (!author || !author.username) {
 			throw new TRPCError({
 				code: "INTERNAL_SERVER_ERROR",
-				message: `Author for posts not found!`,
+				message: "Author for posts not found!",
 			})
 		}
 
@@ -24,7 +24,7 @@ export const postsRouter = createTRPCRouter({
 			post,
 			author: {
 				id: author.id,
-				username: author.username,
+				username: author.username!,
 				profileImageUrl: author.profileImageUrl,
 			},
 		}))
@@ -48,7 +48,7 @@ export const postsRouter = createTRPCRouter({
 			if (!users) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
-					message: `Author of posts not found`,
+					message: "Author of posts not found",
 				})
 			}
 			return {
