@@ -20,11 +20,13 @@ export const postsRouter = createTRPCRouter({
 			})
 		}
 
+		const username = author.username
+
 		return posts.map((post) => ({
 			post,
 			author: {
 				id: author.id,
-				username: author.username!,
+				username,
 				profileImageUrl: author.profileImageUrl,
 			},
 		}))
