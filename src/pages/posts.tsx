@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/nextjs"
+import { SignInButton, useUser } from "@clerk/nextjs"
 import { type NextPage } from "next"
 import { type FC } from "react"
 import { Layout } from "~/components/Layout"
@@ -32,7 +32,15 @@ const Posts: NextPage = () => {
 	const { user, isLoaded } = useUser()
 
 	if (!user) {
-		return <div>Please login again</div>
+		// todo temp solution
+		return (
+			<div>
+				Please login again
+				<span className="m-2 bg-red-700 p-2">
+					<SignInButton />
+				</span>
+			</div>
+		)
 	}
 
 	//fetch asap

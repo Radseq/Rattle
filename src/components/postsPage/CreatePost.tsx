@@ -22,7 +22,7 @@ export const CreatePost = () => {
 		onSuccess: async () => {
 			await posts.refetch()
 		},
-		onError: (data) => {
+		onError: () => {
 			// todo
 		},
 	})
