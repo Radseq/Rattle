@@ -59,4 +59,23 @@ export const postsRouter = createTRPCRouter({
 			}
 		})
 	}),
+	createPost: publicProcedure
+		.input(z.object({ content: z.string().min(3), userId: z.string().min(32) }))
+		.mutation(async ({ ctx, input }) => {
+			const user = await clerkClient.users.getUser(input.userId)
+
+			if (!user || !user.username) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "User not found!",
+				})
+			}
+
+			return await ctx.prisma.post.create({
+				data: {
+					authorId: input.userId,
+					content: input.content,
+				},
+			})
+		}),
 })

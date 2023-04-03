@@ -6,6 +6,7 @@ import { LoadingPage } from "~/components/LoadingPage"
 import { PostItem } from "~/components/postsPage/PostItem"
 
 import { api } from "~/utils/api"
+import { CreatePost } from "~/components/postsPage/CreatePost"
 
 const FetchPosts: FC<{ userId: string }> = ({ userId }) => {
 	const { data, isLoading } = api.posts.getAllByAuthorId.useQuery(userId)
@@ -44,6 +45,7 @@ const Posts: NextPage = () => {
 	return (
 		<Layout>
 			<div className="pt-2">
+				<CreatePost />
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
 				<FetchPosts userId={user.id} />
 			</div>
