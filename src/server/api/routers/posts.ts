@@ -13,10 +13,10 @@ export const postsRouter = createTRPCRouter({
 
 		const author = await clerkClient.users.getUser(input)
 
-		if (!author) {
+		if (!author || !author.username) {
 			throw new TRPCError({
 				code: "INTERNAL_SERVER_ERROR",
-				message: `Author with id: ${input} not found!`,
+				message: `Author for posts not found!`,
 			})
 		}
 
