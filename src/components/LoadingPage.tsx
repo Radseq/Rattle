@@ -1,6 +1,6 @@
 import { type FC } from "react"
 
-const LoadingSpinner: FC<{ size?: number }> = ({ size = 40 }) => {
+export const LoadingSpinner: FC<{ size?: number }> = ({ size = 40 }) => {
 	return (
 		<div role="status">
 			<svg
