@@ -1,7 +1,10 @@
 import clerkClient from "@clerk/clerk-sdk-node"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
+import { CreateRateLimit } from "~/RateLimit"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
+
+const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -62,9 +65,16 @@ export const postsRouter = createTRPCRouter({
 	createPost: privateProcedure
 		.input(z.object({ content: z.string().min(1).max(144) }))
 		.mutation(async ({ ctx, input }) => {
+			const authorId = ctx.authUserId
+			const { success } = await postRateLimit.limit(authorId)
+
+			if (!success) {
+				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
+			}
+
 			return await ctx.prisma.post.create({
 				data: {
-					authorId: ctx.authUserId,
+					authorId,
 					content: input.content,
 				},
 			})
