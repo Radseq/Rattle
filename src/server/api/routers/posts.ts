@@ -1,7 +1,7 @@
 import clerkClient from "@clerk/clerk-sdk-node"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
+import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -59,21 +59,12 @@ export const postsRouter = createTRPCRouter({
 			}
 		})
 	}),
-	createPost: publicProcedure
-		.input(z.object({ content: z.string().min(3), userId: z.string().min(32) }))
+	createPost: privateProcedure
+		.input(z.object({ content: z.string().min(1).max(144) }))
 		.mutation(async ({ ctx, input }) => {
-			const user = await clerkClient.users.getUser(input.userId)
-
-			if (!user || !user.username) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "User not found!",
-				})
-			}
-
 			return await ctx.prisma.post.create({
 				data: {
-					authorId: input.userId,
+					authorId: ctx.authUserId,
 					content: input.content,
 				},
 			})

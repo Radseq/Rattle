@@ -42,8 +42,17 @@ const createInnerTRPCContext = (_opts: CreateContextOptions) => {
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = (_opts: CreateNextContextOptions) => {
-	return createInnerTRPCContext({})
+export const createTRPCContext = (opts: CreateNextContextOptions) => {
+	const { req } = opts
+
+	const auth = getAuth(req)
+
+	const prisma = createInnerTRPCContext({}).prisma
+
+	return {
+		prisma,
+		authUserId: auth.userId,
+	}
 }
 
 /**
@@ -53,9 +62,10 @@ export const createTRPCContext = (_opts: CreateNextContextOptions) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-import { initTRPC } from "@trpc/server"
+import { initTRPC, TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import { ZodError } from "zod"
+import { getAuth } from "@clerk/nextjs/server"
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
 	transformer: superjson,
@@ -92,3 +102,17 @@ export const createTRPCRouter = t.router
  * are logged in.
  */
 export const publicProcedure = t.procedure
+
+const userIsAuth = t.middleware(async ({ ctx, next }) => {
+	if (!ctx.authUserId) {
+		throw new TRPCError({ code: "UNAUTHORIZED" })
+	}
+
+	return next({
+		ctx: {
+			authUserId: ctx.authUserId,
+		},
+	})
+})
+
+export const privateProcedure = t.procedure.use(userIsAuth)

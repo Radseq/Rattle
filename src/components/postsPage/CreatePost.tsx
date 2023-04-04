@@ -18,7 +18,7 @@ export const CreatePost = () => {
 		return <LoadingPage />
 	}
 
-	const createMutation = api.posts.createPost.useMutation({
+	const { mutate, isLoading: isPosting } = api.posts.createPost.useMutation({
 		onSuccess: async () => {
 			await posts.refetch()
 		},
@@ -41,13 +41,15 @@ export const CreatePost = () => {
 				className=" w-full rounded-xl border-2 border-solid text-lg outline-none"
 				placeholder="Write your message & hit enter"
 				onChange={(e) => setPostContent(e.target.value)}
+				type="text"
 				value={postContent}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" && postContent) {
-						createMutation.mutate({ userId: user.id, content: postContent })
+						mutate({ content: postContent })
 						setPostContent("")
 					}
 				}}
+				disabled={isPosting}
 			></input>
 		</div>
 	)
