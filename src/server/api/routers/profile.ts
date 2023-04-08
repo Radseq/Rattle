@@ -18,10 +18,24 @@ export const profileRouter = createTRPCRouter({
 
 		const author = authors[0]
 
+		if (!author.username) {
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Author don't has username!",
+			})
+		}
+
+		let fullName = author.firstName
+		if (author.lastName) {
+			fullName = " " + author.lastName
+		}
+
 		return {
 			id: author.id,
 			username: author.username,
 			profileImageUrl: author.profileImageUrl,
+			fullName,
+			createdAt: author.createdAt,
 		}
 	}),
 })
