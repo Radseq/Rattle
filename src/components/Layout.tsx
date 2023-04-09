@@ -1,8 +1,8 @@
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs"
-import type { FC, ReactElement } from "react"
+import type { PropsWithChildren } from "react"
 import { NavigationBar } from "./homePage/NavigationBar"
 
-export const Layout: FC<{ children?: ReactElement }> = ({ children }) => {
+export const Layout = (props: PropsWithChildren) => {
 	const user = useUser()
 	return (
 		<div className="m-auto flex justify-center 2xl:w-3/5">
@@ -13,7 +13,7 @@ export const Layout: FC<{ children?: ReactElement }> = ({ children }) => {
 				<header className="sticky">
 					<NavigationBar />
 				</header>
-				{children}
+				{props.children}
 			</main>
 			<aside
 				className="sticky hidden w-full flex-grow-0 rounded-lg border-2 border-gray-200 
