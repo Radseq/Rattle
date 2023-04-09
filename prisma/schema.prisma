@@ -11,8 +11,12 @@ datasource db {
     relationMode = "prisma"
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Post {
+    id          String   @id @default(cuid())
+    createdAt   DateTime @default(now())
+    content     String   @db.VarChar(150)
+    authorId    String   @db.VarChar(64)
+    imageUrl    String?  @db.VarChar(200)
+    mediaUrl    String?  @db.VarChar(200)
+    @@index([authorId])
 }
