@@ -1,8 +1,9 @@
 import { useUser } from "@clerk/nextjs"
 import Image from "next/image"
 import { api } from "~/utils/api"
-import { LoadingPage } from "../LoadingPage"
+import { LoadingPage, LoadingSpinner } from "../LoadingPage"
 import { useState } from "react"
+import { toast } from "react-hot-toast"
 
 export const CreatePost = () => {
 	const { user, isLoaded } = useUser()
@@ -22,8 +23,10 @@ export const CreatePost = () => {
 		onSuccess: async () => {
 			await posts.refetch()
 		},
-		onError: () => {
-			// todo
+		onError: (e) => {
+			const zodValidationError = e.data?.zodError?.fieldErrors.content
+			const error = zodValidationError?.join() ?? "Failed to posts! Please try again later"
+			toast.error(error)
 		},
 	})
 
@@ -38,19 +41,25 @@ export const CreatePost = () => {
 			></Image>
 
 			<input
-				className=" w-full rounded-xl border-2 border-solid text-lg outline-none"
+				className="w-full rounded-xl border-2 border-solid text-lg outline-none"
 				placeholder="Write your message & hit enter"
 				onChange={(e) => setPostContent(e.target.value)}
 				type="text"
 				value={postContent}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" && postContent) {
+						e.preventDefault()
 						mutate({ content: postContent })
 						setPostContent("")
 					}
 				}}
 				disabled={isPosting}
 			></input>
+			{isPosting && (
+				<div>
+					<LoadingSpinner size={50} />
+				</div>
+			)}
 		</div>
 	)
 }
