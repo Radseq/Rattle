@@ -1,32 +1,11 @@
 import { SignInButton, useUser } from "@clerk/nextjs"
 import { type NextPage } from "next"
-import { type FC } from "react"
 import { Layout } from "~/components/Layout"
 import { LoadingPage } from "~/components/LoadingPage"
-import { PostItem } from "~/components/postsPage/PostItem"
 
 import { api } from "~/utils/api"
 import { CreatePost } from "~/components/postsPage/CreatePost"
-
-const FetchPosts: FC<{ userId: string }> = ({ userId }) => {
-	const { data, isLoading } = api.posts.getAllByAuthorId.useQuery(userId)
-
-	if (isLoading) {
-		return (
-			<div className="relative">
-				<LoadingPage />
-			</div>
-		)
-	}
-
-	return (
-		<ul className="pl-2">
-			{data?.map((postsWithUser) => (
-				<PostItem key={postsWithUser.post.id} postWithUser={postsWithUser} />
-			))}
-		</ul>
-	)
-}
+import { FetchPosts } from "~/components/postsPage/FetchPosts"
 
 const Posts: NextPage = () => {
 	const { user, isLoaded } = useUser()
