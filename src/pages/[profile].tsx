@@ -11,6 +11,7 @@ import Image from "next/image"
 
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
+import { FetchPosts } from "~/components/postsPage/FetchPosts"
 
 dayjs.extend(relativeTime)
 
@@ -46,88 +47,96 @@ export const getStaticPaths = () => {
 }
 
 const Profile: NextPage<{ username: string }> = ({ username }) => {
-	const { data } = api.profile.getProfileByUsername.useQuery(username)
+	const { data: profileData } = api.profile.getProfileByUsername.useQuery(username)
 
-	if (!data) {
+	if (!profileData) {
 		return <div>{toast.error("Profile not exists!")}</div>
 	}
 
 	return (
 		<>
 			<Head>
-				<title>{data.username}</title>
+				<title>{profileData.username}</title>
 			</Head>
 			<Layout>
-				<div className="flex flex-col">
-					<Image
-						width={600}
-						height={200}
-						className="w-full  bg-black"
-						src={""}
-						alt={"banner"}
-					></Image>
-					<div className="flex justify-between">
-						<div className="relative w-full">
-							<Image
-								className="absolute -top-16 rounded-full border-4 border-white "
-								width={128}
-								height={128}
-								src={data.profileImageUrl}
-								alt={"avatar"}
-							></Image>
-							<span
-								className="absolute -top-16 h-32 w-32 rounded-full border-4 
+				<div>
+					<div className="flex flex-col">
+						<Image
+							width={600}
+							height={200}
+							className="w-full  bg-black"
+							src={""}
+							alt={"banner"}
+						></Image>
+						<div className="flex justify-between">
+							<div className="relative w-full">
+								<Image
+									className="absolute -top-16 rounded-full border-4 border-white "
+									width={128}
+									height={128}
+									src={profileData.profileImageUrl}
+									alt={"avatar"}
+								></Image>
+								<span
+									className="absolute -top-16 h-32 w-32 rounded-full border-4 
 							border-white bg-black bg-opacity-0 transition-all 
 							duration-200 hover:bg-opacity-10"
-							></span>
-						</div>
-						<button
-							className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
+								></span>
+							</div>
+							<button
+								className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
 										hover:bg-blue-700"
-						>
-							Follow
-						</button>
-					</div>
-					<h1 className="pl-2 pt-2 text-2xl font-semibold">{data.fullName}</h1>
-					<span className="pl-2 font-normal text-slate-400">@{data.username}</span>
-					<p className="pl-2">
-						Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ab, nobis! Est
-						quis, quaerat enim unde beatae doloremque, pariatur consequatur similique ut
-						a aliquid quod minima provident officiis sequi explicabo vero!
-					</p>
-					<div className="flex gap-3 pt-2">
-						<span className="flex">
-							<Image
-								width={18}
-								height={18}
-								src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/external-link.svg"
-								alt={"icon"}
-							></Image>
-							<a href="www.google.pl" className="pl-1 text-blue-500">
-								www.google.pl
-							</a>
+							>
+								Follow
+							</button>
+						</div>
+						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profileData.fullName}</h1>
+						<span className="pl-2 font-normal text-slate-400">
+							@{profileData.username}
 						</span>
-						<span className="flex">
-							<Image
-								width={18}
-								height={18}
-								src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/calendar.svg"
-								alt={"icon"}
-							></Image>
-							<span className="pl-1 text-slate-500">
-								since {dayjs(data.createdAt).fromNow()}
+						<p className="pl-2">
+							Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ab, nobis! Est
+							quis, quaerat enim unde beatae doloremque, pariatur consequatur
+							similique ut a aliquid quod minima provident officiis sequi explicabo
+							vero!
+						</p>
+						<div className="flex gap-3 pt-2">
+							<span className="flex">
+								<Image
+									width={18}
+									height={18}
+									src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/external-link.svg"
+									alt={"icon"}
+								></Image>
+								<a href="www.google.pl" className="pl-1 text-blue-500">
+									www.google.pl
+								</a>
 							</span>
-						</span>
+							<span className="flex">
+								<Image
+									width={18}
+									height={18}
+									src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/calendar.svg"
+									alt={"icon"}
+								></Image>
+								<span className="pl-1 text-slate-500">
+									since {dayjs(profileData.createdAt).fromNow()}
+								</span>
+							</span>
+						</div>
+						<div className="flex gap-10 pt-2">
+							<span className="flex">
+								<span className="">0</span>
+								<span className="pl-1 text-slate-500">Watched</span>
+							</span>
+							<span className="flex">
+								<span className="">0</span>
+								<span className="pl-1 text-slate-500">Followed</span>
+							</span>
+						</div>
 					</div>
-					<div className="flex gap-10 pt-2">
-						<span className="flex">
-							<span className="">0</span>
-							<span className="pl-1 text-slate-500">Watched</span>
-						</span>
-						<span className="flex">
-							<span className="">0</span>
-							<span className="pl-1 text-slate-500">Followed</span>
-						</span>
+					<div className="pt-4">
+						<FetchPosts userId={profileData.id} />
 					</div>
 				</div>
 			</Layout>
