@@ -1,6 +1,6 @@
 import { SignOutButton, SignUp, useUser } from "@clerk/nextjs"
 import type { PropsWithChildren } from "react"
-import { NavigationBar } from "./homePage/NavigationBar"
+import { NavigationBar } from "./NavigationBar"
 
 export const Layout = (props: PropsWithChildren) => {
 	const { user, isSignedIn } = useUser()
