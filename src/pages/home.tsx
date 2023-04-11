@@ -1,4 +1,4 @@
-import { SignInButton, useUser } from "@clerk/nextjs"
+import { SignIn, useUser } from "@clerk/nextjs"
 import { type NextPage } from "next"
 import { Layout } from "~/components/Layout"
 import { LoadingPage } from "~/components/LoadingPage"
@@ -7,17 +7,20 @@ import { api } from "~/utils/api"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 
-const Posts: NextPage = () => {
+const Home: NextPage = () => {
 	const { user, isLoaded } = useUser()
 
 	if (!user) {
-		// todo temp solution
 		return (
 			<div>
-				Please login again
-				<span className="m-2 bg-red-700 p-2">
-					<SignInButton />
-				</span>
+				<SignIn
+					appearance={{
+						elements: {
+							rootBox: "mx-auto",
+						},
+					}}
+					redirectUrl={"/home"}
+				/>
 			</div>
 		)
 	}
@@ -40,4 +43,4 @@ const Posts: NextPage = () => {
 	)
 }
 
-export default Posts
+export default Home
