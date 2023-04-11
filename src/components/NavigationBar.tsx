@@ -5,7 +5,7 @@ export const NavigationBar = () => {
 	return (
 		<ul className="w:48 flex content-center justify-between overflow-hidden">
 			<li className="rounded py-2 hover:bg-indigo-300">
-				<Link className="truncate" href="#">
+				<Link className="truncate" href="/">
 					<Image
 						width={10}
 						height={10}
