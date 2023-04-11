@@ -7,7 +7,7 @@ import { api } from "~/utils/api"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 
-const Posts: NextPage = () => {
+const Home: NextPage = () => {
 	const { user, isLoaded } = useUser()
 
 	if (!user) {
@@ -40,4 +40,4 @@ const Posts: NextPage = () => {
 	)
 }
 
-export default Posts
+export default Home
