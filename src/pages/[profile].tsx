@@ -12,6 +12,7 @@ import Image from "next/image"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
+import { useUser } from "@clerk/nextjs"
 
 dayjs.extend(relativeTime)
 
@@ -48,6 +49,8 @@ export const getStaticPaths = () => {
 
 const Profile: NextPage<{ username: string }> = ({ username }) => {
 	const { data: profileData } = api.profile.getProfileByUsername.useQuery(username)
+
+	const { user, isSignedIn } = useUser()
 
 	if (!profileData) {
 		return <div>{toast.error("Profile not exists!")}</div>
@@ -87,12 +90,21 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 							duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
-							<button
-								className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
+							{user && isSignedIn && user.id === profileData.id ? (
+								<button
+									className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
 										hover:bg-blue-700"
-							>
-								Follow
-							</button>
+								>
+									Set up profile
+								</button>
+							) : (
+								<button
+									className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
+									hover:bg-blue-700"
+								>
+									Follow
+								</button>
+							)}
 						</div>
 						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profileData.fullName}</h1>
 						<span className="pl-2 font-normal text-slate-400">
