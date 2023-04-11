@@ -3,8 +3,16 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
 
+const getFullName = (frstName: string | null, lastName: string | null) => {
+	let fullName = frstName
+	if (fullName && lastName) {
+		fullName += " " + lastName
+	}
+	return fullName
+}
+
 export const profileRouter = createTRPCRouter({
-	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ input }) => {
+	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ ctx, input }) => {
 		const authors = await clerkClient.users.getUserList({
 			username: [input],
 		})
@@ -25,17 +33,21 @@ export const profileRouter = createTRPCRouter({
 			})
 		}
 
-		let fullName = author.firstName
-		if (author.lastName) {
-			fullName = " " + author.lastName
-		}
+		const user = await ctx.prisma.user.findFirst({
+			where: {
+				id: author.id,
+			},
+		})
 
 		return {
 			id: author.id,
 			username: author.username,
 			profileImageUrl: author.profileImageUrl,
-			fullName,
+			fullName: getFullName(author.firstName, author.lastName),
 			createdAt: author.createdAt,
+			bannerImgUrl: user && user.bannerImageUrl,
+			description: user && user.description,
+			webPage: user && user.webPage,
 		}
 	}),
 })

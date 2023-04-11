@@ -20,3 +20,11 @@ model Post {
     mediaUrl    String?  @db.VarChar(200)
     @@index([authorId])
 }
+
+model User {
+    id              String   @id @default(cuid())
+    webPage         String?  @db.VarChar(50)
+    description     String?  @db.VarChar(500)
+    bannerImageUrl  String?  @db.VarChar(100)
+    location        String?  @db.VarChar(100)
+}

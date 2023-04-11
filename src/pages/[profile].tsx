@@ -61,13 +61,16 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 			<Layout>
 				<div>
 					<div className="flex flex-col">
-						<Image
-							width={600}
-							height={200}
-							className="w-full  bg-black"
-							src={""}
-							alt={"banner"}
-						></Image>
+						{profileData.bannerImgUrl ? (
+							<Image
+								width={600}
+								height={200}
+								src={profileData.bannerImgUrl}
+								alt={"banner"}
+							></Image>
+						) : (
+							<div className="h-52  w-full bg-black"></div>
+						)}
 						<div className="flex justify-between">
 							<div className="relative w-full">
 								<Image
@@ -77,6 +80,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 									src={profileData.profileImageUrl}
 									alt={"avatar"}
 								></Image>
+								{/* fix me: to add shadow to icon when mouse hover */}
 								<span
 									className="absolute -top-16 h-32 w-32 rounded-full border-4 
 							border-white bg-black bg-opacity-0 transition-all 
@@ -94,24 +98,21 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 						<span className="pl-2 font-normal text-slate-400">
 							@{profileData.username}
 						</span>
-						<p className="pl-2">
-							Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ab, nobis! Est
-							quis, quaerat enim unde beatae doloremque, pariatur consequatur
-							similique ut a aliquid quod minima provident officiis sequi explicabo
-							vero!
-						</p>
+						<p className="pl-2">{profileData.description}</p>
 						<div className="flex gap-3 pt-2">
-							<span className="flex">
-								<Image
-									width={18}
-									height={18}
-									src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/external-link.svg"
-									alt={"icon"}
-								></Image>
-								<a href="www.google.pl" className="pl-1 text-blue-500">
-									www.google.pl
-								</a>
-							</span>
+							{profileData.webPage && (
+								<span className="flex">
+									<Image
+										width={18}
+										height={18}
+										src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/external-link.svg"
+										alt={"icon"}
+									></Image>
+									<a href={profileData.webPage} className="pl-1 text-blue-500">
+										{profileData.webPage}
+									</a>
+								</span>
+							)}
 							<span className="flex">
 								<Image
 									width={18}
