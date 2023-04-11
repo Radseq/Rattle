@@ -9,15 +9,15 @@ dayjs.extend(relativeTime)
 
 export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) => {
 	return (
-		<li className="flex rounded-lg p-2 hover:bg-gray-100 ">
+		<li className="flex rounded-lg py-2 hover:bg-gray-100 ">
 			<Image
-				className="w-1/12 rounded-full pr-2"
+				className="w-1/12 rounded-full"
 				src={postWithUser.author.profileImageUrl}
 				alt={"avatar"}
 				width={128}
 				height={128}
 			></Image>
-			<div className="w-10/12">
+			<div className="w-10/12 pl-2">
 				<div className="font-semibold">
 					<Link
 						href={`/@${postWithUser.author.username}`}

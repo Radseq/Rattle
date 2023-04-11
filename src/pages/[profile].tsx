@@ -113,7 +113,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 									</a>
 								</span>
 							)}
-							<span className="flex">
+							<span className="flex pl-2">
 								<Image
 									width={18}
 									height={18}
@@ -125,7 +125,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 								</span>
 							</span>
 						</div>
-						<div className="flex gap-10 pt-2">
+						<div className="flex gap-10 pt-2 pl-2">
 							<span className="flex">
 								<span className="">0</span>
 								<span className="pl-1 text-slate-500">Watched</span>
