@@ -33,13 +33,15 @@ export const Layout = (props: PropsWithChildren) => {
 					{isSignedIn && (
 						<div>
 							<h1 className="p-2 text-2xl font-semibold">Hello {user.firstName}</h1>
-							<div
-								className="flex justify-center rounded border border-gray-500 bg-transparent 
+							<SignOutButton>
+								<span
+									className="flex justify-center rounded border border-gray-500 bg-transparent 
 							py-2 px-4 font-semibold text-gray-700 hover:border-transparent 
 							hover:bg-gray-500 hover:text-white"
-							>
-								<SignOutButton />
-							</div>
+								>
+									Sign Out
+								</span>
+							</SignOutButton>
 						</div>
 					)}
 				</div>
