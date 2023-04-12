@@ -1,6 +1,5 @@
 import type { GetStaticPropsContext, NextPage } from "next"
 import Head from "next/head"
-import { toast } from "react-hot-toast"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
 import { createProxySSGHelpers } from "@trpc/react-query/ssg"
@@ -14,6 +13,7 @@ import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { useUser } from "@clerk/nextjs"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
+import { LoadingPage } from "~/components/LoadingPage"
 
 dayjs.extend(relativeTime)
 
@@ -49,12 +49,17 @@ export const getStaticPaths = () => {
 }
 
 const Profile: NextPage<{ username: string }> = ({ username }) => {
-	const { data: profileData } = api.profile.getProfileByUsername.useQuery(username)
+	const { data: profileData, isLoading } = api.profile.getProfileByUsername.useQuery(username)
 
 	const { user, isSignedIn } = useUser()
 
+	if (isLoading) {
+		return <LoadingPage />
+	}
+
 	if (!profileData) {
-		return <div>{toast.error("Profile not exists!")}</div>
+		// todo error page
+		return null
 	}
 
 	return (
