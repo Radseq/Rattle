@@ -19,7 +19,7 @@ dayjs.extend(relativeTime)
 export const getStaticProps = async (context: GetStaticPropsContext<{ profile: string }>) => {
 	const ssg = createProxySSGHelpers({
 		router: appRouter,
-		ctx: { prisma, authUserId: null },
+		ctx: { prisma, authUserId: null, opts: undefined },
 		transformer: superjson, // optional - adds superjson serialization
 	})
 

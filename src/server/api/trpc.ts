@@ -42,16 +42,19 @@ const createInnerTRPCContext = (_opts: CreateContextOptions) => {
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = (opts: CreateNextContextOptions) => {
-	const { req } = opts
-
-	const auth = getAuth(req)
-
+export const createTRPCContext = (opts?: CreateNextContextOptions) => {
 	const prisma = createInnerTRPCContext({}).prisma
+
+	let authId: string | null = null
+	if (opts) {
+		const auth = getAuth(opts.req)
+		authId = auth.userId
+	}
 
 	return {
 		prisma,
-		authUserId: auth.userId,
+		authUserId: authId,
+		opts,
 	}
 }
 
@@ -104,6 +107,18 @@ export const createTRPCRouter = t.router
 export const publicProcedure = t.procedure
 
 const userIsAuth = t.middleware(async ({ ctx, next }) => {
+	if (!ctx.authUserId) {
+		throw new TRPCError({ code: "UNAUTHORIZED" })
+	}
+
+	return next({
+		ctx: {
+			authUserId: ctx.authUserId,
+		},
+	})
+})
+
+const userGeolocation = t.middleware(async ({ ctx, next }) => {
 	if (!ctx.authUserId) {
 		throw new TRPCError({ code: "UNAUTHORIZED" })
 	}

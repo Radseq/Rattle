@@ -5,10 +5,25 @@ import type { NextRequest } from "next/server"
 export default withClerkMiddleware((req: NextRequest) => {
 	const { userId } = getAuth(req)
 
-	if (req.nextUrl.pathname === "/" && userId) {
-		return NextResponse.redirect(new URL("/home", req.url))
+	const { nextUrl, url, geo } = req
+
+	if (geo) {
+		if (geo.country) {
+			nextUrl.searchParams.set("country", geo.country)
+		}
+		if (geo.region) {
+			nextUrl.searchParams.set("region", geo.region)
+		}
+		if (geo.city) {
+			nextUrl.searchParams.set("city", geo.city)
+		}
 	}
-	return NextResponse.next()
+
+	// redirect sing in user to home page
+	if (nextUrl.pathname === "/" && userId) {
+		return NextResponse.redirect(new URL("/home", url))
+	}
+	return NextResponse.rewrite(nextUrl)
 })
 
 // Stop Middleware running on static files
