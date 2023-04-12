@@ -118,16 +118,4 @@ const userIsAuth = t.middleware(async ({ ctx, next }) => {
 	})
 })
 
-const userGeolocation = t.middleware(async ({ ctx, next }) => {
-	if (!ctx.authUserId) {
-		throw new TRPCError({ code: "UNAUTHORIZED" })
-	}
-
-	return next({
-		ctx: {
-			authUserId: ctx.authUserId,
-		},
-	})
-})
-
 export const privateProcedure = t.procedure.use(userIsAuth)
