@@ -13,6 +13,7 @@ import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { useUser } from "@clerk/nextjs"
+import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 
 dayjs.extend(relativeTime)
 
@@ -72,7 +73,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 								alt={"banner"}
 							></Image>
 						) : (
-							<div className="h-52  w-full bg-black"></div>
+							<div className="h-52 w-full bg-black"></div>
 						)}
 						<div className="flex justify-between">
 							<div className="relative w-full">
@@ -85,18 +86,16 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 								></Image>
 								{/* fix me: to add shadow to icon when mouse hover */}
 								<span
-									className="absolute -top-16 h-32 w-32 rounded-full border-4 
-							border-white bg-black bg-opacity-0 transition-all 
-							duration-200 hover:bg-opacity-10"
+									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white
+									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
 							{user && isSignedIn && user.id === profileData.id ? (
-								<button
-									className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
-										hover:bg-blue-700"
-								>
-									Set up profile
-								</button>
+								<SetUpProfileModal
+									bannerImageUrl={profileData.bannerImgUrl ?? ""}
+									bio={profileData.bio ?? ""}
+									webPage={profileData.webPage ?? ""}
+								/>
 							) : (
 								<button
 									className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
@@ -110,7 +109,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 						<span className="pl-2 font-normal text-slate-400">
 							@{profileData.username}
 						</span>
-						<p className="pl-2">{profileData.description}</p>
+						<p className="pl-2">{profileData.bio}</p>
 						<div className="flex gap-3 pt-2">
 							{profileData.webPage && (
 								<span className="flex">

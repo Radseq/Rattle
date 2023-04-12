@@ -46,7 +46,7 @@ export const profileRouter = createTRPCRouter({
 			fullName: getFullName(author.firstName, author.lastName),
 			createdAt: author.createdAt,
 			bannerImgUrl: user && user.bannerImageUrl,
-			description: user && user.description,
+			bio: user && user.bio,
 			webPage: user && user.webPage,
 		}
 	}),
