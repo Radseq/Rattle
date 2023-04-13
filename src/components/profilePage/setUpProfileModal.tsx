@@ -5,7 +5,7 @@ export const SetUpProfileModal: FC<{
 	bio: string
 	bannerImageUrl: string
 	profileImageUrl: string
-	showModal: CallableFunction
+	showModal: (arg0: boolean) => void
 }> = (props) => {
 	const [userSettings, setUserSettings] = useState(props)
 
