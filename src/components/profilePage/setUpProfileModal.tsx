@@ -2,6 +2,7 @@ import { type FC, useState } from "react"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
+import { ParseZodErrorToString } from "~/utils/helpers"
 
 export const SetUpProfileModal: FC<{
 	webPage: string | null
@@ -17,10 +18,10 @@ export const SetUpProfileModal: FC<{
 			toast.success("Successfully updated!")
 		},
 		onError: (e) => {
-			const zodValidationError = e.data?.zodError?.fieldErrors.content
 			const error =
-				zodValidationError?.join() ?? "Failed to update settings! Please try again later"
-			toast.error(error)
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to update settings! Please try again later"
+			toast.error(error, { duration: 10000 })
 		},
 	})
 

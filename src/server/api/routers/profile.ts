@@ -58,19 +58,22 @@ export const profileRouter = createTRPCRouter({
 			z.object({
 				webPage: z
 					.string()
-					.max(100, { message: "webPage url is too large, max 100 characters" })
+					.max(100, { message: "Web Page url is too large, max 100 characters" })
+					.url({ message: "Web Page url is not valid!" })
 					.nullable(),
 				bio: z
 					.string()
-					.max(500, { message: "bio is too large, max 500 characters" })
+					.max(500, { message: "Bio is too large, max 500 characters" })
 					.nullable(),
 				bannerImageUrl: z
 					.string()
-					.max(100, { message: "bannerImageUrl url is too large, max 100 characters" })
+					.url({ message: "Banner Image Url is not valid!" })
+					.max(100, { message: "Banner Image Url is too large, max 100 characters" })
 					.nullable(),
 				profileImageUrl: z
 					.string()
-					.max(100, { message: "profileImageUrl url is too large, max 100 characters" })
+					.url({ message: "Profile Image Url is not valid!" })
+					.max(100, { message: "Profile Image Url is too large, max 100 characters" })
 					.nullable(),
 			})
 		)
