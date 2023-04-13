@@ -1,7 +1,10 @@
 import clerkClient from "@clerk/clerk-sdk-node"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
+import { CreateRateLimit } from "~/RateLimit"
+import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
+
+const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 const getFullName = (frstName: string | null, lastName: string | null) => {
 	let fullName = frstName
@@ -50,4 +53,64 @@ export const profileRouter = createTRPCRouter({
 			webPage: user && user.webPage,
 		}
 	}),
+	updateUser: privateProcedure
+		.input(
+			z.object({
+				webPage: z
+					.string()
+					.max(100, { message: "webPage url is too large, max 100 characters" })
+					.nullable(),
+				bio: z
+					.string()
+					.max(500, { message: "bio is too large, max 500 characters" })
+					.nullable(),
+				bannerImageUrl: z
+					.string()
+					.max(100, { message: "bannerImageUrl url is too large, max 100 characters" })
+					.nullable(),
+				profileImageUrl: z
+					.string()
+					.max(100, { message: "profileImageUrl url is too large, max 100 characters" })
+					.nullable(),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const authorId = ctx.authUserId
+			const { success } = await updateProfileRateLimit.limit(authorId)
+
+			if (!success) {
+				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
+			}
+
+			const user = await ctx.prisma.user.findFirst({
+				where: {
+					id: authorId,
+				},
+			})
+
+			if (!user) {
+				return await ctx.prisma.user.create({
+					data: {
+						id: authorId,
+						bannerImageUrl: input.bannerImageUrl,
+						bio: input.bio,
+						profileImageUrl: input.profileImageUrl,
+						webPage: input.webPage,
+						country: ctx.opts?.req.query.country as string | undefined,
+					},
+				})
+			}
+			return await ctx.prisma.user.update({
+				where: {
+					id: authorId,
+				},
+				data: {
+					bannerImageUrl: input.bannerImageUrl,
+					bio: input.bio,
+					profileImageUrl: input.profileImageUrl,
+					webPage: input.webPage,
+					country: ctx.opts?.req.query.country as string | undefined,
+				},
+			})
+		}),
 })

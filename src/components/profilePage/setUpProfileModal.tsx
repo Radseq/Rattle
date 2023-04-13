@@ -1,13 +1,28 @@
 import { type FC, useState } from "react"
+import toast from "react-hot-toast"
+import { api } from "~/utils/api"
+import { LoadingSpinner } from "../LoadingPage"
 
 export const SetUpProfileModal: FC<{
-	webPage: string
-	bio: string
-	bannerImageUrl: string
-	profileImageUrl: string
+	webPage: string | null
+	bio: string | null
+	bannerImageUrl: string | null
+	profileImageUrl: string | null
 	showModal: (arg0: boolean) => void
 }> = (props) => {
 	const [userSettings, setUserSettings] = useState(props)
+
+	const { mutate, isLoading: isUpdating } = api.profile.updateUser.useMutation({
+		onSuccess: () => {
+			toast.success("Successfully updated!")
+		},
+		onError: (e) => {
+			const zodValidationError = e.data?.zodError?.fieldErrors.content
+			const error =
+				zodValidationError?.join() ?? "Failed to update settings! Please try again later"
+			toast.error(error)
+		},
+	})
 
 	return (
 		<div
@@ -48,7 +63,7 @@ export const SetUpProfileModal: FC<{
 												bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 
 												focus:ring-blue-500 "
 								placeholder="Banner image URL"
-								value={userSettings.bannerImageUrl}
+								value={userSettings.bannerImageUrl ?? ""}
 								onChange={(e) => {
 									setUserSettings({
 										...userSettings,
@@ -66,7 +81,7 @@ export const SetUpProfileModal: FC<{
 												bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 
 												focus:ring-blue-500"
 								placeholder="Profile image URL"
-								value={userSettings.profileImageUrl}
+								value={userSettings.profileImageUrl ?? ""}
 								onChange={(e) => {
 									setUserSettings({
 										...userSettings,
@@ -83,7 +98,7 @@ export const SetUpProfileModal: FC<{
 												bg-gray-50 p-2.5 text-sm text-gray-900 
 												focus:border-blue-500 focus:ring-blue-500"
 								placeholder="Website URL"
-								value={userSettings.webPage}
+								value={userSettings.webPage ?? ""}
 								onChange={(e) => {
 									setUserSettings({
 										...userSettings,
@@ -101,7 +116,7 @@ export const SetUpProfileModal: FC<{
 												bg-gray-50 p-2.5 text-sm focus:border-blue-500 
 												focus:ring-blue-500 "
 								placeholder="Write your bio..."
-								value={userSettings.bio}
+								value={userSettings.bio ?? ""}
 								onChange={(e) => {
 									setUserSettings({
 										...userSettings,
@@ -118,15 +133,27 @@ export const SetUpProfileModal: FC<{
 							className="flex items-center justify-end rounded-b border-t 
 										border-solid border-slate-200 p-6"
 						>
-							<button
-								className="mr-1 mb-1 rounded bg-emerald-500 px-6 py-3 
+							{isUpdating ? (
+								<LoadingSpinner />
+							) : (
+								<button
+									className="mr-1 mb-1 rounded bg-emerald-500 px-6 py-3 
 												outline-none transition-all duration-150 ease-linear 
 												hover:shadow-lg focus:outline-none active:bg-emerald-600"
-								type="button"
-								onClick={() => props.showModal(false)}
-							>
-								Save Changes
-							</button>
+									type="button"
+									onClick={(e) => {
+										e.preventDefault()
+										mutate({
+											bannerImageUrl: userSettings.bannerImageUrl,
+											bio: userSettings.bio,
+											profileImageUrl: userSettings.profileImageUrl,
+											webPage: userSettings.webPage,
+										})
+									}}
+								>
+									Save Changes
+								</button>
+							)}
 						</div>
 					)}
 				</div>

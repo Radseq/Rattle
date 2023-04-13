@@ -74,24 +74,17 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 				<div>
 					<div className="flex flex-col">
 						{profileData.bannerImgUrl ? (
-							<Image
-								width={600}
-								height={200}
-								src={profileData.bannerImgUrl}
-								alt={"banner"}
-							></Image>
+							<img src={profileData.bannerImgUrl} alt={"banner"}></img>
 						) : (
 							<div className="h-52 w-full bg-black"></div>
 						)}
 						<div className="flex justify-between">
 							<div className="relative w-full">
-								<Image
-									className="absolute -top-16 rounded-full border-4 border-white "
-									width={128}
-									height={128}
+								<img
+									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white "
 									src={profileData.profileImageUrl}
 									alt={"avatar"}
-								></Image>
+								></img>
 								{/* fix me: to add shadow to icon when mouse hover */}
 								<span
 									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white
