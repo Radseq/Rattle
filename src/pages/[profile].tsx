@@ -100,6 +100,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 									bannerImageUrl={profileData.bannerImgUrl ?? ""}
 									bio={profileData.bio ?? ""}
 									webPage={profileData.webPage ?? ""}
+									profileImageUrl={profileData.profileImageUrl}
 								/>
 							) : (
 								<button

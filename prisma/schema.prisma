@@ -26,5 +26,6 @@ model User {
     webPage         String?  @db.VarChar(50)
     bio             String?  @db.VarChar(500)
     bannerImageUrl  String?  @db.VarChar(100)
+    profileImageUrl String?  @db.VarChar(100)
     country         String?  @db.VarChar(100)
 }

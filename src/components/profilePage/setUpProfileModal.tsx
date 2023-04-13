@@ -4,6 +4,7 @@ export const SetUpProfileModal: FC<{
 	webPage: string
 	bio: string
 	bannerImageUrl: string
+	profileImageUrl: string
 }> = (props) => {
 	const [showModal, setShowModal] = useState<boolean>()
 
@@ -69,6 +70,22 @@ export const SetUpProfileModal: FC<{
 												alt={"banner preview"}
 											></img>
 										</div>
+									</div>
+									<div className="">
+										<input
+											type="url"
+											id="profileImage"
+											className="mb-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 
+											"
+											placeholder="Profile image URL"
+											onChange={(e) => {
+												setUserSettings({
+													...userSettings,
+													profileImageUrl: e.target.value,
+												})
+												e.preventDefault()
+											}}
+										></input>
 									</div>
 									<div className="mt-2">
 										<input
