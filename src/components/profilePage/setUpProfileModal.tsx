@@ -54,7 +54,8 @@ export const SetUpProfileModal: FC<{
 											id="banner"
 											className="mb-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 
 											"
-											placeholder="Banner URL"
+											placeholder="Banner image URL"
+											value={userSettings.bannerImageUrl}
 											onChange={(e) => {
 												setUserSettings({
 													...userSettings,
@@ -63,13 +64,6 @@ export const SetUpProfileModal: FC<{
 												e.preventDefault()
 											}}
 										></input>
-										<div>
-											<img
-												className="h-[200px] w-[600px] bg-gray-500"
-												src={userSettings.bannerImageUrl}
-												alt={"banner preview"}
-											></img>
-										</div>
 									</div>
 									<div className="">
 										<input
@@ -78,6 +72,7 @@ export const SetUpProfileModal: FC<{
 											className="mb-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 
 											"
 											placeholder="Profile image URL"
+											value={userSettings.profileImageUrl}
 											onChange={(e) => {
 												setUserSettings({
 													...userSettings,
