@@ -1,11 +1,11 @@
-import { typeToFlattenedError } from "zod"
+import { type typeToFlattenedError } from "zod"
 
 export const ParseZodErrorToString = (
 	zodError: typeToFlattenedError<any, string> | null | undefined
 ) => {
-	let errors: string[] = []
+	const errors: string[] = []
 	if (zodError?.fieldErrors) {
-		let zodErrors = Object.entries(zodError.fieldErrors).map(([key, value]) => ({
+		const zodErrors = Object.entries(zodError.fieldErrors).map(([key, value]) => ({
 			key,
 			value,
 		}))
