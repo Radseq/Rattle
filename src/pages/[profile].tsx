@@ -131,10 +131,10 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 						<span className="pl-2 font-normal text-slate-400">
 							@{profileData.username}
 						</span>
-						<p className="pl-2">{profileData.bio}</p>
+						<p className="ml-2 mt-2">{profileData.bio}</p>
 						<div className="flex gap-3 pt-2">
 							{profileData.webPage && (
-								<span className="flex">
+								<span className="flex pl-2">
 									<Image
 										width={18}
 										height={18}
@@ -146,22 +146,22 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 									</a>
 								</span>
 							)}
-							<span className="flex pl-2">
+							<span className="ml-2 flex">
 								<Image
 									width={18}
 									height={18}
 									src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/calendar.svg"
 									alt={"icon"}
 								></Image>
-								<span className="pl-1 text-slate-500">
+								<span className="ml-1 text-slate-500">
 									since {dayjs(profileData.createdAt).fromNow()}
 								</span>
 							</span>
 						</div>
-						<div className="flex gap-10 pt-2 pl-2">
+						<div className="ml-2 mt-2 flex gap-10">
 							<span className="flex">
 								<span className="">0</span>
-								<span className="pl-1 text-slate-500">Watched</span>
+								<span className="ml-1 text-slate-500">Watched</span>
 							</span>
 							<span className="flex">
 								<span className="">0</span>
