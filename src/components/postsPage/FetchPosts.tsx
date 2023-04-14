@@ -15,7 +15,7 @@ export const FetchPosts: FC<{ userId: string }> = ({ userId }) => {
 	}
 
 	return (
-		<ul className="pl-2">
+		<ul className="">
 			{data?.map((postsWithUser) => (
 				<PostItem key={postsWithUser.post.id} postWithUser={postsWithUser} />
 			))}
