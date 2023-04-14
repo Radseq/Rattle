@@ -1,12 +1,12 @@
-import { useState, type FC } from "react"
+import { type FC, useState } from "react"
 
 export const FloatingInput: FC<{
 	labelName: string
 	handleOnChange: CallableFunction
-	inputValue?: string
+	inputValue: string
 	maxLength?: number
 }> = ({ labelName, handleOnChange, inputValue, maxLength }) => {
-	const [charsLeft, setCharsLeft] = useState(maxLength && maxLength - inputValue!.length)
+	const [charsLeft, setCharsLeft] = useState(maxLength && maxLength - inputValue.length)
 
 	return (
 		<div className="relative">
@@ -20,7 +20,7 @@ export const FloatingInput: FC<{
 				value={inputValue}
 				onChange={(e) => {
 					if (charsLeft) {
-						const left = charsLeft - (e.target.value.length - inputValue!.length)
+						const left = charsLeft - (e.target.value.length - inputValue.length)
 
 						if (left < 0) {
 							return
@@ -44,7 +44,7 @@ export const FloatingInput: FC<{
 			>
 				{labelName}
 			</label>
-			{maxLength && (
+			{maxLength && charsLeft && (
 				<label
 					htmlFor="bio"
 					className="absolute top-2 right-1 z-10 origin-[0] -translate-y-4 
