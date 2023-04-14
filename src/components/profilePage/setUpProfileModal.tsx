@@ -3,6 +3,7 @@ import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
 import { ParseZodErrorToString } from "~/utils/helpers"
+import { FloatingInput } from "../FloatingInput"
 
 export const SetUpProfileModal: FC<{
 	webPage: string | null
@@ -12,6 +13,8 @@ export const SetUpProfileModal: FC<{
 	showModal: (arg0: boolean) => void
 }> = (props) => {
 	const [userSettings, setUserSettings] = useState(props)
+	const maxBioLength = 500
+	const [textArenaCharsLeft, setTextArenaCharsLeft] = useState(maxBioLength - props.bio!.length)
 
 	const { mutate, isLoading: isUpdating } = api.profile.updateUser.useMutation({
 		onSuccess: () => {
@@ -56,76 +59,97 @@ export const SetUpProfileModal: FC<{
 						</button>
 					</div>
 					<div className="p-2">
-						<div className="">
-							<input
-								type="url"
-								id="banner"
-								className="mb-2 block w-full rounded-lg border border-gray-300
-												bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 
-												focus:ring-blue-500 "
-								placeholder="Banner image URL"
-								value={userSettings.bannerImageUrl ?? ""}
-								onChange={(e) => {
+						<div className="mt-2">
+							<FloatingInput
+								labelName="Banner Image Url"
+								inputValue={userSettings.bannerImageUrl ?? ""}
+								handleOnChange={(e: string) => {
 									setUserSettings({
 										...userSettings,
-										bannerImageUrl: e.target.value,
+										bannerImageUrl: e,
 									})
-									e.preventDefault()
 								}}
-							></input>
-						</div>
-						<div className="">
-							<input
-								type="url"
-								id="profileImage"
-								className="mb-2 block w-full rounded-lg border border-gray-300 
-												bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 
-												focus:ring-blue-500"
-								placeholder="Profile image URL"
-								value={userSettings.profileImageUrl ?? ""}
-								onChange={(e) => {
-									setUserSettings({
-										...userSettings,
-										profileImageUrl: e.target.value,
-									})
-									e.preventDefault()
-								}}
-							></input>
+								maxLength={100}
+							/>
 						</div>
 						<div className="mt-2">
-							<input
-								type="url"
-								className="block w-full rounded-lg border border-gray-300 
-												bg-gray-50 p-2.5 text-sm text-gray-900 
-												focus:border-blue-500 focus:ring-blue-500"
-								placeholder="Website URL"
-								value={userSettings.webPage ?? ""}
-								onChange={(e) => {
+							<FloatingInput
+								labelName="Profile Image URL"
+								inputValue={userSettings.profileImageUrl ?? ""}
+								handleOnChange={(e: string) => {
 									setUserSettings({
 										...userSettings,
-										webPage: e.target.value,
+										profileImageUrl: e,
 									})
-									e.preventDefault()
 								}}
-							></input>
+								maxLength={100}
+							/>
+						</div>
+						<div className="mt-2">
+							<FloatingInput
+								labelName="Website URL"
+								inputValue={userSettings.webPage ?? ""}
+								handleOnChange={(e: string) => {
+									setUserSettings({
+										...userSettings,
+										webPage: e,
+									})
+								}}
+								maxLength={50}
+							/>
 						</div>
 
 						<div className="mt-2 flex-auto">
-							<textarea
-								rows={4}
-								className="block w-full rounded-lg border border-gray-300 
-												bg-gray-50 p-2.5 text-sm focus:border-blue-500 
-												focus:ring-blue-500 "
-								placeholder="Write your bio..."
-								value={userSettings.bio ?? ""}
-								onChange={(e) => {
-									setUserSettings({
-										...userSettings,
-										bio: e.target.value,
-									})
-									e.preventDefault()
-								}}
-							></textarea>
+							<div className="relative">
+								<textarea
+									id="bio"
+									rows={4}
+									className="peer block w-full appearance-none rounded-lg border
+										border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm 
+										text-gray-900 focus:border-blue-600 focus:ring-0"
+									placeholder=""
+									value={userSettings.bio ?? ""}
+									onChange={(e) => {
+										const charsLeft =
+											textArenaCharsLeft -
+											(e.target.value.length - userSettings.bio!.length)
+										setTextArenaCharsLeft(charsLeft)
+										if (charsLeft < 0) {
+											return
+										}
+
+										setUserSettings({
+											...userSettings,
+											bio: e.target.value,
+										})
+										e.preventDefault()
+									}}
+								/>
+								<label
+									htmlFor="bio"
+									className="absolute top-2 left-1 z-10 origin-[0] -translate-y-4 
+										scale-75 transform bg-white px-2 text-sm text-gray-500 
+										duration-300 peer-placeholder-shown:top-1/2 
+										peer-placeholder-shown:-translate-y-1/2 
+										peer-placeholder-shown:scale-100 peer-focus:top-2 
+										peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
+										peer-focus:text-blue-600"
+								>
+									Bio
+								</label>
+								<label
+									htmlFor="bio"
+									className="absolute top-2 right-1 z-10 origin-[0] -translate-y-4 
+										scale-75 transform bg-white px-2 text-sm text-gray-500 
+										duration-300 peer-placeholder-shown:top-1/2 
+										peer-placeholder-shown:-translate-y-1/2 
+										peer-placeholder-shown:scale-100 peer-focus:top-2 
+										peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
+										peer-focus:text-blue-600"
+								>
+									{`${maxBioLength}/${textArenaCharsLeft}`}
+								</label>
+							</div>
 						</div>
 					</div>
 
