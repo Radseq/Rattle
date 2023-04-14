@@ -61,7 +61,7 @@ export const SetUpProfileModal: FC<{
 					<div className="p-2">
 						<div className="mt-2">
 							<FloatingInput
-								labelName="Banner Image Url"
+								labelName="Banner Image URL"
 								inputValue={userSettings.bannerImageUrl ?? ""}
 								handleOnChange={(e: string) => {
 									setUserSettings({
