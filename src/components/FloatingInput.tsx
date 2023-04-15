@@ -1,6 +1,6 @@
-import { InputHTMLAttributes, type FC } from "react"
+import { type FC, InputHTMLAttributes } from "react"
 
-type HtmlInputProps = InputHTMLAttributes<HTMLInputElement> & {}
+type HtmlInputProps = InputHTMLAttributes<HTMLInputElement>
 
 const StyledInput = (props: HtmlInputProps) => (
 	<input
