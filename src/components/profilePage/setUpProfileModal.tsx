@@ -3,7 +3,7 @@ import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
 import { ParseZodErrorToString } from "~/utils/helpers"
-import { FloatingInput } from "../FloatingInput"
+import { FloatingInput, FloatingTextArea } from "../FloatingInput"
 
 export const SetUpProfileModal: FC<{
 	webPage: string | null
@@ -13,8 +13,6 @@ export const SetUpProfileModal: FC<{
 	showModal: (arg0: boolean) => void
 }> = (props) => {
 	const [userSettings, setUserSettings] = useState(props)
-	const maxBioLength = 500
-	const charsLeft: number | null = maxBioLength ? maxBioLength - props.bio!.length : null
 
 	const { mutate, isLoading: isUpdating } = api.profile.updateUser.useMutation({
 		onSuccess: () => {
@@ -100,57 +98,18 @@ export const SetUpProfileModal: FC<{
 						</div>
 
 						<div className="mt-2 flex-auto">
-							<div className="relative">
-								<textarea
-									id="bio"
-									rows={4}
-									className="peer block w-full appearance-none rounded-lg border
-										border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm 
-										text-gray-900 focus:border-blue-600 focus:ring-0"
-									placeholder=""
-									value={userSettings.bio ?? ""}
-									onChange={(e) => {
-										if (charsLeft) {
-											const calcLenth =
-												charsLeft -
-												(e.target.value.length - userSettings.bio!.length)
-
-											if (calcLenth <= 0) {
-												return
-											}
-										}
-										setUserSettings({
-											...userSettings,
-											bio: e.target.value,
-										})
-										e.preventDefault()
-									}}
-								/>
-								<label
-									htmlFor="bio"
-									className="absolute top-2 left-1 z-10 origin-[0] -translate-y-4 
-										scale-75 transform bg-white px-2 text-sm text-gray-500 
-										duration-300 peer-placeholder-shown:top-1/2 
-										peer-placeholder-shown:-translate-y-1/2 
-										peer-placeholder-shown:scale-100 peer-focus:top-2 
-										peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
-										peer-focus:text-blue-600"
-								>
-									Bio
-								</label>
-								<label
-									htmlFor="bio"
-									className="absolute top-2 right-1 z-10 origin-[0] -translate-y-4 
-										scale-75 transform bg-white px-2 text-sm text-gray-500 
-										duration-300 peer-placeholder-shown:top-1/2 
-										peer-placeholder-shown:-translate-y-1/2 
-										peer-placeholder-shown:scale-100 peer-focus:top-2 
-										peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
-										peer-focus:text-blue-600"
-								>
-									{`${maxBioLength}/${charsLeft}`}
-								</label>
-							</div>
+							<FloatingTextArea
+								labelName="Bio"
+								inputValue={userSettings.bio ?? ""}
+								handleOnChange={(e: string) => {
+									setUserSettings({
+										...userSettings,
+										bio: e,
+									})
+								}}
+								maxLength={500}
+								rows={4}
+							/>
 						</div>
 					</div>
 
