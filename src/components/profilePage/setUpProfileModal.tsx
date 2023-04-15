@@ -14,7 +14,7 @@ export const SetUpProfileModal: FC<{
 }> = (props) => {
 	const [userSettings, setUserSettings] = useState(props)
 	const maxBioLength = 500
-	const [textArenaCharsLeft, setTextArenaCharsLeft] = useState(maxBioLength - props.bio!.length)
+	const charsLeft: number | null = maxBioLength ? maxBioLength - props.bio!.length : null
 
 	const { mutate, isLoading: isUpdating } = api.profile.updateUser.useMutation({
 		onSuccess: () => {
@@ -110,14 +110,15 @@ export const SetUpProfileModal: FC<{
 									placeholder=""
 									value={userSettings.bio ?? ""}
 									onChange={(e) => {
-										const charsLeft =
-											textArenaCharsLeft -
-											(e.target.value.length - userSettings.bio!.length)
-										setTextArenaCharsLeft(charsLeft)
-										if (charsLeft < 0) {
-											return
-										}
+										if (charsLeft) {
+											const calcLenth =
+												charsLeft -
+												(e.target.value.length - userSettings.bio!.length)
 
+											if (calcLenth <= 0) {
+												return
+											}
+										}
 										setUserSettings({
 											...userSettings,
 											bio: e.target.value,
@@ -147,7 +148,7 @@ export const SetUpProfileModal: FC<{
 										peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
 										peer-focus:text-blue-600"
 								>
-									{`${maxBioLength}/${textArenaCharsLeft}`}
+									{`${maxBioLength}/${charsLeft}`}
 								</label>
 							</div>
 						</div>

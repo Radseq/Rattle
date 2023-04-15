@@ -6,13 +6,13 @@ export const FloatingInput: FC<{
 	inputValue: string
 	maxLength?: number
 }> = ({ labelName, handleOnChange, inputValue, maxLength }) => {
-	const [charsLeft, setCharsLeft] = useState(maxLength && maxLength - inputValue.length)
+	const charsLeft: number | null = maxLength ? maxLength - inputValue.length : null
 
 	return (
 		<div className="relative">
 			<input
 				type="text"
-				id="banner"
+				id={labelName}
 				className="peer block w-full appearance-none rounded-lg border
                     border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm 
                     text-gray-900 focus:border-blue-600 focus:ring-0"
@@ -20,20 +20,18 @@ export const FloatingInput: FC<{
 				value={inputValue}
 				onChange={(e) => {
 					if (charsLeft) {
-						const left = charsLeft - (e.target.value.length - inputValue.length)
+						const calcLenth = charsLeft - (e.target.value.length - inputValue.length)
 
-						if (left < 0) {
+						if (calcLenth <= 0) {
 							return
 						}
-
-						setCharsLeft(left)
 					}
 					handleOnChange(e.target.value)
 					e.preventDefault()
 				}}
 			/>
 			<label
-				htmlFor="banner"
+				htmlFor={labelName}
 				className="absolute top-2 left-1 z-10 origin-[0] -translate-y-4 
                     scale-75 transform bg-white px-2 text-sm text-gray-500 
                     duration-300 peer-placeholder-shown:top-1/2 

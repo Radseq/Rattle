@@ -4,7 +4,7 @@ import { Redis } from "@upstash/redis"
 type Unit = "ms" | "s" | "m" | "h" | "d"
 export type Duration = `${number} ${Unit}` | `${number}${Unit}`
 
-// Create a new ratelimiter, that allows 1 requests per minute seconds
+// Create a new ratelimiter, that allows 1 requests per duration unit
 export const CreateRateLimit = (props: {
 	requestCount: number
 	requestCountPer: Duration
