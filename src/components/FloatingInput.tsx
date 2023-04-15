@@ -1,30 +1,14 @@
-import { type FC } from "react"
+import { type FC, type ReactNode } from "react"
 
-const LabelCounter: FC<{ maxLength: number; charsLeft: number; htmlFor: string }> = ({
-	maxLength,
-	charsLeft,
-	htmlFor,
-}) => {
-	return (
-		<label
-			htmlFor={htmlFor}
-			className="absolute top-2 right-1 z-10 origin-[0] -translate-y-4 
-				scale-75 transform bg-white px-2 text-sm text-gray-500 
-				duration-300 peer-placeholder-shown:top-1/2 
-				peer-placeholder-shown:-translate-y-1/2 
-				peer-placeholder-shown:scale-100 peer-focus:top-2 
-				peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
-				peer-focus:text-blue-600"
-		>
-			{`${maxLength}/${charsLeft}`}
-		</label>
-	)
+type Props = {
+	children?: ReactNode
+	htmlFor: string
 }
 
-const Label: FC<{ name: string }> = ({ name }) => {
+const Label = ({ children, ...props }: Props) => {
 	return (
 		<label
-			htmlFor={name}
+			htmlFor={props.htmlFor}
 			className="absolute top-2 left-1 z-10 origin-[0] -translate-y-4 
 				scale-75 transform bg-white px-2 text-sm text-gray-500 
 				duration-300 peer-placeholder-shown:top-1/2 
@@ -33,7 +17,7 @@ const Label: FC<{ name: string }> = ({ name }) => {
 				peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
 				peer-focus:text-blue-600"
 		>
-			{name}
+			{children}
 		</label>
 	)
 }
@@ -68,9 +52,9 @@ export const FloatingInput: FC<{
 					e.preventDefault()
 				}}
 			/>
-			<Label name={labelName} />
+			<Label htmlFor={labelName}>{labelName}</Label>
 			{maxLength && charsLeft && (
-				<LabelCounter charsLeft={charsLeft} htmlFor={labelName} maxLength={maxLength} />
+				<Label htmlFor={labelName}>{`${maxLength}/${charsLeft}`}</Label>
 			)}
 		</div>
 	)
@@ -107,9 +91,9 @@ export const FloatingTextArea: FC<{
 					e.preventDefault()
 				}}
 			/>
-			<Label name={labelName} />
+			<Label htmlFor={labelName}>{labelName}</Label>
 			{maxLength && charsLeft && (
-				<LabelCounter charsLeft={charsLeft} htmlFor={labelName} maxLength={maxLength} />
+				<Label htmlFor={labelName}>{`${maxLength}/${charsLeft}`}</Label>
 			)}
 		</div>
 	)
