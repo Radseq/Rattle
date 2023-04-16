@@ -21,15 +21,16 @@ const config = {
     ecmaFeatures: {
 			jsx: true,
 		},
-		ecmaVersion: 12,
+		ecmaVersion: 2022,
 		sourceType: 'module',
   },
-  plugins: ["@typescript-eslint", "react"],
+  plugins: ["@typescript-eslint", "react", "tailwindcss"],
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
     'plugin:prettier/recommended',
+	'plugin:tailwindcss/recommended',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'next/core-web-vitals',
