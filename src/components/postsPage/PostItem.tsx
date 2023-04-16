@@ -38,7 +38,7 @@ export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) =
 					alt={"icon"}
 					className="peer"
 				></Image>
-				<OptionMenu postId={postWithUser.post.id} />
+				<OptionMenu postId={postWithUser.post.id} userId={postWithUser.author.id} />
 			</div>
 		</li>
 	)
