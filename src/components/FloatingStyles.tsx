@@ -1,4 +1,4 @@
-import { InputHTMLAttributes } from "react"
+import { type InputHTMLAttributes } from "react"
 
 type HtmlInputProps = InputHTMLAttributes<HTMLInputElement>
 
@@ -33,7 +33,7 @@ export const StyledLabel = (props: HtmlLabelProps) => (
 		className={`absolute top-2 ${
 			props.side === "left" ? "left-1" : "right-1"
 		} z-10 origin-[0] -translate-y-4 
-			scale-75 transform bg-white px-2 text-sm text-gray-500 
+			scale-75 bg-white px-2 text-sm text-gray-500 
 			duration-300 peer-placeholder-shown:top-1/2 
 			peer-placeholder-shown:-translate-y-1/2 
 			peer-placeholder-shown:scale-100 peer-focus:top-2 
