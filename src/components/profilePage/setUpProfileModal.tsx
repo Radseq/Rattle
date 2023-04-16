@@ -1,9 +1,15 @@
-import { type FC, useState } from "react"
+import { type FC } from "react"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
 import { ParseZodErrorToString } from "~/utils/helpers"
-import { FloatingInput } from "../FloatingInput"
+import { StyledInput, StyledLabel, StyledTextArea } from "../FloatingStyles"
+import { useRestrictedInput, useRestrictedTextArea } from "~/hooks/useRestrictedInput"
+
+const BANNER_MAX_LETTERS = 50
+const PROFILE_MAX_LETTERS = 50
+const WEBPAGE_MAX_LETTERS = 50
+const BIO_MAX_LETTERS = 500
 
 export const SetUpProfileModal: FC<{
 	webPage: string | null
@@ -12,10 +18,6 @@ export const SetUpProfileModal: FC<{
 	profileImageUrl: string | null
 	showModal: (arg0: boolean) => void
 }> = (props) => {
-	const [userSettings, setUserSettings] = useState(props)
-	const maxBioLength = 500
-	const [textArenaCharsLeft, setTextArenaCharsLeft] = useState(maxBioLength - props.bio!.length)
-
 	const { mutate, isLoading: isUpdating } = api.profile.updateUser.useMutation({
 		onSuccess: () => {
 			toast.success("Successfully updated!")
@@ -27,6 +29,14 @@ export const SetUpProfileModal: FC<{
 			toast.error(error, { duration: 10000 })
 		},
 	})
+
+	const bannerInput = useRestrictedInput(BANNER_MAX_LETTERS ?? 0, props.bannerImageUrl || "")
+
+	const profileInput = useRestrictedInput(PROFILE_MAX_LETTERS ?? 0, props.profileImageUrl || "")
+
+	const webPageInput = useRestrictedInput(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
+
+	const bioTextArea = useRestrictedTextArea(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
 
 	return (
 		<div
@@ -60,100 +70,73 @@ export const SetUpProfileModal: FC<{
 					</div>
 					<div className="p-2">
 						<div className="mt-2">
-							<FloatingInput
-								labelName="Banner Image URL"
-								inputValue={userSettings.bannerImageUrl ?? ""}
-								handleOnChange={(e: string) => {
-									setUserSettings({
-										...userSettings,
-										bannerImageUrl: e,
-									})
-								}}
-								maxLength={100}
-							/>
+							<div className="relative">
+								<StyledInput id="bannerImageUrl" {...bannerInput} />
+								<StyledLabel htmlFor="bannerImageUrl" side="left">
+									Profile Image URL
+								</StyledLabel>
+								{bannerInput.charsLeft && (
+									<StyledLabel
+										side="right"
+										htmlFor="bannerImageUrl"
+									>{`${BANNER_MAX_LETTERS}/${bannerInput.charsLeft}`}</StyledLabel>
+								)}
+							</div>
+						</div>
+
+						<div className="mt-2">
+							<div className="relative">
+								<StyledInput
+									id="profileImageUrl"
+									placeholder=""
+									{...profileInput}
+								/>
+								<StyledLabel htmlFor="profileImageUrl" side="left">
+									Profile Image URL
+								</StyledLabel>
+								{profileInput.charsLeft && (
+									<StyledLabel
+										side="right"
+										htmlFor="profileImageUrl"
+									>{`${PROFILE_MAX_LETTERS}/${profileInput.charsLeft}`}</StyledLabel>
+								)}
+							</div>
 						</div>
 						<div className="mt-2">
-							<FloatingInput
-								labelName="Profile Image URL"
-								inputValue={userSettings.profileImageUrl ?? ""}
-								handleOnChange={(e: string) => {
-									setUserSettings({
-										...userSettings,
-										profileImageUrl: e,
-									})
-								}}
-								maxLength={100}
-							/>
-						</div>
-						<div className="mt-2">
-							<FloatingInput
-								labelName="Website URL"
-								inputValue={userSettings.webPage ?? ""}
-								handleOnChange={(e: string) => {
-									setUserSettings({
-										...userSettings,
-										webPage: e,
-									})
-								}}
-								maxLength={50}
-							/>
+							<div className="relative">
+								<StyledInput id="webpageUrl" placeholder="" {...webPageInput} />
+								<StyledLabel htmlFor="webpageUrl" side="left">
+									Webpage URL
+								</StyledLabel>
+								{webPageInput.charsLeft && (
+									<StyledLabel
+										side="right"
+										htmlFor="webpageUrl"
+									>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsLeft}`}</StyledLabel>
+								)}
+							</div>
 						</div>
 
 						<div className="mt-2 flex-auto">
 							<div className="relative">
-								<textarea
-									id="bio"
-									rows={4}
-									className="peer block w-full appearance-none rounded-lg border
-										border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm 
-										text-gray-900 focus:border-blue-600 focus:ring-0"
-									placeholder=""
-									value={userSettings.bio ?? ""}
-									onChange={(e) => {
-										const charsLeft =
-											textArenaCharsLeft -
-											(e.target.value.length - userSettings.bio!.length)
-										setTextArenaCharsLeft(charsLeft)
-										if (charsLeft < 0) {
-											return
-										}
-
-										setUserSettings({
-											...userSettings,
-											bio: e.target.value,
-										})
-										e.preventDefault()
-									}}
-								/>
-								<label
-									htmlFor="bio"
-									className="absolute top-2 left-1 z-10 origin-[0] -translate-y-4 
-										scale-75 transform bg-white px-2 text-sm text-gray-500 
-										duration-300 peer-placeholder-shown:top-1/2 
-										peer-placeholder-shown:-translate-y-1/2 
-										peer-placeholder-shown:scale-100 peer-focus:top-2 
-										peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
-										peer-focus:text-blue-600"
-								>
+								<StyledTextArea id="bio" placeholder="" {...bioTextArea} rows={4} />
+								<StyledLabel htmlFor="bio" side="left">
 									Bio
-								</label>
-								<label
-									htmlFor="bio"
-									className="absolute top-2 right-1 z-10 origin-[0] -translate-y-4 
-										scale-75 transform bg-white px-2 text-sm text-gray-500 
-										duration-300 peer-placeholder-shown:top-1/2 
-										peer-placeholder-shown:-translate-y-1/2 
-										peer-placeholder-shown:scale-100 peer-focus:top-2 
-										peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 
-										peer-focus:text-blue-600"
-								>
-									{`${maxBioLength}/${textArenaCharsLeft}`}
-								</label>
+								</StyledLabel>
+								{bioTextArea.charsLeft && (
+									<StyledLabel
+										side="right"
+										htmlFor="bio"
+									>{`${BIO_MAX_LETTERS}/${bioTextArea.charsLeft}`}</StyledLabel>
+								)}
 							</div>
 						</div>
 					</div>
 
-					{(userSettings.bannerImageUrl || userSettings.bio || userSettings.webPage) && (
+					{(bannerInput.value ||
+						profileInput.value ||
+						webPageInput.value ||
+						bioTextArea.value) && (
 						<div
 							className="flex items-center justify-end rounded-b border-t 
 										border-solid border-slate-200 p-6"
@@ -162,17 +145,17 @@ export const SetUpProfileModal: FC<{
 								<LoadingSpinner />
 							) : (
 								<button
-									className="mr-1 mb-1 rounded bg-emerald-500 px-6 py-3 
-												outline-none transition-all duration-150 ease-linear 
-												hover:shadow-lg focus:outline-none active:bg-emerald-600"
+									className="mr-1 mb-1 rounded bg-emerald-500 px-6 py-3 outline-none 
+									transition-all duration-150 ease-linear hover:shadow-lg 
+									focus:outline-none active:bg-emerald-600"
 									type="button"
 									onClick={(e) => {
 										e.preventDefault()
 										mutate({
-											bannerImageUrl: userSettings.bannerImageUrl,
-											bio: userSettings.bio,
-											profileImageUrl: userSettings.profileImageUrl,
-											webPage: userSettings.webPage,
+											bannerImageUrl: bannerInput.value,
+											bio: bioTextArea.value,
+											profileImageUrl: profileInput.value,
+											webPage: webPageInput.value,
 										})
 									}}
 								>

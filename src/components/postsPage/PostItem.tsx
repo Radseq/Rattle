@@ -27,7 +27,7 @@ export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) =
 						{dayjs(postWithUser.post.createdAt).fromNow()}
 					</span>
 				</div>
-				<span className="text-md">{postWithUser.post.content}</span>
+				<span>{postWithUser.post.content}</span>
 			</div>
 			<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
 				<Image

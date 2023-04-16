@@ -5,7 +5,7 @@ import { useUser } from "@clerk/nextjs"
 export const NavigationBar = () => {
 	const { isSignedIn } = useUser()
 	return (
-		<ul className="w:48 flex content-center justify-between overflow-hidden">
+		<ul className="flex content-center justify-between overflow-hidden">
 			<li className="rounded py-2 hover:bg-indigo-300">
 				<Link className="truncate" href={isSignedIn ? "/home" : "/"}>
 					<Image
