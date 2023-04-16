@@ -30,29 +30,13 @@ export const SetUpProfileModal: FC<{
 		},
 	})
 
-	const {
-		charsLeft: bannerCharsLeft,
-		onChange: onBannerChange,
-		value: bannerValue,
-	} = useRestrictedInput(BANNER_MAX_LETTERS ?? 0, props.bannerImageUrl || "")
+	const bannerInput = useRestrictedInput(BANNER_MAX_LETTERS ?? 0, props.bannerImageUrl || "")
 
-	const {
-		charsLeft: profileCharsLeft,
-		onChange: onProfileChange,
-		value: profileValue,
-	} = useRestrictedInput(PROFILE_MAX_LETTERS ?? 0, props.profileImageUrl || "")
+	const profileInput = useRestrictedInput(PROFILE_MAX_LETTERS ?? 0, props.profileImageUrl || "")
 
-	const {
-		charsLeft: webpageCharsLeft,
-		onChange: onWebPageChange,
-		value: webPageValue,
-	} = useRestrictedInput(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
+	const webPageInput = useRestrictedInput(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
 
-	const {
-		charsLeft: bioCharsLeft,
-		onChange: onBioChange,
-		value: bioValue,
-	} = useRestrictedTextArea(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
+	const bioTextArea = useRestrictedTextArea(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
 
 	return (
 		<div
@@ -87,20 +71,15 @@ export const SetUpProfileModal: FC<{
 					<div className="p-2">
 						<div className="mt-2">
 							<div className="relative">
-								<StyledInput
-									id="bannerImageUrl"
-									placeholder=""
-									value={bannerValue}
-									onChange={onBannerChange}
-								/>
+								<StyledInput id="bannerImageUrl" {...bannerInput} />
 								<StyledLabel htmlFor="bannerImageUrl" side="left">
 									Profile Image URL
 								</StyledLabel>
-								{bannerCharsLeft && (
+								{bannerInput.charsLeft && (
 									<StyledLabel
 										side="right"
 										htmlFor="bannerImageUrl"
-									>{`${BANNER_MAX_LETTERS}/${bannerCharsLeft}`}</StyledLabel>
+									>{`${BANNER_MAX_LETTERS}/${bannerInput.charsLeft}`}</StyledLabel>
 								)}
 							</div>
 						</div>
@@ -110,63 +89,54 @@ export const SetUpProfileModal: FC<{
 								<StyledInput
 									id="profileImageUrl"
 									placeholder=""
-									value={profileValue}
-									onChange={onProfileChange}
+									{...profileInput}
 								/>
 								<StyledLabel htmlFor="profileImageUrl" side="left">
 									Profile Image URL
 								</StyledLabel>
-								{profileCharsLeft && (
+								{profileInput.charsLeft && (
 									<StyledLabel
 										side="right"
 										htmlFor="profileImageUrl"
-									>{`${PROFILE_MAX_LETTERS}/${profileCharsLeft}`}</StyledLabel>
+									>{`${PROFILE_MAX_LETTERS}/${profileInput.charsLeft}`}</StyledLabel>
 								)}
 							</div>
 						</div>
 						<div className="mt-2">
 							<div className="relative">
-								<StyledInput
-									id="webpageUrl"
-									placeholder=""
-									value={webPageValue}
-									onChange={onWebPageChange}
-								/>
+								<StyledInput id="webpageUrl" placeholder="" {...webPageInput} />
 								<StyledLabel htmlFor="webpageUrl" side="left">
 									Webpage URL
 								</StyledLabel>
-								{webpageCharsLeft && (
+								{webPageInput.charsLeft && (
 									<StyledLabel
 										side="right"
 										htmlFor="webpageUrl"
-									>{`${WEBPAGE_MAX_LETTERS}/${webpageCharsLeft}`}</StyledLabel>
+									>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsLeft}`}</StyledLabel>
 								)}
 							</div>
 						</div>
 
 						<div className="mt-2 flex-auto">
 							<div className="relative">
-								<StyledTextArea
-									id="bio"
-									placeholder=""
-									value={bioValue}
-									onChange={onBioChange}
-									rows={4}
-								/>
+								<StyledTextArea id="bio" placeholder="" {...bioTextArea} rows={4} />
 								<StyledLabel htmlFor="bio" side="left">
 									Bio
 								</StyledLabel>
-								{bioCharsLeft && (
+								{bioTextArea.charsLeft && (
 									<StyledLabel
 										side="right"
 										htmlFor="bio"
-									>{`${BIO_MAX_LETTERS}/${bioCharsLeft}`}</StyledLabel>
+									>{`${BIO_MAX_LETTERS}/${bioTextArea.charsLeft}`}</StyledLabel>
 								)}
 							</div>
 						</div>
 					</div>
 
-					{(bannerValue || profileValue || webPageValue || bioValue) && (
+					{(bannerInput.value ||
+						profileInput.value ||
+						webPageInput.value ||
+						bioTextArea.value) && (
 						<div
 							className="flex items-center justify-end rounded-b border-t 
 										border-solid border-slate-200 p-6"
@@ -182,10 +152,10 @@ export const SetUpProfileModal: FC<{
 									onClick={(e) => {
 										e.preventDefault()
 										mutate({
-											bannerImageUrl: bannerValue,
-											bio: bioValue,
-											profileImageUrl: profileValue,
-											webPage: webPageValue,
+											bannerImageUrl: bannerInput.value,
+											bio: bioTextArea.value,
+											profileImageUrl: profileInput.value,
+											webPage: webPageInput.value,
 										})
 									}}
 								>
