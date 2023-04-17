@@ -13,8 +13,9 @@ import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { useUser } from "@clerk/nextjs"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
-import { LoadingPage } from "~/components/LoadingPage"
+import { LoadingPage, LoadingSpinner } from "~/components/LoadingPage"
 import { useState } from "react"
+import toast from "react-hot-toast"
 
 dayjs.extend(relativeTime)
 
@@ -64,6 +65,17 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 		// todo error page
 		return null
 	}
+
+	const { mutate, isLoading: isFolloweed } = api.follow.addUserToFollow.useMutation({
+		onSuccess: () => {
+			toast.success(`${username} is now followeed`)
+		},
+		onError: (e) => {
+			const zodValidationError = e.data?.zodError?.fieldErrors.content
+			const error = zodValidationError?.join() ?? "Failed to posts! Please try again later"
+			toast.error(error)
+		},
+	})
 
 	return (
 		<>
@@ -122,7 +134,12 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 								<button
 									className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
 									hover:bg-blue-700"
+									onClick={(e) => {
+										e.preventDefault()
+										mutate(profileData.id)
+									}}
 								>
+									{isFolloweed && <LoadingSpinner />}
 									Follow
 								</button>
 							)}
