@@ -11,11 +11,8 @@ import Image from "next/image"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
-import { useUser } from "@clerk/nextjs"
-import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
-import { LoadingPage, LoadingSpinner } from "~/components/LoadingPage"
-import { useState } from "react"
-import toast from "react-hot-toast"
+import { LoadingPage } from "~/components/LoadingPage"
+import { DetermineActionButton } from "~/components/profilePage/DetermineActionButton"
 
 dayjs.extend(relativeTime)
 
@@ -53,10 +50,6 @@ export const getStaticPaths = () => {
 const Profile: NextPage<{ username: string }> = ({ username }) => {
 	const { data: profileData, isLoading } = api.profile.getProfileByUsername.useQuery(username)
 
-	const [showModal, setShowModal] = useState<boolean>()
-
-	const { user, isSignedIn } = useUser()
-
 	if (isLoading) {
 		return <LoadingPage />
 	}
@@ -65,17 +58,6 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 		// todo error page
 		return null
 	}
-
-	const { mutate, isLoading: isFolloweed } = api.follow.addUserToFollow.useMutation({
-		onSuccess: () => {
-			toast.success(`${username} is now followeed`)
-		},
-		onError: (e) => {
-			const zodValidationError = e.data?.zodError?.fieldErrors.content
-			const error = zodValidationError?.join() ?? "Failed to posts! Please try again later"
-			toast.error(error)
-		},
-	})
 
 	return (
 		<>
@@ -103,46 +85,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
-							{user && isSignedIn && user.id === profileData.id ? (
-								<div>
-									<button
-										className="block rounded-lg bg-blue-500 px-5 py-2.5 text-center font-bold 
-									text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 
-									dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-										type="button"
-										onClick={(e) => {
-											setShowModal(true)
-											e.preventDefault()
-										}}
-									>
-										Set up profile
-									</button>
-									{showModal ? (
-										<div>
-											<SetUpProfileModal
-												bannerImageUrl={profileData.bannerImgUrl ?? ""}
-												bio={profileData.bio ?? ""}
-												webPage={profileData.webPage ?? ""}
-												profileImageUrl={profileData.profileImageUrl}
-												showModal={(e: boolean) => setShowModal(e)}
-											/>
-											<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
-										</div>
-									) : null}
-								</div>
-							) : (
-								<button
-									className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
-									hover:bg-blue-700"
-									onClick={(e) => {
-										e.preventDefault()
-										mutate(profileData.id)
-									}}
-								>
-									{isFolloweed && <LoadingSpinner />}
-									Follow
-								</button>
-							)}
+							<DetermineActionButton profileData={profileData} />
 						</div>
 						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profileData.fullName}</h1>
 						<span className="pl-2 font-normal text-slate-400">
