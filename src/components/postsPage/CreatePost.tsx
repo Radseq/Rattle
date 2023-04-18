@@ -4,6 +4,7 @@ import { api } from "~/utils/api"
 import { LoadingPage, LoadingSpinner } from "../LoadingPage"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
+import { ParseZodErrorToString } from "~/utils/helpers"
 
 export const CreatePost = () => {
 	const { user, isLoaded } = useUser()
@@ -24,9 +25,10 @@ export const CreatePost = () => {
 			await posts.refetch()
 		},
 		onError: (e) => {
-			const zodValidationError = e.data?.zodError?.fieldErrors.content
-			const error = zodValidationError?.join() ?? "Failed to posts! Please try again later"
-			toast.error(error)
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to update settings! Please try again later"
+			toast.error(error, { duration: 10000 })
 		},
 	})
 
