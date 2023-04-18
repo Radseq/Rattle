@@ -1,10 +1,10 @@
-import { useState, type FC } from "react"
+import { type FC, useState } from "react"
 import { SetUpProfileModal } from "./setUpProfileModal"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { LoadingSpinner } from "../LoadingPage"
-import { ProfileData } from "./types"
+import { type ProfileData } from "./types"
 import { useUser } from "@clerk/nextjs"
 
 const ZOD_ERROR_DURATION_MS = 10000

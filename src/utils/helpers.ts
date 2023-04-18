@@ -1,5 +1,6 @@
 import { type typeToFlattenedError } from "zod"
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export const ParseZodErrorToString = (
 	zodError: typeToFlattenedError<any, string> | null | undefined
 ) => {
