@@ -47,7 +47,6 @@ export const getStaticProps = async (context: GetStaticPropsContext<{ profile: s
 export const getStaticPaths = () => {
 	return {
 		paths: [],
-		// https://nextjs.org/docs/api-reference/data-fetching/get-static-paths#fallback-blocking
 		fallback: "blocking",
 	}
 }
