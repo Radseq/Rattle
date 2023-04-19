@@ -4,13 +4,13 @@ import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
 
-const OptionMenuItem: FC<{ postId: string; userId: string }> = ({ postId, userId }) => {
-	const posts = api.posts.getAllByAuthorId.useQuery(userId)
-
+const DeleteMenuItem: FC<{ postId: string; onDelete: CallableFunction }> = ({
+	postId,
+	onDelete,
+}) => {
 	const { mutate, isLoading: isDeleting } = api.posts.deletePost.useMutation({
-		onSuccess: async () => {
+		onSuccess: () => {
 			toast.success("Post Deleted")
-			await posts.refetch()
 		},
 		onError: (e) => {
 			const zodValidationError = e.data?.zodError?.fieldErrors.content
@@ -18,14 +18,13 @@ const OptionMenuItem: FC<{ postId: string; userId: string }> = ({ postId, userId
 			toast.error(error)
 		},
 	})
-
 	return (
 		<div
 			className="flex h-12 w-full rounded-lg p-2  hover:bg-gray-50"
 			onClick={(e) => {
 				e.preventDefault()
-				console.log(postId.length)
 				mutate(postId)
+				onDelete()
 			}}
 		>
 			<Image
@@ -44,14 +43,24 @@ const OptionMenuItem: FC<{ postId: string; userId: string }> = ({ postId, userId
 	)
 }
 
-export const OptionMenu: FC<{ postId: string; userId: string }> = (postId) => {
+export const OptionMenu: FC<{
+	postId: string
+	closeMenu: () => void
+	refetchPosts: CallableFunction
+}> = ({ postId, closeMenu, refetchPosts }) => {
 	return (
 		<ul
-			className="absolute right-1 hidden h-full w-64 flex-col rounded-lg 
-				bg-white shadow-[0px_0px_3px_1px_#00000024] hover:flex peer-hover:flex "
+			className="absolute right-1 h-full w-64 flex-col rounded-lg 
+				bg-white shadow-[0px_0px_3px_1px_#00000024]"
+			onMouseLeave={closeMenu}
 		>
 			<li>
-				<OptionMenuItem {...postId} />
+				<DeleteMenuItem
+					postId={postId}
+					onDelete={async () => {
+						await refetchPosts()
+					}}
+				/>
 			</li>
 		</ul>
 	)

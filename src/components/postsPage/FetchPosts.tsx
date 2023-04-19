@@ -4,7 +4,7 @@ import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
 
 export const FetchPosts: FC<{ userId: string }> = ({ userId }) => {
-	const { data, isLoading } = api.posts.getAllByAuthorId.useQuery(userId)
+	const { data, isLoading, refetch } = api.posts.getAllByAuthorId.useQuery(userId)
 
 	if (isLoading) {
 		return (
@@ -17,7 +17,11 @@ export const FetchPosts: FC<{ userId: string }> = ({ userId }) => {
 	return (
 		<ul className="">
 			{data?.map((postsWithUser) => (
-				<PostItem key={postsWithUser.post.id} postWithUser={postsWithUser} />
+				<PostItem
+					key={postsWithUser.post.id}
+					postWithUser={postsWithUser}
+					refetchPosts={refetch}
+				/>
 			))}
 		</ul>
 	)
