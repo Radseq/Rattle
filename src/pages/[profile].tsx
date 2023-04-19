@@ -11,8 +11,13 @@ import Image from "next/image"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
-import { LoadingPage } from "~/components/LoadingPage"
-import { DetermineActionButton } from "~/components/profilePage/DetermineActionButton"
+import { LoadingPage, LoadingSpinner } from "~/components/LoadingPage"
+import { useUser } from "@clerk/nextjs"
+import toast from "react-hot-toast"
+import { ParseZodErrorToString } from "~/utils/helpers"
+import { DangerButton, PrimalyButton } from "~/components/StyledButtons"
+import { useState } from "react"
+import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 
 dayjs.extend(relativeTime)
 
@@ -47,8 +52,13 @@ export const getStaticPaths = () => {
 	}
 }
 
+const ZOD_ERROR_DURATION_MS = 10000
+
 const Profile: NextPage<{ username: string }> = ({ username }) => {
 	const { data: profileData, isLoading } = api.profile.getProfileByUsername.useQuery(username)
+
+	const { user, isSignedIn } = useUser()
+	const [showModal, setShowModal] = useState<boolean>()
 
 	if (isLoading) {
 		return <LoadingPage />
@@ -58,6 +68,36 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 		// todo error page
 		return null
 	}
+
+	const { mutate: addUserToFollow, isLoading: isFolloweed } =
+		api.follow.addUserToFollow.useMutation({
+			onSuccess: () => {
+				toast.success(`${username} is now followeed`)
+				window.location.reload()
+			},
+			onError: (e) => {
+				const error =
+					ParseZodErrorToString(e.data?.zodError) ??
+					"Failed to update settings! Please try again later"
+				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
+			},
+		})
+
+	const { mutate: stopFollowing, isLoading: isUnFollowing } =
+		api.follow.stopFollowing.useMutation({
+			onSuccess: () => {
+				toast.success(`${username} is now Unfolloweed`)
+				window.location.reload()
+			},
+			onError: (e) => {
+				const error =
+					ParseZodErrorToString(e.data?.zodError) ??
+					"Failed to update settings! Please try again later"
+				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
+			},
+		})
+
+	const { data: isAlreadyFollowing } = api.follow.isFolloweed.useQuery(profileData.id)
 
 	return (
 		<>
@@ -85,7 +125,54 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
-							<DetermineActionButton profileData={profileData} />
+							<div className="mt-4 h-14">
+								{user && isSignedIn && user.id === profileData.id ? (
+									<div>
+										<PrimalyButton
+											onClick={(e) => {
+												setShowModal(true)
+												e.preventDefault()
+											}}
+										>
+											Set up profile
+										</PrimalyButton>
+										{showModal ? (
+											<div>
+												<SetUpProfileModal
+													bannerImageUrl={profileData.bannerImgUrl ?? ""}
+													bio={profileData.bio ?? ""}
+													webPage={profileData.webPage ?? ""}
+													profileImageUrl={profileData.profileImageUrl}
+													showModal={(e: boolean) => setShowModal(e)}
+												/>
+												<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
+											</div>
+										) : null}
+									</div>
+								) : isAlreadyFollowing && isSignedIn ? (
+									<DangerButton
+										onClick={(e) => {
+											e.preventDefault()
+											stopFollowing(profileData.id)
+										}}
+									>
+										{isUnFollowing && <LoadingSpinner />}
+										Unfollow
+									</DangerButton>
+								) : (
+									isSignedIn && (
+										<PrimalyButton
+											onClick={(e) => {
+												e.preventDefault()
+												addUserToFollow(profileData.id)
+											}}
+										>
+											{isFolloweed && <LoadingSpinner />}
+											Follow
+										</PrimalyButton>
+									)
+								)}
+							</div>
 						</div>
 						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profileData.fullName}</h1>
 						<span className="pl-2 font-normal text-slate-400">
