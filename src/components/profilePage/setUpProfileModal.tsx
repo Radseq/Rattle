@@ -36,7 +36,7 @@ export const SetUpProfileModal: FC<{
 
 	const webPageInput = useRestrictedInput(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
 
-	const bioTextArea = useRestrictedTextArea(BIO_MAX_LETTERS ?? 0, props.webPage || "")
+	const bioTextArea = useRestrictedTextArea(BIO_MAX_LETTERS ?? 0, props.bio || "")
 
 	return (
 		<div
