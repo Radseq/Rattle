@@ -1,9 +1,9 @@
-import Image from "next/image"
 import { type FC } from "react"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
 import { Icon } from "../Icon"
+import { ParseZodErrorToString } from "~/utils/helpers"
 
 export const OptionMenu: FC<{
 	postId: string
@@ -12,13 +12,14 @@ export const OptionMenu: FC<{
 }> = ({ postId, closeMenu, refetchPosts }) => {
 	const { mutate, isLoading: isDeleting } = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
-			toast.success("Post Deleted")
+			toast.success("Post Deleted!")
 			await refetchPosts()
 		},
 		onError: (e) => {
-			const zodValidationError = e.data?.zodError?.fieldErrors.content
-			const error = zodValidationError?.join() ?? "Failed to posts! Please try again later"
-			toast.error(error)
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to delete post! Please try again later"
+			toast.error(error, { duration: 10000 })
 		},
 	})
 	return (
