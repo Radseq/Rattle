@@ -10,6 +10,8 @@ export type Profile = {
 }
 
 export type SignInUser = {
-	userId: string | undefined
+	userId: string | null
 	isSignedIn: boolean
 }
+
+export type ProfilePageType = "view" | "current user" | "different user"

@@ -16,7 +16,8 @@ import { DangerButton, PrimalyButton } from "~/components/StyledButtons"
 import { useState } from "react"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 import { clerkClient, getAuth } from "@clerk/nextjs/server"
-import { type Profile, type SignInUser } from "src/components/profilePage/types"
+import type { Profile, SignInUser } from "src/components/profilePage/types"
+import { useProfileType } from "~/hooks/useProfileType"
 
 dayjs.extend(relativeTime)
 
@@ -27,7 +28,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		username: [username.replace("@", "")],
 	})
 
-	if (authors.length > 1 || !authors[0]) {
+	if (authors.length > 1 || !authors[0] || !authors[0].username) {
 		return {
 			redirect: {
 				destination: "/",
@@ -59,23 +60,26 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		}
 	}
 
+	const profile: Profile = {
+		id: author.id,
+		username: author.username ?? "",
+		profileImageUrl: (authorLocal && authorLocal.profileImageUrl) ?? author.profileImageUrl,
+		fullName: getFullName(author.firstName, author.lastName),
+		createdAt: author.createdAt,
+		bannerImgUrl: authorLocal && authorLocal.bannerImageUrl,
+		bio: authorLocal && authorLocal.bio,
+		webPage: authorLocal && authorLocal.webPage,
+	}
+
+	const signInUser: SignInUser = {
+		userId: userId ? userId : null,
+		isSignedIn: !!userId,
+	}
+
 	return {
 		props: {
-			profile: {
-				id: author.id,
-				username: author.username,
-				profileImageUrl:
-					(authorLocal && authorLocal.profileImageUrl) ?? author.profileImageUrl,
-				fullName: getFullName(author.firstName, author.lastName),
-				createdAt: author.createdAt,
-				bannerImgUrl: authorLocal && authorLocal.bannerImageUrl,
-				bio: authorLocal && authorLocal.bio,
-				webPage: authorLocal && authorLocal.webPage,
-			},
-			signInUser: {
-				userId: userId ? userId : null,
-				isSignedIn: !!userId,
-			},
+			profile,
+			signInUser,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
 		},
 	}
@@ -89,7 +93,7 @@ const Profile: NextPage<{
 	isUserFollowProfile: boolean | null
 }> = ({ profile, signInUser, isUserFollowProfile }) => {
 	const [showModal, setShowModal] = useState<boolean>()
-
+	const profileType = useProfileType(profile, signInUser)
 	const { mutate: addUserToFollow, isLoading: isFolloweed } =
 		api.follow.addUserToFollow.useMutation({
 			onSuccess: () => {
@@ -144,9 +148,7 @@ const Profile: NextPage<{
 								></span>
 							</div>
 							<div className="mt-4 h-14">
-								{signInUser.isSignedIn &&
-								signInUser.userId &&
-								profile.id === signInUser.userId ? (
+								{profileType === "current user" ? (
 									<div>
 										<PrimalyButton
 											onClick={(e) => {
@@ -169,7 +171,7 @@ const Profile: NextPage<{
 											</div>
 										) : null}
 									</div>
-								) : isUserFollowProfile ? (
+								) : isUserFollowProfile && profileType === "different user" ? (
 									<DangerButton
 										onClick={(e) => {
 											e.preventDefault()
@@ -180,8 +182,8 @@ const Profile: NextPage<{
 										Unfollow
 									</DangerButton>
 								) : (
-									signInUser &&
-									signInUser.isSignedIn && (
+									signInUser.isSignedIn &&
+									!isUserFollowProfile && (
 										<PrimalyButton
 											onClick={(e) => {
 												e.preventDefault()
