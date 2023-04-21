@@ -25,7 +25,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.profile as string
 
 	const authors = await clerkClient.users.getUserList({
-		username: [username.replace("@", "")],
+		username: [username],
 	})
 
 	if (authors.length > 1 || !authors[0] || !authors[0].username) {
