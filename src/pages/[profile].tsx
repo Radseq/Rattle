@@ -1,33 +1,30 @@
-import type { GetServerSideProps, GetStaticPropsContext, NextPage } from "next"
+import type { GetServerSideProps, NextPage } from "next"
 import Head from "next/head"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
-import { createProxySSGHelpers } from "@trpc/react-query/ssg"
-import superjson from "superjson"
-import { appRouter } from "~/server/api/root"
+
 import { prisma } from "~/server/db"
 import Image from "next/image"
 
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
-import { LoadingPage, LoadingSpinner } from "~/components/LoadingPage"
-import { useUser } from "@clerk/nextjs"
+import { LoadingSpinner } from "~/components/LoadingPage"
 import toast from "react-hot-toast"
-import { ParseZodErrorToString, getFullName } from "~/utils/helpers"
+import { getFullName, ParseZodErrorToString } from "~/utils/helpers"
 import { DangerButton, PrimalyButton } from "~/components/StyledButtons"
 import { useState } from "react"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
-import { clerkClient } from "@clerk/nextjs/server"
+import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import { type Profile, type SignInUser } from "src/components/profilePage/types"
 
 dayjs.extend(relativeTime)
 
-export const getServerSideProps = async (context: GetStaticPropsContext<{ profile: string }>) => {
-	const username = context.params?.profile.replace("@", "") as string
+export const getServerSideProps: GetServerSideProps = async (props) => {
+	const username = props.params?.profile as string
 
 	const authors = await clerkClient.users.getUserList({
-		username: [username],
+		username: [username.replace("@", "")],
 	})
 
 	if (authors.length > 1 || !authors[0]) {
@@ -47,10 +44,10 @@ export const getServerSideProps = async (context: GetStaticPropsContext<{ profil
 		},
 	})
 
-	const { user, isSignedIn, isLoaded } = useUser()
+	const { user, userId } = getAuth(props.req)
 
-	let isUserFollowProfile: boolean | undefined
-	if (user && isLoaded) {
+	let isUserFollowProfile: boolean | null = null
+	if (user) {
 		const followeed = await prisma.followeed.findFirst({
 			where: {
 				watched: user.id,
@@ -76,11 +73,10 @@ export const getServerSideProps = async (context: GetStaticPropsContext<{ profil
 				webPage: authorLocal && authorLocal.webPage,
 			},
 			signInUser: {
-				userId: user ? user.id : undefined,
-				isSignedIn,
-				isLoaded,
+				userId: userId ? userId : null,
+				isSignedIn: !!userId,
 			},
-			isUserFollowProfile,
+			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
 		},
 	}
 }
@@ -90,26 +86,14 @@ const ZOD_ERROR_DURATION_MS = 10000
 const Profile: NextPage<{
 	profile: Profile
 	signInUser: SignInUser
-	isUserFollowProfile: boolean | undefined
+	isUserFollowProfile: boolean | null
 }> = ({ profile, signInUser, isUserFollowProfile }) => {
-	const { data: profileData, isLoading } = api.profile.getProfileByUsername.useQuery(username)
-
-	const { user, isSignedIn } = useUser()
 	const [showModal, setShowModal] = useState<boolean>()
-
-	if (isLoading) {
-		return <LoadingPage />
-	}
-
-	if (!profileData) {
-		// todo error page
-		return null
-	}
 
 	const { mutate: addUserToFollow, isLoading: isFolloweed } =
 		api.follow.addUserToFollow.useMutation({
 			onSuccess: () => {
-				toast.success(`${username} is now followeed`)
+				toast.success(`${profile.username} is now followeed`)
 				window.location.reload()
 			},
 			onError: (e) => {
@@ -123,7 +107,7 @@ const Profile: NextPage<{
 	const { mutate: stopFollowing, isLoading: isUnFollowing } =
 		api.follow.stopFollowing.useMutation({
 			onSuccess: () => {
-				toast.success(`${username} is now Unfolloweed`)
+				toast.success(`${profile.username} is now Unfolloweed`)
 				window.location.reload()
 			},
 			onError: (e) => {
@@ -133,19 +117,16 @@ const Profile: NextPage<{
 				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
 			},
 		})
-
-	const { data: isAlreadyFollowing } = api.follow.isFolloweed.useQuery(profileData.id)
-
 	return (
 		<>
 			<Head>
-				<title>{profileData.username}</title>
+				<title>{profile.username}</title>
 			</Head>
 			<Layout>
 				<div>
 					<div className="flex flex-col">
-						{profileData.bannerImgUrl ? (
-							<img src={profileData.bannerImgUrl} alt={"banner"}></img>
+						{profile.bannerImgUrl ? (
+							<img src={profile.bannerImgUrl} alt={"banner"}></img>
 						) : (
 							<div className="h-52 w-full bg-black"></div>
 						)}
@@ -153,7 +134,7 @@ const Profile: NextPage<{
 							<div className="relative w-full">
 								<img
 									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white "
-									src={profileData.profileImageUrl}
+									src={profile.profileImageUrl}
 									alt={"avatar"}
 								></img>
 								{/* fix me: to add shadow to icon when mouse hover */}
@@ -163,7 +144,9 @@ const Profile: NextPage<{
 								></span>
 							</div>
 							<div className="mt-4 h-14">
-								{user && isSignedIn && user.id === profileData.id ? (
+								{signInUser.isSignedIn &&
+								signInUser.userId &&
+								profile.id === signInUser.userId ? (
 									<div>
 										<PrimalyButton
 											onClick={(e) => {
@@ -176,32 +159,33 @@ const Profile: NextPage<{
 										{showModal ? (
 											<div>
 												<SetUpProfileModal
-													bannerImageUrl={profileData.bannerImgUrl ?? ""}
-													bio={profileData.bio ?? ""}
-													webPage={profileData.webPage ?? ""}
-													profileImageUrl={profileData.profileImageUrl}
+													bannerImageUrl={profile.bannerImgUrl ?? ""}
+													bio={profile.bio ?? ""}
+													webPage={profile.webPage ?? ""}
+													profileImageUrl={profile.profileImageUrl}
 													showModal={(e: boolean) => setShowModal(e)}
 												/>
 												<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
 											</div>
 										) : null}
 									</div>
-								) : isAlreadyFollowing && isSignedIn ? (
+								) : isUserFollowProfile ? (
 									<DangerButton
 										onClick={(e) => {
 											e.preventDefault()
-											stopFollowing(profileData.id)
+											stopFollowing(profile.id)
 										}}
 									>
 										{isUnFollowing && <LoadingSpinner />}
 										Unfollow
 									</DangerButton>
 								) : (
-									isSignedIn && (
+									signInUser &&
+									signInUser.isSignedIn && (
 										<PrimalyButton
 											onClick={(e) => {
 												e.preventDefault()
-												addUserToFollow(profileData.id)
+												addUserToFollow(profile.id)
 											}}
 										>
 											{isFolloweed && <LoadingSpinner />}
@@ -211,13 +195,11 @@ const Profile: NextPage<{
 								)}
 							</div>
 						</div>
-						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profileData.fullName}</h1>
-						<span className="pl-2 font-normal text-slate-400">
-							@{profileData.username}
-						</span>
-						<p className="ml-2 mt-2">{profileData.bio}</p>
+						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profile.fullName}</h1>
+						<span className="pl-2 font-normal text-slate-400">@{profile.username}</span>
+						<p className="ml-2 mt-2">{profile.bio}</p>
 						<div className="flex gap-3 pt-2">
-							{profileData.webPage && (
+							{profile.webPage && (
 								<span className="flex pl-2">
 									<Image
 										width={18}
@@ -225,8 +207,8 @@ const Profile: NextPage<{
 										src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/external-link.svg"
 										alt={"icon"}
 									></Image>
-									<a href={profileData.webPage} className="pl-1 text-blue-500">
-										{profileData.webPage}
+									<a href={profile.webPage} className="pl-1 text-blue-500">
+										{profile.webPage}
 									</a>
 								</span>
 							)}
@@ -238,7 +220,7 @@ const Profile: NextPage<{
 									alt={"icon"}
 								></Image>
 								<span className="ml-1 text-slate-500">
-									since {dayjs(profileData.createdAt).fromNow()}
+									since {dayjs(profile.createdAt).fromNow()}
 								</span>
 							</span>
 						</div>
@@ -254,7 +236,7 @@ const Profile: NextPage<{
 						</div>
 					</div>
 					<div className="pt-4">
-						<FetchPosts userId={profileData.id} />
+						<FetchPosts userId={profile.id} />
 					</div>
 				</div>
 			</Layout>

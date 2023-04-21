@@ -1,5 +1,4 @@
 import clerkClient from "@clerk/clerk-sdk-node"
-import { useUser } from "@clerk/nextjs"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"

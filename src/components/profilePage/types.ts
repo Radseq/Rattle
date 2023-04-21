@@ -11,6 +11,5 @@ export type Profile = {
 
 export type SignInUser = {
 	userId: string | undefined
-	isSignedIn: boolean | undefined
-	isLoaded: boolean
+	isSignedIn: boolean
 }
