@@ -1,18 +1,12 @@
 import clerkClient from "@clerk/clerk-sdk-node"
+import { useUser } from "@clerk/nextjs"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
+import { getFullName } from "~/utils/helpers"
 
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
-
-const getFullName = (frstName: string | null, lastName: string | null) => {
-	let fullName = frstName
-	if (fullName && lastName) {
-		fullName += " " + lastName
-	}
-	return fullName
-}
 
 export const profileRouter = createTRPCRouter({
 	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ ctx, input }) => {

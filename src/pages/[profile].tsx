@@ -1,4 +1,4 @@
-import type { GetStaticPropsContext, NextPage } from "next"
+import type { GetServerSideProps, GetStaticPropsContext, NextPage } from "next"
 import Head from "next/head"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
@@ -14,46 +14,84 @@ import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { LoadingPage, LoadingSpinner } from "~/components/LoadingPage"
 import { useUser } from "@clerk/nextjs"
 import toast from "react-hot-toast"
-import { ParseZodErrorToString } from "~/utils/helpers"
+import { ParseZodErrorToString, getFullName } from "~/utils/helpers"
 import { DangerButton, PrimalyButton } from "~/components/StyledButtons"
 import { useState } from "react"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
+import { clerkClient } from "@clerk/nextjs/server"
+import { type Profile, type SignInUser } from "src/components/profilePage/types"
 
 dayjs.extend(relativeTime)
 
-export const getStaticProps = async (context: GetStaticPropsContext<{ profile: string }>) => {
-	const ssg = createProxySSGHelpers({
-		router: appRouter,
-		ctx: { prisma, authUserId: null, opts: undefined },
-		transformer: superjson, // optional - adds superjson serialization
-	})
-
+export const getServerSideProps = async (context: GetStaticPropsContext<{ profile: string }>) => {
 	const username = context.params?.profile.replace("@", "") as string
 
-	if (!username) {
-		throw new Error("No Username provided")
+	const authors = await clerkClient.users.getUserList({
+		username: [username],
+	})
+
+	if (authors.length > 1 || !authors[0]) {
+		return {
+			redirect: {
+				destination: "/",
+				permanent: false,
+			},
+		}
 	}
 
-	await ssg.profile.getProfileByUsername.prefetch(username)
+	const author = authors[0]
+
+	const authorLocal = await prisma.user.findFirst({
+		where: {
+			id: author.id,
+		},
+	})
+
+	const { user, isSignedIn, isLoaded } = useUser()
+
+	let isUserFollowProfile: boolean | undefined
+	if (user && isLoaded) {
+		const followeed = await prisma.followeed.findFirst({
+			where: {
+				watched: user.id,
+				watching: author.id,
+			},
+		})
+		if (followeed) {
+			isUserFollowProfile = true
+		}
+	}
 
 	return {
 		props: {
-			trpcState: ssg.dehydrate(),
-			username,
+			profile: {
+				id: author.id,
+				username: author.username,
+				profileImageUrl:
+					(authorLocal && authorLocal.profileImageUrl) ?? author.profileImageUrl,
+				fullName: getFullName(author.firstName, author.lastName),
+				createdAt: author.createdAt,
+				bannerImgUrl: authorLocal && authorLocal.bannerImageUrl,
+				bio: authorLocal && authorLocal.bio,
+				webPage: authorLocal && authorLocal.webPage,
+			},
+			signInUser: {
+				userId: user ? user.id : undefined,
+				isSignedIn,
+				isLoaded,
+			},
+			isUserFollowProfile,
 		},
-	}
-}
-
-export const getStaticPaths = () => {
-	return {
-		paths: [],
-		fallback: "blocking",
 	}
 }
 
 const ZOD_ERROR_DURATION_MS = 10000
 
-const Profile: NextPage<{ username: string }> = ({ username }) => {
+const Profile: NextPage<{
+	profile: Profile
+	signInUser: SignInUser
+	isUserFollowProfile: boolean | undefined
+}> = ({ profile, signInUser, isUserFollowProfile }) => {
 	const { data: profileData, isLoading } = api.profile.getProfileByUsername.useQuery(username)
 
 	const { user, isSignedIn } = useUser()

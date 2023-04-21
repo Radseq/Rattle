@@ -1,4 +1,4 @@
-export type ProfileData = {
+export type Profile = {
 	id: string
 	username: string
 	profileImageUrl: string
@@ -7,4 +7,10 @@ export type ProfileData = {
 	bannerImgUrl: string | null
 	bio: string | null
 	webPage: string | null
+}
+
+export type SignInUser = {
+	userId: string | undefined
+	isSignedIn: boolean | undefined
+	isLoaded: boolean
 }
