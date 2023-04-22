@@ -12,12 +12,11 @@ import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { LoadingSpinner } from "~/components/LoadingPage"
 import toast from "react-hot-toast"
 import { getFullName, ParseZodErrorToString } from "~/utils/helpers"
-import { DangerButton, PrimalyButton } from "~/components/StyledButtons"
-import { useState } from "react"
-import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import type { Profile, SignInUser } from "src/components/profilePage/types"
-import { useProfileType } from "~/hooks/useProfileType"
+import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelector"
+import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
+import { useState } from "react"
 
 dayjs.extend(relativeTime)
 
@@ -93,7 +92,7 @@ const Profile: NextPage<{
 	isUserFollowProfile: boolean | null
 }> = ({ profile, signInUser, isUserFollowProfile }) => {
 	const [showModal, setShowModal] = useState<boolean>()
-	const profileType = useProfileType(profile, signInUser)
+
 	const { mutate: addUserToFollow, isLoading: isFolloweed } =
 		api.follow.addUserToFollow.useMutation({
 			onSuccess: () => {
@@ -121,6 +120,7 @@ const Profile: NextPage<{
 				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
 			},
 		})
+
 	return (
 		<>
 			<Head>
@@ -148,53 +148,33 @@ const Profile: NextPage<{
 								></span>
 							</div>
 							<div className="mt-4 h-14">
-								{profileType === "current user" ? (
+								<ActionButtonSelector
+									isUserFollowProfile={isUserFollowProfile}
+									profile={profile}
+									signInUser={signInUser}
+									onClick={(profileid: string, type: string) => {
+										if (type === "unfollow") {
+											stopFollowing(profileid)
+										} else if (type === "follow") {
+											addUserToFollow(profileid)
+										} else {
+											setShowModal(true)
+										}
+									}}
+								/>
+								{(isFolloweed || isUnFollowing) && <LoadingSpinner />}
+								{showModal ? (
 									<div>
-										<PrimalyButton
-											onClick={(e) => {
-												setShowModal(true)
-												e.preventDefault()
-											}}
-										>
-											Set up profile
-										</PrimalyButton>
-										{showModal ? (
-											<div>
-												<SetUpProfileModal
-													bannerImageUrl={profile.bannerImgUrl ?? ""}
-													bio={profile.bio ?? ""}
-													webPage={profile.webPage ?? ""}
-													profileImageUrl={profile.profileImageUrl}
-													showModal={(e: boolean) => setShowModal(e)}
-												/>
-												<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
-											</div>
-										) : null}
+										<SetUpProfileModal
+											bannerImageUrl={profile.bannerImgUrl ?? ""}
+											bio={profile.bio ?? ""}
+											webPage={profile.webPage ?? ""}
+											profileImageUrl={profile.profileImageUrl}
+											showModal={(e: boolean) => setShowModal(e)}
+										/>
+										<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
 									</div>
-								) : isUserFollowProfile && profileType === "different user" ? (
-									<DangerButton
-										onClick={(e) => {
-											e.preventDefault()
-											stopFollowing(profile.id)
-										}}
-									>
-										{isUnFollowing && <LoadingSpinner />}
-										Unfollow
-									</DangerButton>
-								) : (
-									signInUser.isSignedIn &&
-									!isUserFollowProfile && (
-										<PrimalyButton
-											onClick={(e) => {
-												e.preventDefault()
-												addUserToFollow(profile.id)
-											}}
-										>
-											{isFolloweed && <LoadingSpinner />}
-											Follow
-										</PrimalyButton>
-									)
-								)}
+								) : null}
 							</div>
 						</div>
 						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profile.fullName}</h1>
