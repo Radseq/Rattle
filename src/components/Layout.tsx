@@ -36,7 +36,7 @@ export const Layout = (props: PropsWithChildren) => {
 							<h1 className="p-2 text-2xl font-semibold">Hello {user.firstName}</h1>
 
 							<Link
-								href={user.username ? `/@${user.username}` : "/"}
+								href={user.username ? `/${user.username}` : "/"}
 								className="mb-2 flex justify-center rounded border 
 								border-gray-500 bg-transparent py-2 px-4 font-semibold 
 								text-gray-700 hover:border-transparent hover:bg-gray-500 
