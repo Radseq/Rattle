@@ -1,12 +1,18 @@
-import type { Profile, ProfilePageType, SignInUser } from "~/components/profilePage/types"
+import type { ProfilePageType, SignInUser } from "~/components/profilePage/types"
 
-export const useProfileType = (profile: Profile, signInUser: SignInUser): ProfilePageType => {
+export const useProfileType = (
+	profileId: string,
+	signInUser: SignInUser,
+	isUserFollowProfile: boolean | null
+): ProfilePageType => {
 	const { isSignedIn, userId } = signInUser
 
 	if (!isSignedIn) {
 		return "view"
-	} else if (userId === profile.id) {
-		return "current user"
+	} else if (isSignedIn && userId === profileId) {
+		return "own"
+	} else if (isSignedIn && isUserFollowProfile) {
+		return "follow"
 	}
-	return "different user"
+	return "unfollow"
 }

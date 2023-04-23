@@ -17,6 +17,7 @@ import type { Profile, SignInUser } from "src/components/profilePage/types"
 import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelector"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 import { useState } from "react"
+import { useProfileType } from "~/hooks/useProfileType"
 
 dayjs.extend(relativeTime)
 
@@ -93,6 +94,8 @@ const Profile: NextPage<{
 }> = ({ profile, signInUser, isUserFollowProfile }) => {
 	const [showModal, setShowModal] = useState<boolean>()
 
+	const profileType = useProfileType(profile.id, signInUser, isUserFollowProfile)
+
 	const { mutate: addUserToFollow, isLoading: isFolloweed } =
 		api.follow.addUserToFollow.useMutation({
 			onSuccess: () => {
@@ -149,14 +152,14 @@ const Profile: NextPage<{
 							</div>
 							<div className="mt-4 h-14">
 								<ActionButtonSelector
-									isUserFollowProfile={isUserFollowProfile}
-									profile={profile}
-									signInUser={signInUser}
-									onClick={(profileid: string, type: string) => {
-										if (type === "unfollow") {
-											stopFollowing(profileid)
-										} else if (type === "follow") {
-											addUserToFollow(profileid)
+									profileType={profileType}
+									onClick={(
+										actionType: "signUp" | "follow" | "unfollow" | null
+									) => {
+										if (actionType === "unfollow") {
+											stopFollowing(profile.id)
+										} else if (actionType === "follow") {
+											addUserToFollow(profile.id)
 										} else {
 											setShowModal(true)
 										}

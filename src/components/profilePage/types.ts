@@ -14,4 +14,4 @@ export type SignInUser = {
 	isSignedIn: boolean
 }
 
-export type ProfilePageType = "view" | "current user" | "different user"
+export type ProfilePageType = "view" | "own" | "follow" | "unfollow"
