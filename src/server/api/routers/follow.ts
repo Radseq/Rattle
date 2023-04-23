@@ -3,6 +3,7 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc"
 import { clerkClient } from "@clerk/nextjs/server"
 import { TRPCError } from "@trpc/server"
 import { prisma } from "~/server/db"
+import { isFolloweed } from "../follow"
 
 export const followRouter = createTRPCRouter({
 	isFolloweed: publicProcedure
@@ -12,18 +13,7 @@ export const followRouter = createTRPCRouter({
 				return false
 			}
 
-			const followeed = await prisma.followeed.findFirst({
-				where: {
-					watched: ctx.authUserId,
-					watching: input,
-				},
-			})
-
-			if (followeed) {
-				return true
-			}
-
-			return false
+			return isFolloweed(ctx.authUserId, input)
 		}),
 	addUserToFollow: privateProcedure
 		.input(z.string().min(32, { message: "Wrong user input!" }))

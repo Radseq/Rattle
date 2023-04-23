@@ -18,17 +18,16 @@ import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelec
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 import { useState } from "react"
 import { useProfileType } from "~/hooks/useProfileType"
+import { getProfileByUserName } from "~/server/api/profile"
+import { isFolloweed } from "~/server/api/follow"
 
 dayjs.extend(relativeTime)
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.profile as string
 
-	const authors = await clerkClient.users.getUserList({
-		username: [username],
-	})
-
-	if (authors.length > 1 || !authors[0] || !authors[0].username) {
+	const profile = await getProfileByUserName(username)
+	if (!profile) {
 		return {
 			redirect: {
 				destination: "/",
@@ -37,39 +36,9 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		}
 	}
 
-	const author = authors[0]
-
-	const authorLocal = await prisma.user.findFirst({
-		where: {
-			id: author.id,
-		},
-	})
-
 	const { user, userId } = getAuth(props.req)
 
-	let isUserFollowProfile: boolean | null = null
-	if (user) {
-		const followeed = await prisma.followeed.findFirst({
-			where: {
-				watched: user.id,
-				watching: author.id,
-			},
-		})
-		if (followeed) {
-			isUserFollowProfile = true
-		}
-	}
-
-	const profile: Profile = {
-		id: author.id,
-		username: author.username ?? "",
-		profileImageUrl: (authorLocal && authorLocal.profileImageUrl) ?? author.profileImageUrl,
-		fullName: getFullName(author.firstName, author.lastName),
-		createdAt: author.createdAt,
-		bannerImgUrl: authorLocal && authorLocal.bannerImageUrl,
-		bio: authorLocal && authorLocal.bio,
-		webPage: authorLocal && authorLocal.webPage,
-	}
+	let isUserFollowProfile = user ? await isFolloweed(user.id, profile.id) : false
 
 	const signInUser: SignInUser = {
 		userId: userId ? userId : null,
