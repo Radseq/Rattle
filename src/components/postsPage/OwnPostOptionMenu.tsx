@@ -5,7 +5,7 @@ import { LoadingSpinner } from "../LoadingPage"
 import { Icon } from "../Icon"
 import { ParseZodErrorToString } from "~/utils/helpers"
 
-export const OptionMenu: FC<{
+export const OwnPostOptionMenu: FC<{
 	postId: string
 	closeMenu: () => void
 	refetchPosts: CallableFunction

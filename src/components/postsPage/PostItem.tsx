@@ -1,17 +1,18 @@
 import { type FC, useState } from "react"
-import type { PostWithUser } from "./types"
+import type { PostOptionMenuType, PostWithUser } from "./types"
 import Image from "next/image"
 import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { OptionMenu } from "./OptionMenu"
+import { OwnPostOptionMenu } from "./OwnPostOptionMenu"
 
 dayjs.extend(relativeTime)
 
-export const PostItem: FC<{ postWithUser: PostWithUser; refetchPosts: CallableFunction }> = ({
-	postWithUser,
-	refetchPosts,
-}) => {
+export const PostItem: FC<{
+	postWithUser: PostWithUser
+	menuType: PostOptionMenuType
+	refetchPosts: CallableFunction
+}> = ({ postWithUser, refetchPosts, menuType }) => {
 	const [showMenu, setShowMenu] = useState(false)
 	return (
 		<li className="flex rounded-lg py-2 hover:bg-gray-100 ">
@@ -44,8 +45,8 @@ export const PostItem: FC<{ postWithUser: PostWithUser; refetchPosts: CallableFu
 					src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/dots-horizontal.svg"
 					alt={"icon"}
 				></Image>
-				{showMenu && (
-					<OptionMenu
+				{menuType === "own" && showMenu && (
+					<OwnPostOptionMenu
 						postId={postWithUser.post.id}
 						closeMenu={() => setShowMenu(false)}
 						refetchPosts={refetchPosts}

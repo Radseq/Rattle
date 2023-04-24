@@ -48,7 +48,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		props: {
 			profile,
 			signInUser,
-			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
+			isUserFollowProfile,
 		},
 	}
 }
@@ -58,7 +58,7 @@ const ZOD_ERROR_DURATION_MS = 10000
 const Profile: NextPage<{
 	profile: Profile
 	signInUser: SignInUser
-	isUserFollowProfile: boolean | null
+	isUserFollowProfile: boolean
 }> = ({ profile, signInUser, isUserFollowProfile }) => {
 	const [showModal, setShowModal] = useState<boolean>()
 
@@ -189,7 +189,11 @@ const Profile: NextPage<{
 						</div>
 					</div>
 					<div className="pt-4">
-						<FetchPosts userId={profile.id} />
+						<FetchPosts
+							userId={profile.id}
+							signInUser={signInUser}
+							isUserFollowProfile={isUserFollowProfile}
+						/>
 					</div>
 				</div>
 			</Layout>
