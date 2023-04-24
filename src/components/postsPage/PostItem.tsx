@@ -25,7 +25,7 @@ export const PostItem: FC<{ postWithUser: PostWithUser; refetchPosts: CallableFu
 			<div className="w-10/12 pl-2">
 				<div className="font-semibold">
 					<Link
-						href={`/@${postWithUser.author.username}`}
+						href={`/${postWithUser.author.username}`}
 					>{`@${postWithUser.author.username}`}</Link>
 					<span className="p-1 text-slate-400">·</span>
 					<span className="font-normal text-slate-400">

@@ -1,80 +1,107 @@
-import type { GetStaticPropsContext, NextPage } from "next"
+import type { GetServerSideProps, NextPage } from "next"
 import Head from "next/head"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
-import { createProxySSGHelpers } from "@trpc/react-query/ssg"
-import superjson from "superjson"
-import { appRouter } from "~/server/api/root"
-import { prisma } from "~/server/db"
+
 import Image from "next/image"
 
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
-import { useUser } from "@clerk/nextjs"
+import { LoadingSpinner } from "~/components/LoadingPage"
+import toast from "react-hot-toast"
+import { ParseZodErrorToString } from "~/utils/helpers"
+import { getAuth } from "@clerk/nextjs/server"
+import type { Profile, SignInUser } from "src/components/profilePage/types"
+import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelector"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
-import { LoadingPage } from "~/components/LoadingPage"
 import { useState } from "react"
+import { useProfileType } from "~/hooks/useProfileType"
+import { getProfileByUserName } from "~/server/api/profile"
+import { isFolloweed } from "~/server/api/follow"
 
 dayjs.extend(relativeTime)
 
-export const getStaticProps = async (context: GetStaticPropsContext<{ profile: string }>) => {
-	const ssg = createProxySSGHelpers({
-		router: appRouter,
-		ctx: { prisma, authUserId: null, opts: undefined },
-		transformer: superjson, // optional - adds superjson serialization
-	})
+export const getServerSideProps: GetServerSideProps = async (props) => {
+	const username = props.params?.profile as string
 
-	const username = context.params?.profile.replace("@", "") as string
-
-	if (!username) {
-		throw new Error("No Username provided")
+	const profile = await getProfileByUserName(username)
+	if (!profile) {
+		return {
+			redirect: {
+				destination: "/",
+				permanent: false,
+			},
+		}
 	}
 
-	await ssg.profile.getProfileByUsername.prefetch(username)
+	const { user, userId } = getAuth(props.req)
+
+	const isUserFollowProfile = user ? await isFolloweed(user.id, profile.id) : false
+
+	const signInUser: SignInUser = {
+		userId: userId ? userId : null,
+		isSignedIn: !!userId,
+	}
 
 	return {
 		props: {
-			trpcState: ssg.dehydrate(),
-			username,
+			profile,
+			signInUser,
+			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
 		},
 	}
 }
 
-export const getStaticPaths = () => {
-	return {
-		paths: [],
-		// https://nextjs.org/docs/api-reference/data-fetching/get-static-paths#fallback-blocking
-		fallback: "blocking",
-	}
-}
+const ZOD_ERROR_DURATION_MS = 10000
 
-const Profile: NextPage<{ username: string }> = ({ username }) => {
-	const { data: profileData, isLoading } = api.profile.getProfileByUsername.useQuery(username)
-
+const Profile: NextPage<{
+	profile: Profile
+	signInUser: SignInUser
+	isUserFollowProfile: boolean | null
+}> = ({ profile, signInUser, isUserFollowProfile }) => {
 	const [showModal, setShowModal] = useState<boolean>()
 
-	const { user, isSignedIn } = useUser()
+	const profileType = useProfileType(profile.id, signInUser, isUserFollowProfile)
 
-	if (isLoading) {
-		return <LoadingPage />
-	}
+	const { mutate: addUserToFollow, isLoading: isFolloweed } =
+		api.follow.addUserToFollow.useMutation({
+			onSuccess: () => {
+				toast.success(`${profile.username} is now followeed`)
+				window.location.reload()
+			},
+			onError: (e) => {
+				const error =
+					ParseZodErrorToString(e.data?.zodError) ??
+					"Failed to update settings! Please try again later"
+				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
+			},
+		})
 
-	if (!profileData) {
-		// todo error page
-		return null
-	}
+	const { mutate: stopFollowing, isLoading: isUnFollowing } =
+		api.follow.stopFollowing.useMutation({
+			onSuccess: () => {
+				toast.success(`${profile.username} is now Unfolloweed`)
+				window.location.reload()
+			},
+			onError: (e) => {
+				const error =
+					ParseZodErrorToString(e.data?.zodError) ??
+					"Failed to update settings! Please try again later"
+				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
+			},
+		})
 
 	return (
 		<>
 			<Head>
-				<title>{profileData.username}</title>
+				<title>{profile.username}</title>
 			</Head>
 			<Layout>
 				<div>
 					<div className="flex flex-col">
-						{profileData.bannerImgUrl ? (
-							<img src={profileData.bannerImgUrl} alt={"banner"}></img>
+						{profile.bannerImgUrl ? (
+							<img src={profile.bannerImgUrl} alt={"banner"}></img>
 						) : (
 							<div className="h-52 w-full bg-black"></div>
 						)}
@@ -82,7 +109,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 							<div className="relative w-full">
 								<img
 									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white "
-									src={profileData.profileImageUrl}
+									src={profile.profileImageUrl}
 									alt={"avatar"}
 								></img>
 								{/* fix me: to add shadow to icon when mouse hover */}
@@ -91,49 +118,41 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
-							{user && isSignedIn && user.id === profileData.id ? (
-								<div>
-									<button
-										className="block rounded-lg bg-blue-500 px-5 py-2.5 text-center font-bold 
-									text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 
-									dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-										type="button"
-										onClick={(e) => {
+							<div className="mt-4 h-14">
+								<ActionButtonSelector
+									profileType={profileType}
+									onClick={(
+										actionType: "signUp" | "follow" | "unfollow" | null
+									) => {
+										if (actionType === "unfollow") {
+											stopFollowing(profile.id)
+										} else if (actionType === "follow") {
+											addUserToFollow(profile.id)
+										} else {
 											setShowModal(true)
-											e.preventDefault()
-										}}
-									>
-										Set up profile
-									</button>
-									{showModal ? (
-										<div>
-											<SetUpProfileModal
-												bannerImageUrl={profileData.bannerImgUrl ?? ""}
-												bio={profileData.bio ?? ""}
-												webPage={profileData.webPage ?? ""}
-												profileImageUrl={profileData.profileImageUrl}
-												showModal={(e: boolean) => setShowModal(e)}
-											/>
-											<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
-										</div>
-									) : null}
-								</div>
-							) : (
-								<button
-									className="m-2 rounded-full bg-blue-500 py-2 px-4 font-bold text-white 
-									hover:bg-blue-700"
-								>
-									Follow
-								</button>
-							)}
+										}
+									}}
+								/>
+								{(isFolloweed || isUnFollowing) && <LoadingSpinner />}
+								{showModal ? (
+									<div>
+										<SetUpProfileModal
+											bannerImageUrl={profile.bannerImgUrl ?? ""}
+											bio={profile.bio ?? ""}
+											webPage={profile.webPage ?? ""}
+											profileImageUrl={profile.profileImageUrl}
+											showModal={(e: boolean) => setShowModal(e)}
+										/>
+										<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
+									</div>
+								) : null}
+							</div>
 						</div>
-						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profileData.fullName}</h1>
-						<span className="pl-2 font-normal text-slate-400">
-							@{profileData.username}
-						</span>
-						<p className="ml-2 mt-2">{profileData.bio}</p>
+						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profile.fullName}</h1>
+						<span className="pl-2 font-normal text-slate-400">@{profile.username}</span>
+						<p className="ml-2 mt-2">{profile.bio}</p>
 						<div className="flex gap-3 pt-2">
-							{profileData.webPage && (
+							{profile.webPage && (
 								<span className="flex pl-2">
 									<Image
 										width={18}
@@ -141,8 +160,8 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 										src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/external-link.svg"
 										alt={"icon"}
 									></Image>
-									<a href={profileData.webPage} className="pl-1 text-blue-500">
-										{profileData.webPage}
+									<a href={profile.webPage} className="pl-1 text-blue-500">
+										{profile.webPage}
 									</a>
 								</span>
 							)}
@@ -154,7 +173,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 									alt={"icon"}
 								></Image>
 								<span className="ml-1 text-slate-500">
-									since {dayjs(profileData.createdAt).fromNow()}
+									since {dayjs(profile.createdAt).fromNow()}
 								</span>
 							</span>
 						</div>
@@ -170,7 +189,7 @@ const Profile: NextPage<{ username: string }> = ({ username }) => {
 						</div>
 					</div>
 					<div className="pt-4">
-						<FetchPosts userId={profileData.id} />
+						<FetchPosts userId={profile.id} />
 					</div>
 				</div>
 			</Layout>
