@@ -4,7 +4,7 @@ import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
 import { useUser } from "@clerk/nextjs"
 import { usePostOptionMenuType } from "~/hooks/usePostOptionMenuType"
-import { SignInUser } from "../profilePage/types"
+import { type SignInUser } from "../profilePage/types"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -15,6 +15,8 @@ export const FetchPosts: FC<{
 
 	const { user } = useUser()
 
+	const type = usePostOptionMenuType(isUserFollowProfile, signInUser, userId === user?.id)
+
 	if (isLoading) {
 		return (
 			<div className="relative">
@@ -22,8 +24,6 @@ export const FetchPosts: FC<{
 			</div>
 		)
 	}
-
-	const type = usePostOptionMenuType(isUserFollowProfile, signInUser, userId === user?.id)
 
 	return (
 		<ul className="">
