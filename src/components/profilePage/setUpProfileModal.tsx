@@ -6,8 +6,8 @@ import { ParseZodErrorToString } from "~/utils/helpers"
 import { StyledInput, StyledLabel, StyledTextArea } from "../FloatingStyles"
 import { useRestrictedInput, useRestrictedTextArea } from "~/hooks/useRestrictedInput"
 
-const BANNER_MAX_LETTERS = 50
-const PROFILE_MAX_LETTERS = 50
+const BANNER_MAX_LETTERS = 100
+const PROFILE_MAX_LETTERS = 100
 const WEBPAGE_MAX_LETTERS = 50
 const BIO_MAX_LETTERS = 500
 
@@ -36,7 +36,7 @@ export const SetUpProfileModal: FC<{
 
 	const webPageInput = useRestrictedInput(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
 
-	const bioTextArea = useRestrictedTextArea(WEBPAGE_MAX_LETTERS ?? 0, props.webPage || "")
+	const bioTextArea = useRestrictedTextArea(BIO_MAX_LETTERS ?? 0, props.bio || "")
 
 	return (
 		<div

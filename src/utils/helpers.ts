@@ -1,5 +1,6 @@
 import { type typeToFlattenedError } from "zod"
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 export const ParseZodErrorToString = (
 	zodError: typeToFlattenedError<any, string> | null | undefined
 ) => {
@@ -18,4 +19,12 @@ export const ParseZodErrorToString = (
 	}
 
 	return errors.join("\n")
+}
+
+export const getFullName = (frstName: string | null, lastName: string | null) => {
+	let fullName = frstName
+	if (fullName && lastName) {
+		fullName += " " + lastName
+	}
+	return fullName
 }
