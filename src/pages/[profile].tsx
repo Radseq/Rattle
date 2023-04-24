@@ -3,7 +3,6 @@ import Head from "next/head"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
 
-import { prisma } from "~/server/db"
 import Image from "next/image"
 
 import dayjs from "dayjs"
@@ -11,8 +10,8 @@ import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { LoadingSpinner } from "~/components/LoadingPage"
 import toast from "react-hot-toast"
-import { getFullName, ParseZodErrorToString } from "~/utils/helpers"
-import { clerkClient, getAuth } from "@clerk/nextjs/server"
+import { ParseZodErrorToString } from "~/utils/helpers"
+import { getAuth } from "@clerk/nextjs/server"
 import type { Profile, SignInUser } from "src/components/profilePage/types"
 import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelector"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
@@ -38,7 +37,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	const { user, userId } = getAuth(props.req)
 
-	let isUserFollowProfile = user ? await isFolloweed(user.id, profile.id) : false
+	const isUserFollowProfile = user ? await isFolloweed(user.id, profile.id) : false
 
 	const signInUser: SignInUser = {
 		userId: userId ? userId : null,

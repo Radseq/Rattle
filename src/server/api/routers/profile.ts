@@ -7,8 +7,8 @@ import { getProfileByUserName } from "../profile"
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 export const profileRouter = createTRPCRouter({
-	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ ctx, input }) => {
-		const profile = getProfileByUserName(input)
+	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ input }) => {
+		const profile = await getProfileByUserName(input)
 		if (!profile) {
 			throw new TRPCError({
 				code: "INTERNAL_SERVER_ERROR",

@@ -1,6 +1,6 @@
 import clerkClient from "@clerk/clerk-sdk-node"
 import { prisma } from "../db"
-import { Profile } from "~/components/profilePage/types"
+import type { Profile } from "~/components/profilePage/types"
 import { getFullName } from "~/utils/helpers"
 
 export const getProfileByUserName = async (userName: string) => {
