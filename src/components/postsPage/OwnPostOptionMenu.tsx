@@ -1,27 +1,10 @@
 import { type FC } from "react"
-import toast from "react-hot-toast"
-import { api } from "~/utils/api"
-import { LoadingSpinner } from "../LoadingPage"
 import { Icon } from "../Icon"
-import { ParseZodErrorToString } from "~/utils/helpers"
 
 export const OwnPostOptionMenu: FC<{
-	postId: string
 	closeMenu: () => void
-	refetchPosts: CallableFunction
-}> = ({ postId, closeMenu, refetchPosts }) => {
-	const { mutate, isLoading: isDeleting } = api.posts.deletePost.useMutation({
-		onSuccess: async () => {
-			toast.success("Post Deleted!")
-			await refetchPosts()
-		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to delete post! Please try again later"
-			toast.error(error, { duration: 10000 })
-		},
-	})
+	onPostDeleteClick: () => void
+}> = ({ closeMenu, onPostDeleteClick }) => {
 	return (
 		<ul
 			className="absolute right-1 h-full w-64 flex-col rounded-lg 
@@ -30,15 +13,10 @@ export const OwnPostOptionMenu: FC<{
 		>
 			<li
 				className="flex h-12 w-full rounded-lg p-2  hover:bg-gray-50"
-				onClick={() => mutate(postId)}
+				onClick={onPostDeleteClick}
 			>
 				<Icon iconKind="trash" />
 				<button className="pl-1 font-bold text-red-500">Delete</button>
-				{isDeleting && (
-					<div>
-						<LoadingSpinner size={30} />
-					</div>
-				)}
 			</li>
 		</ul>
 	)

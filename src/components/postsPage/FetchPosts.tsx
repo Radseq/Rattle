@@ -4,6 +4,8 @@ import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
 import { usePostOptionMenuType } from "~/hooks/usePostOptionMenuType"
 import { type SignInUser } from "../profilePage/types"
+import toast from "react-hot-toast"
+import { ParseZodErrorToString } from "~/utils/helpers"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -13,6 +15,30 @@ export const FetchPosts: FC<{
 	const { data, isLoading, refetch } = api.posts.getAllByAuthorId.useQuery(userId)
 
 	const type = usePostOptionMenuType(isUserFollowProfile, signInUser, userId)
+
+	const deletePost = api.posts.deletePost.useMutation({
+		onSuccess: async () => {
+			toast.success("Post Deleted!")
+			await refetch()
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to delete post! Please try again later"
+			toast.error(error, { duration: 10000 })
+		},
+	})
+
+	const handlePostOptionClick = (type: string, postId: string) => {
+		switch (type) {
+			case "delete":
+				deletePost.mutate(postId)
+				break
+
+			default:
+				break
+		}
+	}
 
 	if (isLoading) {
 		return (
@@ -29,7 +55,7 @@ export const FetchPosts: FC<{
 					key={postsWithUser.post.id}
 					postWithUser={postsWithUser}
 					menuType={type}
-					refetchPosts={refetch}
+					onOptionClick={handlePostOptionClick}
 				/>
 			))}
 		</ul>

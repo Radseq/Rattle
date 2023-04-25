@@ -11,8 +11,8 @@ dayjs.extend(relativeTime)
 export const PostItem: FC<{
 	postWithUser: PostWithUser
 	menuType: PostOptionMenuType
-	refetchPosts: CallableFunction
-}> = ({ postWithUser, refetchPosts, menuType }) => {
+	onOptionClick: (type: string, postId: string) => void
+}> = ({ postWithUser, onOptionClick, menuType }) => {
 	const [showMenu, setShowMenu] = useState(false)
 	return (
 		<li className="flex rounded-lg py-2 hover:bg-gray-100 ">
@@ -48,9 +48,11 @@ export const PostItem: FC<{
 					></Image>
 					{menuType === "own" && showMenu && (
 						<OwnPostOptionMenu
-							postId={postWithUser.post.id}
 							closeMenu={() => setShowMenu(false)}
-							refetchPosts={refetchPosts}
+							onPostDeleteClick={() => {
+								onOptionClick("delete", postWithUser.post.id)
+								setShowMenu(false)
+							}}
 						/>
 					)}
 				</div>
