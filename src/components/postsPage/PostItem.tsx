@@ -35,24 +35,26 @@ export const PostItem: FC<{
 				</div>
 				<span>{postWithUser.post.content}</span>
 			</div>
-			<div
-				className="relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200"
-				onMouseEnter={() => setShowMenu(true)}
-			>
-				<Image
-					width={15}
-					height={15}
-					src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/dots-horizontal.svg"
-					alt={"icon"}
-				></Image>
-				{menuType === "own" && showMenu && (
-					<OwnPostOptionMenu
-						postId={postWithUser.post.id}
-						closeMenu={() => setShowMenu(false)}
-						refetchPosts={refetchPosts}
-					/>
-				)}
-			</div>
+			{menuType !== "view" && (
+				<div
+					className="relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200"
+					onMouseEnter={() => setShowMenu(true)}
+				>
+					<Image
+						width={15}
+						height={15}
+						src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/dots-horizontal.svg"
+						alt={"icon"}
+					></Image>
+					{menuType === "own" && showMenu && (
+						<OwnPostOptionMenu
+							postId={postWithUser.post.id}
+							closeMenu={() => setShowMenu(false)}
+							refetchPosts={() => refetchPosts}
+						/>
+					)}
+				</div>
+			)}
 		</li>
 	)
 }

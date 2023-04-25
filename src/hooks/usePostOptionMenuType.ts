@@ -4,16 +4,16 @@ import type { SignInUser } from "~/components/profilePage/types"
 export const usePostOptionMenuType = (
 	isUserFollowProfile: boolean | null,
 	signInUser: SignInUser,
-	ownPost: boolean
+	authorId: string
 ): PostOptionMenuType => {
-	const { isSignedIn } = signInUser
+	const { isSignedIn, userId } = signInUser
 
-	if (isUserFollowProfile && isSignedIn && ownPost) {
+	if (!isSignedIn) {
+		return "view"
+	} else if (userId === authorId) {
 		return "own"
-	} else if (isUserFollowProfile && isSignedIn) {
+	} else if (isUserFollowProfile) {
 		return "followedAuthor"
-	} else if (!isUserFollowProfile && isSignedIn) {
-		return "notFollowedAuthor"
 	}
-	return "view"
+	return "notFollowedAuthor"
 }
