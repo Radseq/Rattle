@@ -1,11 +1,11 @@
-import type { PostOptionMenuType } from "~/components/postsPage/types"
+import type { PostMenuItemsType } from "~/components/postsPage/types"
 import type { SignInUser } from "~/components/profilePage/types"
 
-export const usePostOptionMenuType = (
+export const usePostMenuItemsType = (
 	isUserFollowProfile: boolean | null,
 	signInUser: SignInUser,
 	authorId: string
-): PostOptionMenuType => {
+): PostMenuItemsType => {
 	const { isSignedIn, userId } = signInUser
 
 	if (!isSignedIn) {

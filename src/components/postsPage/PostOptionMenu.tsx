@@ -1,7 +1,7 @@
 import { type FC } from "react"
 import { Icon } from "../Icon"
 
-export const OwnPostOptionMenu: FC<{
+export const PostOptionMenu: FC<{
 	closeMenu: () => void
 	onPostDeleteClick: () => void
 }> = ({ closeMenu, onPostDeleteClick }) => {

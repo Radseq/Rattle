@@ -1,19 +1,19 @@
 import { type FC, useState } from "react"
-import type { PostOptionMenuType, PostWithUser } from "./types"
+import type { PostMenuItemsType, PostWithUser } from "./types"
 import Image from "next/image"
 import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { OwnPostOptionMenu } from "./OwnPostOptionMenu"
+import { PostOptionMenu } from "./PostOptionMenu"
 import { Icon } from "../Icon"
 
 dayjs.extend(relativeTime)
 
 export const PostItem: FC<{
 	postWithUser: PostWithUser
-	menuType: PostOptionMenuType
+	menuItemsType: PostMenuItemsType
 	onOptionClick: (type: string, postId: string) => void
-}> = ({ postWithUser, onOptionClick, menuType }) => {
+}> = ({ postWithUser, onOptionClick, menuItemsType }) => {
 	const [showMenu, setShowMenu] = useState(false)
 	return (
 		<li className="flex rounded-lg py-2 hover:bg-gray-100 ">
@@ -36,14 +36,14 @@ export const PostItem: FC<{
 				</div>
 				<span>{postWithUser.post.content}</span>
 			</div>
-			{menuType !== "view" && (
+			{menuItemsType !== "view" && (
 				<div
 					className="relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200"
 					onMouseEnter={() => setShowMenu(true)}
 				>
 					<Icon iconKind="optionDots" />
-					{menuType === "own" && showMenu && (
-						<OwnPostOptionMenu
+					{menuItemsType === "own" && showMenu && (
+						<PostOptionMenu
 							closeMenu={() => setShowMenu(false)}
 							onPostDeleteClick={() => {
 								onOptionClick("delete", postWithUser.post.id)

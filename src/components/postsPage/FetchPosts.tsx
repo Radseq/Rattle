@@ -2,10 +2,10 @@ import { type FC } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
-import { usePostOptionMenuType } from "~/hooks/usePostOptionMenuType"
 import { type SignInUser } from "../profilePage/types"
 import toast from "react-hot-toast"
 import { ParseZodErrorToString } from "~/utils/helpers"
+import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -14,7 +14,7 @@ export const FetchPosts: FC<{
 }> = ({ userId, isUserFollowProfile, signInUser }) => {
 	const { data, isLoading, refetch } = api.posts.getAllByAuthorId.useQuery(userId)
 
-	const type = usePostOptionMenuType(isUserFollowProfile, signInUser, userId)
+	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
 
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
@@ -54,7 +54,7 @@ export const FetchPosts: FC<{
 				<PostItem
 					key={postsWithUser.post.id}
 					postWithUser={postsWithUser}
-					menuType={type}
+					menuItemsType={type}
 					onOptionClick={handlePostOptionClick}
 				/>
 			))}
