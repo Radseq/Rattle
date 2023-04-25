@@ -1,13 +1,15 @@
 import { type FC } from "react"
 import { Trash } from "./Icons/Trash"
+import { OptionDots } from "./Icons/OptionDots"
 
-type IconKindProps = "trash"
+type IconKindProps = "trash" | "optionDots"
 
 const GetIconByType = (kind: IconKindProps) => {
 	switch (kind) {
 		case "trash":
 			return <Trash />
-
+		case "optionDots":
+			return <OptionDots />
 		default:
 			return null
 	}

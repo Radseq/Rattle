@@ -5,6 +5,7 @@ import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { OwnPostOptionMenu } from "./OwnPostOptionMenu"
+import { Icon } from "../Icon"
 
 dayjs.extend(relativeTime)
 
@@ -40,12 +41,7 @@ export const PostItem: FC<{
 					className="relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200"
 					onMouseEnter={() => setShowMenu(true)}
 				>
-					<Image
-						width={15}
-						height={15}
-						src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/dots-horizontal.svg"
-						alt={"icon"}
-					></Image>
+					<Icon iconKind="optionDots" />
 					{menuType === "own" && showMenu && (
 						<OwnPostOptionMenu
 							closeMenu={() => setShowMenu(false)}
