@@ -3,7 +3,7 @@ import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
 import { ParseZodErrorToString } from "~/utils/helpers"
-import { StyledInput, StyledLabel, StyledTextArea } from "../FloatingStyles"
+import { StyledInput, StyledLabel, StyledTextArea } from "../styledHTMLElements/FloatingStyles"
 import { useRestrictedInput, useRestrictedTextArea } from "~/hooks/useRestrictedInput"
 
 const BANNER_MAX_LETTERS = 100

@@ -1,16 +1,7 @@
-import type { FC, LiHTMLAttributes } from "react"
+import type { FC } from "react"
 import { Icon } from "../Icon"
 import { type PostMenuItemsType } from "./types"
-
-type ListItemProps = LiHTMLAttributes<HTMLLIElement>
-
-const ListItem = (props: ListItemProps) => {
-	return (
-		<li className="flex h-12 w-full cursor-pointer rounded-lg p-2  hover:bg-gray-50">
-			{props.children}
-		</li>
-	)
-}
+import { ListItem } from "../styledHTMLElements/StyledListItem"
 
 export const PostOptionMenu: FC<{
 	closeMenu: () => void
