@@ -2,7 +2,7 @@ import { type FC } from "react"
 import { Trash } from "./Icons/Trash"
 import { OptionDots } from "./Icons/OptionDots"
 
-type IconKindProps = "trash" | "optionDots"
+export type IconKindProps = "trash" | "optionDots"
 
 const GetIconByType = (kind: IconKindProps) => {
 	switch (kind) {

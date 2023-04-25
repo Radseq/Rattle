@@ -12,7 +12,7 @@ dayjs.extend(relativeTime)
 export const PostItem: FC<{
 	postWithUser: PostWithUser
 	menuItemsType: PostMenuItemsType
-	onOptionClick: (type: string, postId: string) => void
+	onOptionClick: (action: string, postId: string) => void
 }> = ({ postWithUser, onOptionClick, menuItemsType }) => {
 	const [showMenu, setShowMenu] = useState(false)
 	return (
@@ -42,11 +42,13 @@ export const PostItem: FC<{
 					onMouseEnter={() => setShowMenu(true)}
 				>
 					<Icon iconKind="optionDots" />
-					{menuItemsType === "own" && showMenu && (
+					{showMenu && (
 						<PostOptionMenu
 							closeMenu={() => setShowMenu(false)}
-							onPostDeleteClick={() => {
-								onOptionClick("delete", postWithUser.post.id)
+							postId={postWithUser.post.id}
+							menuItemsType={menuItemsType}
+							onMenuItemClick={(action, postId) => {
+								onOptionClick(action, postId)
 								setShowMenu(false)
 							}}
 						/>

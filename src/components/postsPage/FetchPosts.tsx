@@ -29,8 +29,8 @@ export const FetchPosts: FC<{
 		},
 	})
 
-	const handlePostOptionClick = (type: string, postId: string) => {
-		switch (type) {
+	const handlePostOptionClick = (action: string, postId: string) => {
+		switch (action) {
 			case "delete":
 				deletePost.mutate(postId)
 				break
