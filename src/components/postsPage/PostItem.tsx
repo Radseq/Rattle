@@ -50,7 +50,7 @@ export const PostItem: FC<{
 						<OwnPostOptionMenu
 							postId={postWithUser.post.id}
 							closeMenu={() => setShowMenu(false)}
-							refetchPosts={() => refetchPosts}
+							refetchPosts={refetchPosts}
 						/>
 					)}
 				</div>
