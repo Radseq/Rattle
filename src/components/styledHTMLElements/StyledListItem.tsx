@@ -1,4 +1,4 @@
-import { LiHTMLAttributes } from "react"
+import type { LiHTMLAttributes } from "react"
 
 type ListItemProps = LiHTMLAttributes<HTMLLIElement>
 
