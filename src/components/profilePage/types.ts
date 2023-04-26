@@ -7,6 +7,8 @@ export type Profile = {
 	bannerImgUrl: string | null
 	bio: string | null
 	webPage: string | null
+	watchedCount: number | null
+	watchingCount: number | null
 }
 
 export type SignInUser = {

@@ -2,6 +2,7 @@ import clerkClient from "@clerk/clerk-sdk-node"
 import { prisma } from "../db"
 import type { Profile } from "~/components/profilePage/types"
 import { getFullName } from "~/utils/helpers"
+import { userFollowFolloweedCount as userFollowCount } from "./follow"
 
 export const getProfileByUserName = async (userName: string) => {
 	const authors = await clerkClient.users.getUserList({
@@ -18,6 +19,8 @@ export const getProfileByUserName = async (userName: string) => {
 		return null
 	}
 
+	const { watchedCount, watchingCount } = await userFollowCount(author.id)
+
 	const authorLocal = await prisma.user.findFirst({
 		where: {
 			id: author.id,
@@ -33,5 +36,7 @@ export const getProfileByUserName = async (userName: string) => {
 		bannerImgUrl: authorLocal && authorLocal.bannerImageUrl,
 		bio: authorLocal && authorLocal.bio,
 		webPage: authorLocal && authorLocal.webPage,
+		watchedCount: watchedCount,
+		watchingCount: watchingCount,
 	} as Profile
 }
