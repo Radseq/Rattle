@@ -11,8 +11,11 @@ import { getPostById, getPostReplas } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
-	const username = props.params?.profile as string
+	const username = props.params?.username as string
 	const postId = props.params?.postId as string
+
+	console.log("props.params: ", props.params)
+	console.log("username: ", username, " postId: ", postId)
 
 	const getPost = await getPostById(postId)
 
@@ -42,7 +45,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	return {
 		props: {
-			post,
+			post: { ...post, createdAt: post.createdAt.toString() },
 			author,
 			signInUser,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
