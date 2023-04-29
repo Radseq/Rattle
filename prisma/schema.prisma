@@ -23,15 +23,6 @@ model Post {
     @@index([authorId])
 }
 
-model User {
-    id              String   @id @default(cuid())
-    webPage         String?  @db.VarChar(50)
-    bio             String?  @db.VarChar(500)
-    bannerImageUrl  String?  @db.VarChar(100)
-    profileImageUrl String?  @db.VarChar(100)
-    country         String?  @db.VarChar(100)
-}
-
 model Followeed {
     id          Int     @id @default(autoincrement())
     watching    String  @db.VarChar(64)

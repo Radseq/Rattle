@@ -1,6 +1,6 @@
 import clerkClient from "@clerk/clerk-sdk-node"
 import { prisma } from "../db"
-import type { Profile } from "~/components/profilePage/types"
+import type { Profile, ProfileExtend } from "~/components/profilePage/types"
 import { getFullName } from "~/utils/helpers"
 
 export const getProfileByUserName = async (userName: string) => {
@@ -13,6 +13,8 @@ export const getProfileByUserName = async (userName: string) => {
 	}
 
 	const author = authors[0]
+
+	const extended = author.publicMetadata.extended as ProfileExtend | null
 
 	if (!author.username) {
 		return null
@@ -30,8 +32,6 @@ export const getProfileByUserName = async (userName: string) => {
 		profileImageUrl: (authorLocal && authorLocal.profileImageUrl) ?? author.profileImageUrl,
 		fullName: getFullName(author.firstName, author.lastName),
 		createdAt: author.createdAt,
-		bannerImgUrl: authorLocal && authorLocal.bannerImageUrl,
-		bio: authorLocal && authorLocal.bio,
-		webPage: authorLocal && authorLocal.webPage,
+		extended: extended,
 	} as Profile
 }

@@ -4,6 +4,9 @@ import { CreateRateLimit } from "~/RateLimit"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { getProfileByUserName } from "../profile"
 
+import { ProfileExtend } from "~/components/profilePage/types"
+import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
+
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 export const profileRouter = createTRPCRouter({
@@ -49,35 +52,27 @@ export const profileRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
-			const user = await ctx.prisma.user.findFirst({
-				where: {
-					id: authorId,
+			const authors = await clerkClient.users.getUserList({
+				userId: [authorId],
+			})
+
+			if (authors.length > 1 || !authors[0]) {
+				throw new TRPCError({ code: "NOT_FOUND" })
+			}
+
+			const extended: ProfileExtend = {
+				bannerImgUrl: input.bannerImageUrl,
+				bio: input.bio,
+				country: ctx.opts?.req.query.country as string | null,
+				webPage: input.webPage,
+			}
+
+			await clerkClient.users.updateUserMetadata(authorId, {
+				publicMetadata: {
+					extended: extended,
 				},
 			})
 
-			if (!user) {
-				return await ctx.prisma.user.create({
-					data: {
-						id: authorId,
-						bannerImageUrl: input.bannerImageUrl,
-						bio: input.bio,
-						profileImageUrl: input.profileImageUrl,
-						webPage: input.webPage,
-						country: ctx.opts?.req.query.country as string | undefined,
-					},
-				})
-			}
-			return await ctx.prisma.user.update({
-				where: {
-					id: authorId,
-				},
-				data: {
-					bannerImageUrl: input.bannerImageUrl,
-					bio: input.bio,
-					profileImageUrl: input.profileImageUrl,
-					webPage: input.webPage,
-					country: ctx.opts?.req.query.country as string | undefined,
-				},
-			})
+			return extended
 		}),
 })

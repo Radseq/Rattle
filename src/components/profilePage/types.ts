@@ -4,9 +4,14 @@ export type Profile = {
 	profileImageUrl: string
 	fullName: string | null
 	createdAt: number
+	extended: ProfileExtend | null
+}
+
+export type ProfileExtend = {
 	bannerImgUrl: string | null
 	bio: string | null
 	webPage: string | null
+	country: string | null
 }
 
 export type SignInUser = {
