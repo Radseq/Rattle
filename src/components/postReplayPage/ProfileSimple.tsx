@@ -11,7 +11,7 @@ export const ProfileSimple: FC<{ profileImageUrl: string; fullName: string; user
 			<img className="w-16" src={profileImageUrl} alt="avatar url" />
 			<div className="ml-2 mt-1 flex w-10/12 flex-col">
 				<div className="h-5 font-bold">{fullName}</div>
-				<div className="text-md">{`@${username}`}</div>
+				<div className="">{`@${username}`}</div>
 			</div>
 			<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
 				{/* todo use icon from other branch */}

@@ -4,7 +4,7 @@ import { CreateRateLimit } from "~/RateLimit"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { getProfileByUserName } from "../profile"
 
-import { ProfileExtend } from "~/components/profilePage/types"
+import type { ProfileExtend } from "~/components/profilePage/types"
 import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
 
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
