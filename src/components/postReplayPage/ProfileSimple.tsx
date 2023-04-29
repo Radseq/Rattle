@@ -8,7 +8,13 @@ export const ProfileSimple: FC<{ profileImageUrl: string; fullName: string; user
 }) => {
 	return (
 		<div className="flex h-16">
-			<img className="w-16" src={profileImageUrl} alt="avatar url" />
+			<Image
+				className="w-1/12 rounded-full"
+				src={profileImageUrl}
+				alt={"avatar"}
+				width={128}
+				height={128}
+			></Image>
 			<div className="ml-2 mt-1 flex w-10/12 flex-col">
 				<div className="h-5 font-bold">{fullName}</div>
 				<div className="">{`@${username}`}</div>
