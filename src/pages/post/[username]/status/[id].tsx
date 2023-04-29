@@ -1,23 +1,72 @@
-import { type NextPage } from "next"
+import { getAuth } from "@clerk/nextjs/server"
+import type { Post } from "@prisma/client"
+import type { GetServerSideProps, NextPage } from "next"
 import { Layout } from "~/components/Layout"
 import { PostContent } from "~/components/postReplayPage/PostContent"
 import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
+import type { PostWithUser } from "~/components/postsPage/types"
+import type { Profile, SignInUser } from "~/components/profilePage/types"
+import { isFolloweed } from "~/server/api/follow"
+import { getPostById, getPostReplas } from "~/server/api/posts"
+import { getProfileByUserName } from "~/server/api/profile"
 
-const ReplayPost: NextPage = () => {
+export const getServerSideProps: GetServerSideProps = async (props) => {
+	const username = props.params?.profile as string
+	const postId = props.params?.postId as string
+
+	const getPost = await getPostById(postId)
+
+	const getProfile = await getProfileByUserName(username)
+
+	const getPostReplays = await getPostReplas(postId)
+
+	const [post, author, postReplays] = await Promise.all([getPost, getProfile, getPostReplays])
+
+	if (!author || !post) {
+		return {
+			redirect: {
+				destination: "/",
+				permanent: false,
+			},
+		}
+	}
+
+	const { user, userId } = getAuth(props.req)
+
+	const isUserFollowProfile = user ? await isFolloweed(user.id, author.id) : false
+
+	const signInUser: SignInUser = {
+		userId: userId ? userId : null,
+		isSignedIn: !!userId,
+	}
+
+	return {
+		props: {
+			post,
+			author,
+			signInUser,
+			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
+			postReplays,
+		},
+	}
+}
+
+const ReplayPost: NextPage<{
+	post: Post
+	author: Profile
+	signInUser: SignInUser
+	isUserFollowProfile: boolean | null
+	postReplays: PostWithUser[]
+}> = ({ post, author, signInUser, isUserFollowProfile, postReplays }) => {
 	return (
 		<Layout>
 			<div className="h-48 flex-col pt-2">
 				<ProfileSimple
-					fullName="John Brown"
-					profileImageUrl="https://img.freepik.com/free-vector/isolated-young-handsome-man-different-poses-white-background-illustration_632498-859.jpg?t=st=1682533159~exp=1682533759~hmac=425cb0c37d202bc59c34c9ac4934b704eeec0f5c9c0898734324c3c65e44353e"
-					username="johnB"
+					fullName={author.fullName}
+					profileImageUrl={author.profileImageUrl}
+					username={author.username}
 				/>
-				<PostContent
-					postCreateDate="9:01 AM · Apr 27, 2023"
-					message={`Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus tempora, ipsum
-	beatae fuga et ea sapiente quam adipisci odit non corporis atque totam inventore
-	voluptas, porro quisquam distinctio. Quod, quis.`}
-				/>
+				<PostContent postCreateDate={post.createdAt.toString()} message={post.content} />
 				<hr className="my-2" />
 			</div>
 		</Layout>

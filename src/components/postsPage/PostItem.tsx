@@ -17,18 +17,20 @@ export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) =
 				width={128}
 				height={128}
 			></Image>
-			<div className="w-10/12 pl-2">
-				<div className="font-semibold">
-					<Link
-						href={`/${postWithUser.author.username}`}
-					>{`@${postWithUser.author.username}`}</Link>
-					<span className="p-1 text-slate-400">·</span>
-					<span className="font-normal text-slate-400">
-						{dayjs(postWithUser.post.createdAt).fromNow()}
-					</span>
+			<Link href={`/post/${postWithUser.author.username}/status/${postWithUser.post.id}`}>
+				<div className="w-10/12 pl-2">
+					<div className="font-semibold">
+						<Link
+							href={`/${postWithUser.author.username}`}
+						>{`@${postWithUser.author.username}`}</Link>
+						<span className="p-1 text-slate-400">·</span>
+						<span className="font-normal text-slate-400">
+							{dayjs(postWithUser.post.createdAt).fromNow()}
+						</span>
+					</div>
+					<span>{postWithUser.post.content}</span>
 				</div>
-				<span>{postWithUser.post.content}</span>
-			</div>
+			</Link>
 			<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
 				<Image
 					width={15}

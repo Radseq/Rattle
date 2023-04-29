@@ -2,7 +2,7 @@ export type Profile = {
 	id: string
 	username: string
 	profileImageUrl: string
-	fullName: string | null
+	fullName: string
 	createdAt: number
 	extended: ProfileExtend | null
 }
