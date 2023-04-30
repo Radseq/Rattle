@@ -1,6 +1,6 @@
 import Image from "next/image"
 import { LoadingSpinner } from "../LoadingPage"
-import { FC, useState } from "react"
+import { type FC, useState } from "react"
 
 export const CreatePost: FC<{
 	onCreatePost: (message: string) => void

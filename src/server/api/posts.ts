@@ -21,21 +21,19 @@ export const getPostReplas = async (postId: string) => {
 		})
 	}
 
-	return {
-		replaysWithAuthor: postReplays.map((post) => {
-			const postAuthor = replaysAuthors.find((user) => user.id === post.authorId)
-			if (!postAuthor) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Author of one of the posts not found",
-				})
-			}
-			return {
-				post,
-				postAuthor,
-			}
-		}),
-	}
+	return postReplays.map((post) => {
+		const postAuthor = replaysAuthors.find((user) => user.id === post.authorId)
+		if (!postAuthor) {
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Author of one of the posts not found",
+			})
+		}
+		return {
+			post,
+			postAuthor,
+		}
+	})
 }
 
 export const getPostById = async (postId: string) => {

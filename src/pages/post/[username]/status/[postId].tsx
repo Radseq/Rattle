@@ -6,6 +6,7 @@ import { Layout } from "~/components/Layout"
 import { PostContent } from "~/components/postReplayPage/PostContent"
 import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
+import { PostItem } from "~/components/postsPage/PostItem"
 import type { PostWithUser } from "~/components/postsPage/types"
 import type { Profile, SignInUser } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
@@ -17,9 +18,6 @@ import { ParseZodErrorToString } from "~/utils/helpers"
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
-
-	console.log("props.params: ", props.params)
-	console.log("username: ", username, " postId: ", postId)
 
 	const getPost = await getPostById(postId)
 
@@ -66,7 +64,7 @@ const ReplayPost: NextPage<{
 	postReplays: PostWithUser[]
 }> = ({ post, author, signInUser, isUserFollowProfile, postReplays }) => {
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
-		onSuccess: async () => {
+		onSuccess: () => {
 			window.location.reload()
 		},
 		onError: (e) => {
@@ -95,6 +93,13 @@ const ReplayPost: NextPage<{
 						placeholderMessage="Replay & Hit Enter!"
 						profileImageUrl={author.profileImageUrl}
 					/>
+				)}
+				{postReplays && (
+					<ul className="">
+						{postReplays?.map((postsWithUser) => (
+							<PostItem key={postsWithUser.post.id} postWithUser={postsWithUser} />
+						))}
+					</ul>
 				)}
 			</div>
 		</Layout>

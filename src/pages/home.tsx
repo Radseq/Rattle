@@ -36,7 +36,7 @@ const Home: NextPage = () => {
 
 	const { mutate, isLoading: isPosting } = api.posts.createPost.useMutation({
 		onSuccess: async () => {
-			posts.refetch()
+			await posts.refetch()
 		},
 		onError: (e) => {
 			const error =
