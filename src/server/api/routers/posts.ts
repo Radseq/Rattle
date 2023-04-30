@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
+import { filterClarkClientToUser } from "~/utils/helpers"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -42,11 +43,7 @@ export const postsRouter = createTRPCRouter({
 				userId: posts.map((post) => post.authorId),
 				limit: 10,
 			})
-		).map((user) => ({
-			id: user.id,
-			username: user.username,
-			profileImageUrl: user.profileImageUrl,
-		}))
+		).map((user) => filterClarkClientToUser(user))
 
 		return posts.map((post) => {
 			const postAuthor = users.find((user) => user.id === post.authorId)

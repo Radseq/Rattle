@@ -1,6 +1,7 @@
 import { clerkClient } from "@clerk/nextjs/server"
 import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
+import { filterClarkClientToUser } from "~/utils/helpers"
 
 export const getPostReplas = async (postId: string) => {
 	const postReplays = await prisma.post.findMany({
@@ -21,8 +22,8 @@ export const getPostReplas = async (postId: string) => {
 		})
 	}
 
-	return postReplays.map((post) => {
-		const postAuthor = replaysAuthors.find((user) => user.id === post.authorId)
+	return postReplays.map((postReplay) => {
+		const postAuthor = replaysAuthors.find((user) => user.id === postReplay.authorId)
 		if (!postAuthor) {
 			throw new TRPCError({
 				code: "INTERNAL_SERVER_ERROR",
@@ -30,8 +31,8 @@ export const getPostReplas = async (postId: string) => {
 			})
 		}
 		return {
-			post,
-			postAuthor,
+			post: { ...postReplay, createdAt: postReplay.createdAt.toString() },
+			author: filterClarkClientToUser(postAuthor),
 		}
 	})
 }

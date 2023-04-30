@@ -51,7 +51,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 			author,
 			signInUser,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
-			postReplays,
+			postWithAutorsReplays: postReplays,
 		},
 	}
 }
@@ -61,8 +61,8 @@ const ReplayPost: NextPage<{
 	author: Profile
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
-	postReplays: PostWithUser[]
-}> = ({ post, author, signInUser, isUserFollowProfile, postReplays }) => {
+	postWithAutorsReplays: PostWithUser[]
+}> = ({ post, author, signInUser, isUserFollowProfile, postWithAutorsReplays }) => {
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
 		onSuccess: () => {
 			window.location.reload()
@@ -74,6 +74,7 @@ const ReplayPost: NextPage<{
 			toast.error(error, { duration: 10000 })
 		},
 	})
+
 	return (
 		<Layout>
 			<div className="h-48 flex-col pt-2">
@@ -94,10 +95,13 @@ const ReplayPost: NextPage<{
 						profileImageUrl={author.profileImageUrl}
 					/>
 				)}
-				{postReplays && (
+				{postWithAutorsReplays && (
 					<ul className="">
-						{postReplays?.map((postsWithUser) => (
-							<PostItem key={postsWithUser.post.id} postWithUser={postsWithUser} />
+						{postWithAutorsReplays?.map((postWithAutorsReplays) => (
+							<PostItem
+								key={postWithAutorsReplays.post.id}
+								postWithUser={postWithAutorsReplays}
+							/>
 						))}
 					</ul>
 				)}
