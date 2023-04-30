@@ -65,9 +65,9 @@ const ReplayPost: NextPage<{
 	isUserFollowProfile: boolean | null
 	postReplays: PostWithUser[]
 }> = ({ post, author, signInUser, isUserFollowProfile, postReplays }) => {
-	const { mutate, isLoading: isPosting } = api.posts.createPost.useMutation({
+	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
 		onSuccess: async () => {
-			//posts.refetch()
+			window.location.reload()
 		},
 		onError: (e) => {
 			const error =
@@ -86,12 +86,16 @@ const ReplayPost: NextPage<{
 				/>
 				<PostContent postCreateDate={post.createdAt.toString()} message={post.content} />
 				<hr className="my-2" />
-				<CreatePost
-					isCreating={isPosting}
-					onCreatePost={(respondMessage) => mutate({ content: respondMessage })}
-					placeholderMessage="Replay & Hit Enter!"
-					profileImageUrl={author.profileImageUrl}
-				/>
+				{signInUser.isSignedIn && signInUser.userId !== post.authorId && (
+					<CreatePost
+						isCreating={isPosting}
+						onCreatePost={(respondMessage) =>
+							mutate({ content: respondMessage, replayPostId: post.id })
+						}
+						placeholderMessage="Replay & Hit Enter!"
+						profileImageUrl={author.profileImageUrl}
+					/>
+				)}
 			</div>
 		</Layout>
 	)
