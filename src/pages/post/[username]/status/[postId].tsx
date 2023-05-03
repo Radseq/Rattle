@@ -84,7 +84,7 @@ const ReplayPost: NextPage<{
 					profileImageUrl={author.profileImageUrl}
 					username={author.username}
 				/>
-				<PostContent postCreateDate={post.createdAt.toString()} message={post.content} />
+				<PostContent postCreateDate={post.createdAt} message={post.content} />
 				<hr className="my-2" />
 				{signInUser.isSignedIn && signInUser.userId !== post.authorId && (
 					<CreatePost
