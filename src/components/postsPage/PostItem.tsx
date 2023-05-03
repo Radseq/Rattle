@@ -22,9 +22,11 @@ export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) =
 				href={`/post/${postWithUser.author.username}/status/${postWithUser.post.id}`}
 			>
 				<div className="font-semibold">
-					<Link
-						href={`/${postWithUser.author.username}`}
-					>{`@${postWithUser.author.username}`}</Link>
+					<span>
+						<Link
+							href={`/${postWithUser.author.username}`}
+						>{`@${postWithUser.author.username}`}</Link>
+					</span>
 					<span className="p-1 text-slate-400">·</span>
 					<span className="font-normal text-slate-400">
 						{dayjs(postWithUser.post.createdAt).fromNow()}
