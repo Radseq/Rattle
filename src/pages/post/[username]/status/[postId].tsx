@@ -20,11 +20,11 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
 
-	const getPost = await getPostById(postId)
+	const getPost = getPostById(postId)
 
-	const getProfile = await getProfileByUserName(username)
+	const getProfile = getProfileByUserName(username)
 
-	const getPostReplays = await getPostReplas(postId)
+	const getPostReplays = getPostReplas(postId)
 
 	const [post, author, postReplays] = await Promise.all([getPost, getProfile, getPostReplays])
 
