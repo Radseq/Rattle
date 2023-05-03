@@ -19,6 +19,7 @@ import { useState } from "react"
 import { useProfileType } from "~/hooks/useProfileType"
 import { getProfileByUserName } from "~/server/api/profile"
 import { isFolloweed } from "~/server/api/follow"
+import { CONFIG } from "~/config"
 
 dayjs.extend(relativeTime)
 
@@ -53,8 +54,6 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	}
 }
 
-const ZOD_ERROR_DURATION_MS = 10000
-
 const Profile: NextPage<{
 	profile: Profile
 	signInUser: SignInUser
@@ -74,7 +73,7 @@ const Profile: NextPage<{
 				const error =
 					ParseZodErrorToString(e.data?.zodError) ??
 					"Failed to update settings! Please try again later"
-				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
+				toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 			},
 		})
 
@@ -88,7 +87,7 @@ const Profile: NextPage<{
 				const error =
 					ParseZodErrorToString(e.data?.zodError) ??
 					"Failed to update settings! Please try again later"
-				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
+				toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 			},
 		})
 

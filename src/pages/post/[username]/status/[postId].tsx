@@ -14,6 +14,7 @@ import { getPostById, getPostReplas } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
+import { CONFIG } from "~/config"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -71,7 +72,7 @@ const ReplayPost: NextPage<{
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
 				"Failed to update settings! Please try again later"
-			toast.error(error, { duration: 10000 })
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
 
