@@ -82,7 +82,9 @@ const ReplayPost: NextPage<{
 	const handleNavigateToPost = (postId: string, authorUsername: string) => {
 		// preventing navigate when user selecting text e.g post content text
 		if (!window.getSelection()?.toString()) {
-			router.push(`/post/${authorUsername}/status/${postId}`)
+			router
+				.push(`/post/${authorUsername}/status/${postId}`)
+				.catch(() => toast.error("Error while navigation to post"))
 		}
 	}
 
