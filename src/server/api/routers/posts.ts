@@ -10,7 +10,7 @@ const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
 		const posts = await ctx.prisma.post.findMany({
-			where: { authorId: input },
+			where: { authorId: input, replayId: null },
 			orderBy: { createdAt: "desc" },
 			take: 10,
 		})
