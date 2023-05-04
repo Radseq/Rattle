@@ -4,12 +4,24 @@ import Image from "next/image"
 import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
+import { useRouter } from "next/navigation"
 
 dayjs.extend(relativeTime)
 
 export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) => {
+	const router = useRouter()
 	return (
-		<li className="flex rounded-lg py-2 hover:bg-gray-100 ">
+		<li
+			className="flex cursor-pointer rounded-lg py-2 hover:bg-gray-100"
+			onMouseUp={() => {
+				// preventing navigate when user selecting text e.g post content text
+				if (!window.getSelection()?.toString()) {
+					router.push(
+						`/post/${postWithUser.author.username}/status/${postWithUser.post.id}`
+					)
+				}
+			}}
+		>
 			<Image
 				className="w-1/12 rounded-full"
 				src={postWithUser.author.profileImageUrl}
@@ -17,10 +29,7 @@ export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) =
 				width={128}
 				height={128}
 			></Image>
-			<Link
-				className="w-10/12 pl-2"
-				href={`/post/${postWithUser.author.username}/status/${postWithUser.post.id}`}
-			>
+			<div className="w-10/12 pl-2">
 				<div className="font-semibold">
 					<span>
 						<Link
@@ -33,7 +42,7 @@ export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) =
 					</span>
 				</div>
 				<span>{postWithUser.post.content}</span>
-			</Link>
+			</div>
 			<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
 				<Image
 					width={15}
