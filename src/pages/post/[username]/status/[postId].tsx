@@ -15,6 +15,7 @@ import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { CONFIG } from "~/config"
+import { useRouter } from "next/router"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -76,6 +77,15 @@ const ReplayPost: NextPage<{
 		},
 	})
 
+	const router = useRouter()
+
+	const handleNavigateToPost = (postId: string, authorUsername: string) => {
+		// preventing navigate when user selecting text e.g post content text
+		if (!window.getSelection()?.toString()) {
+			router.push(`/post/${authorUsername}/status/${postId}`)
+		}
+	}
+
 	return (
 		<Layout>
 			<div className="h-48 flex-col pt-2">
@@ -112,6 +122,12 @@ const ReplayPost: NextPage<{
 							<PostItem
 								key={postWithAutorsReplays.post.id}
 								postWithUser={postWithAutorsReplays}
+								onNavigateToPost={() => {
+									handleNavigateToPost(
+										postWithAutorsReplays.post.id,
+										postWithAutorsReplays.author.username
+									)
+								}}
 							/>
 						))}
 					</ul>

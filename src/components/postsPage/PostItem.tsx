@@ -4,23 +4,17 @@ import Image from "next/image"
 import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { useRouter } from "next/navigation"
 
 dayjs.extend(relativeTime)
 
-export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) => {
-	const router = useRouter()
+export const PostItem: FC<{ postWithUser: PostWithUser; onNavigateToPost: () => void }> = ({
+	postWithUser,
+	onNavigateToPost,
+}) => {
 	return (
 		<li
 			className="flex cursor-pointer rounded-lg py-2 hover:bg-gray-100"
-			onMouseUp={() => {
-				// preventing navigate when user selecting text e.g post content text
-				if (!window.getSelection()?.toString()) {
-					router.push(
-						`/post/${postWithUser.author.username}/status/${postWithUser.post.id}`
-					)
-				}
-			}}
+			onMouseUp={() => onNavigateToPost()}
 		>
 			<Image
 				className="w-1/12 rounded-full"
