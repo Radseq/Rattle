@@ -10,7 +10,7 @@ import { PostItem } from "~/components/postsPage/PostItem"
 import type { PostWithUser } from "~/components/postsPage/types"
 import type { Profile, SignInUser } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
-import { getPostById, getPostReplas } from "~/server/api/posts"
+import { getPostById, getPostReplays } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
@@ -20,13 +20,11 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
 
-	const getPost = getPostById(postId)
-
-	const getProfile = getProfileByUserName(username)
-
-	const getPostReplays = getPostReplas(postId)
-
-	const [post, author, postReplays] = await Promise.all([getPost, getProfile, getPostReplays])
+	const [post, author, postReplays] = await Promise.all([
+		getPostById(postId),
+		getProfileByUserName(username),
+		getPostReplays(postId),
+	])
 
 	if (!author || !post) {
 		return {
@@ -52,7 +50,8 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 			author,
 			signInUser,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
-			postWithAutorsReplays: postReplays,
+			postWithAutorsReplays: postReplays.replays,
+			replaysCount: postReplays.replaysCount,
 		},
 	}
 }
@@ -63,7 +62,8 @@ const ReplayPost: NextPage<{
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
 	postWithAutorsReplays: PostWithUser[]
-}> = ({ post, author, signInUser, isUserFollowProfile, postWithAutorsReplays }) => {
+	replaysCount: number
+}> = ({ post, author, signInUser, isUserFollowProfile, postWithAutorsReplays, replaysCount }) => {
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
 		onSuccess: () => {
 			window.location.reload()
@@ -86,6 +86,13 @@ const ReplayPost: NextPage<{
 				/>
 				<PostContent postCreateDate={post.createdAt} message={post.content} />
 				<hr className="my-2" />
+				<footer className="ml-2">
+					<span className="pr-1 font-bold">{replaysCount}</span>
+					<span className="text-gray-500">
+						{`Response${replaysCount > 1 ? "s" : ""}`}
+					</span>
+				</footer>
+				<hr className="my-2" />
 				{signInUser.isSignedIn && signInUser.userId !== post.authorId && (
 					<CreatePost
 						isCreating={isPosting}
@@ -106,6 +113,7 @@ const ReplayPost: NextPage<{
 						))}
 					</ul>
 				)}
+				<hr className="my-2" />
 			</div>
 		</Layout>
 	)
