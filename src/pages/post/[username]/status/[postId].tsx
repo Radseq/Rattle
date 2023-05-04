@@ -94,16 +94,19 @@ const ReplayPost: NextPage<{
 				</footer>
 				<hr className="my-2" />
 				{signInUser.isSignedIn && signInUser.userId !== post.authorId && (
-					<CreatePost
-						isCreating={isPosting}
-						onCreatePost={(respondMessage) =>
-							mutate({ content: respondMessage, replayPostId: post.id })
-						}
-						placeholderMessage="Replay & Hit Enter!"
-						profileImageUrl={author.profileImageUrl}
-					/>
+					<div>
+						<CreatePost
+							isCreating={isPosting}
+							onCreatePost={(respondMessage) =>
+								mutate({ content: respondMessage, replayPostId: post.id })
+							}
+							placeholderMessage="Replay & Hit Enter!"
+							profileImageUrl={author.profileImageUrl}
+						/>
+						<hr className="my-2" />
+					</div>
 				)}
-				{postWithAutorsReplays && (
+				{postWithAutorsReplays && postWithAutorsReplays.length > 0 && (
 					<ul className="">
 						{postWithAutorsReplays?.map((postWithAutorsReplays) => (
 							<PostItem
@@ -113,7 +116,6 @@ const ReplayPost: NextPage<{
 						))}
 					</ul>
 				)}
-				<hr className="my-2" />
 			</div>
 		</Layout>
 	)
