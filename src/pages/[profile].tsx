@@ -20,6 +20,7 @@ import { useProfileType } from "~/hooks/useProfileType"
 import { getProfileByUserName } from "~/server/api/profile"
 import { isFolloweed } from "~/server/api/follow"
 import { CONFIG } from "~/config"
+import { Icon } from "~/components/Icon"
 
 dayjs.extend(relativeTime)
 
@@ -153,12 +154,7 @@ const Profile: NextPage<{
 						<div className="flex gap-3 pt-2">
 							{profile.extended?.webPage && (
 								<span className="flex pl-2">
-									<Image
-										width={18}
-										height={18}
-										src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/external-link.svg"
-										alt={"icon"}
-									></Image>
+									<Icon iconKind="externalLink" />
 									<a
 										href={profile.extended?.webPage}
 										className="pl-1 text-blue-500"
@@ -168,12 +164,7 @@ const Profile: NextPage<{
 								</span>
 							)}
 							<span className="ml-2 flex">
-								<Image
-									width={18}
-									height={18}
-									src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/calendar.svg"
-									alt={"icon"}
-								></Image>
+								<Icon iconKind="calendar" />
 								<span className="ml-1 text-slate-500">
 									since {dayjs(profile.createdAt).fromNow()}
 								</span>

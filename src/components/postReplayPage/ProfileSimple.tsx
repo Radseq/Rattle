@@ -1,5 +1,6 @@
 import type { FC } from "react"
 import Image from "next/image"
+import { Icon } from "../Icon"
 
 export const ProfileSimple: FC<{ profileImageUrl: string; fullName: string; username: string }> = ({
 	profileImageUrl,
@@ -20,13 +21,7 @@ export const ProfileSimple: FC<{ profileImageUrl: string; fullName: string; user
 				<div className="">{`@${username}`}</div>
 			</div>
 			<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
-				{/* todo use icon from other branch */}
-				<Image
-					width={15}
-					height={15}
-					src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/dots-horizontal.svg"
-					alt={"option icon"}
-				></Image>
+				<Icon iconKind="optionDots" />
 			</div>
 		</div>
 	)
