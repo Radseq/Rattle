@@ -16,6 +16,7 @@ import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
+import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -79,12 +80,38 @@ const ReplayPost: NextPage<{
 
 	const router = useRouter()
 
+	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
+
 	const handleNavigateToPost = (postId: string, authorUsername: string) => {
 		// preventing navigate when user selecting text e.g post content text
 		if (!window.getSelection()?.toString()) {
 			router
 				.push(`/post/${authorUsername}/status/${postId}`)
 				.catch(() => toast.error("Error while navigation to post"))
+		}
+	}
+
+	const deletePost = api.posts.deletePost.useMutation({
+		onSuccess: () => {
+			toast.success("Post Deleted!")
+			window.location.reload()
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to delete post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const handlePostOptionClick = (action: string, postId: string) => {
+		switch (action) {
+			case "delete":
+				deletePost.mutate(postId)
+				break
+
+			default:
+				break
 		}
 	}
 
@@ -130,6 +157,8 @@ const ReplayPost: NextPage<{
 										postWithAutorsReplays.author.username
 									)
 								}}
+								menuItemsType={type}
+								onOptionClick={handlePostOptionClick}
 							/>
 						))}
 					</ul>
