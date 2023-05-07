@@ -2,6 +2,7 @@ import clerkClient from "@clerk/clerk-sdk-node"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
+import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
 
@@ -12,7 +13,7 @@ export const postsRouter = createTRPCRouter({
 		const posts = await ctx.prisma.post.findMany({
 			where: { authorId: input, replayId: null },
 			orderBy: { createdAt: "desc" },
-			take: 10,
+			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
 		})
 
 		const author = await clerkClient.users.getUser(input)
@@ -65,7 +66,9 @@ export const postsRouter = createTRPCRouter({
 				content: z
 					.string()
 					.min(1, { message: "Message is too small" })
-					.max(144, { message: "Message is too large, max 144 characters" }),
+					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
+						message: `Message is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
+					}),
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -89,7 +92,9 @@ export const postsRouter = createTRPCRouter({
 				content: z
 					.string()
 					.min(1, { message: "Replay is too small" })
-					.max(144, { message: "Replay is too large, max 144 characters" }),
+					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
+						message: `Replay is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
+					}),
 				replayPostId: z.string().cuid(),
 			})
 		)

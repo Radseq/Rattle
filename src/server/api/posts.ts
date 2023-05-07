@@ -2,6 +2,7 @@ import { clerkClient } from "@clerk/nextjs/server"
 import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
 import { filterClarkClientToUser } from "~/utils/helpers"
+import { CONFIG } from "~/config"
 
 export const getPostReplays = async (postId: string) => {
 	const getPostReplaysCount = prisma.post.count({
@@ -14,7 +15,7 @@ export const getPostReplays = async (postId: string) => {
 		where: {
 			replayId: postId,
 		},
-		take: 15, //todo get from env
+		take: CONFIG.MAX_POST_REPLAYS,
 	})
 
 	const [postReplaysCount, postReplays] = await Promise.all([getPostReplaysCount, getPostReplays])

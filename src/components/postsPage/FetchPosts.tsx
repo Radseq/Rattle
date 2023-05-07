@@ -7,6 +7,7 @@ import toast from "react-hot-toast"
 import { type SignInUser } from "../profilePage/types"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
+import { CONFIG } from "~/config"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -28,7 +29,7 @@ export const FetchPosts: FC<{
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
 				"Failed to delete post! Please try again later"
-			toast.error(error, { duration: 10000 })
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
 

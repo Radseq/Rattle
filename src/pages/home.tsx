@@ -8,6 +8,7 @@ import { CreatePost } from "~/components/postsPage/CreatePost"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import toast from "react-hot-toast"
+import { CONFIG } from "~/config"
 
 const Home: NextPage = () => {
 	const { user, isLoaded, isSignedIn } = useUser()
@@ -42,7 +43,7 @@ const Home: NextPage = () => {
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
 				"Failed to update settings! Please try again later"
-			toast.error(error, { duration: 10000 })
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
 

@@ -1,3 +1,6 @@
 export const CONFIG = {
 	TOAST_ERROR_DURATION_MS: Number(process.env.TOAST_ERROR_DURATION_MS),
+	MAX_POSTS_BY_AUTHOR_ID: Number(process.env.MAX_POSTS_BY_AUTHOR_ID),
+	MAX_POST_REPLAYS: Number(process.env.MAX_POST_REPLAYS),
+	MAX_POST_MESSAGE_LENGTH: Number(process.env.MAX_POST_MESSAGE_LENGTH),
 }
