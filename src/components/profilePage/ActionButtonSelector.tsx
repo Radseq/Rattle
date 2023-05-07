@@ -1,6 +1,6 @@
 import { type FC } from "react"
 import type { ProfilePageType } from "./types"
-import { DangerButton, PrimalyButton } from "../StyledButtons"
+import { DangerButton, PrimalyButton } from "../styledHTMLElements/StyledButtons"
 
 export const ActionButtonSelector: FC<{
 	profileType: ProfilePageType

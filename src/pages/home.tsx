@@ -10,7 +10,7 @@ import { ParseZodErrorToString } from "~/utils/helpers"
 import toast from "react-hot-toast"
 
 const Home: NextPage = () => {
-	const { user, isLoaded } = useUser()
+	const { user, isLoaded, isSignedIn } = useUser()
 
 	if (!user) {
 		return (
@@ -58,7 +58,11 @@ const Home: NextPage = () => {
 					placeholderMessage="Write your message & hit enter"
 				/>
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
-				<FetchPosts userId={user.id} />
+				<FetchPosts
+					isUserFollowProfile={null}
+					signInUser={{ isSignedIn, userId: user.id }}
+					userId={user.id}
+				/>
 			</div>
 		</Layout>
 	)

@@ -109,4 +109,14 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
+	deletePost: privateProcedure
+		.input(z.string().min(25, { message: "id is too small" }))
+		.mutation(async ({ ctx, input }) => {
+			return await ctx.prisma.post.deleteMany({
+				where: {
+					id: input,
+					authorId: ctx.authUserId,
+				},
+			})
+		}),
 })

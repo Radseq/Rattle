@@ -4,10 +4,45 @@ import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
+import { type SignInUser } from "../profilePage/types"
+import { ParseZodErrorToString } from "~/utils/helpers"
+import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 
-export const FetchPosts: FC<{ userId: string }> = ({ userId }) => {
-	const { data, isLoading } = api.posts.getAllByAuthorId.useQuery(userId)
+export const FetchPosts: FC<{
+	userId: string
+	signInUser: SignInUser
+	isUserFollowProfile: boolean | null
+}> = ({ userId, isUserFollowProfile, signInUser }) => {
+	const { data, isLoading, refetch } = api.posts.getAllByAuthorId.useQuery(userId)
+
 	const router = useRouter()
+
+	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
+
+	const deletePost = api.posts.deletePost.useMutation({
+		onSuccess: async () => {
+			toast.success("Post Deleted!")
+			await refetch()
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to delete post! Please try again later"
+			toast.error(error, { duration: 10000 })
+		},
+	})
+
+	const handlePostOptionClick = (action: string, postId: string) => {
+		switch (action) {
+			case "delete":
+				deletePost.mutate(postId)
+				break
+
+			default:
+				break
+		}
+	}
+
 	if (isLoading) {
 		return (
 			<div className="relative">
@@ -34,6 +69,8 @@ export const FetchPosts: FC<{ userId: string }> = ({ userId }) => {
 					onNavigateToPost={() => {
 						handleNavigateToPost(postsWithUser.post.id, postsWithUser.author.username)
 					}}
+					menuItemsType={type}
+					onOptionClick={handlePostOptionClick}
 				/>
 			))}
 		</ul>

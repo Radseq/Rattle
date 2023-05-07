@@ -12,7 +12,7 @@ import { LoadingSpinner } from "~/components/LoadingPage"
 import toast from "react-hot-toast"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { getAuth } from "@clerk/nextjs/server"
-import type { Profile, SignInUser } from "src/components/profilePage/types"
+import { type Profile, type SignInUser } from "src/components/profilePage/types"
 import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelector"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 import { useState } from "react"
@@ -49,7 +49,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		props: {
 			profile,
 			signInUser,
-			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
+			isUserFollowProfile,
 		},
 	}
 }
@@ -57,7 +57,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 const Profile: NextPage<{
 	profile: Profile
 	signInUser: SignInUser
-	isUserFollowProfile: boolean | null
+	isUserFollowProfile: boolean
 }> = ({ profile, signInUser, isUserFollowProfile }) => {
 	const [showModal, setShowModal] = useState<boolean>()
 
@@ -191,7 +191,11 @@ const Profile: NextPage<{
 						</div>
 					</div>
 					<div className="pt-4">
-						<FetchPosts userId={profile.id} />
+						<FetchPosts
+							userId={profile.id}
+							signInUser={signInUser}
+							isUserFollowProfile={isUserFollowProfile}
+						/>
 					</div>
 				</div>
 			</Layout>
