@@ -1,13 +1,20 @@
-import type { FC } from "react"
-import type { PostWithUser } from "./types"
+import { type FC, useState } from "react"
+import type { PostMenuItemsType, PostWithUser } from "./types"
 import Image from "next/image"
 import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
+import { PostOptionMenu } from "./PostOptionMenu"
+import { Icon } from "../Icon"
 
 dayjs.extend(relativeTime)
 
-export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) => {
+export const PostItem: FC<{
+	postWithUser: PostWithUser
+	menuItemsType: PostMenuItemsType
+	onOptionClick: (action: string, postId: string) => void
+}> = ({ postWithUser, onOptionClick, menuItemsType }) => {
+	const [showMenu, setShowMenu] = useState(false)
 	return (
 		<li className="flex rounded-lg py-2 hover:bg-gray-100 ">
 			<Image
@@ -29,14 +36,25 @@ export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) =
 				</div>
 				<span>{postWithUser.post.content}</span>
 			</div>
-			<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
-				<Image
-					width={15}
-					height={15}
-					src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/dots-horizontal.svg"
-					alt={"icon"}
-				></Image>
-			</div>
+			{menuItemsType !== "view" && (
+				<div
+					className="relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200"
+					onMouseEnter={() => setShowMenu(true)}
+				>
+					<Icon iconKind="optionDots" />
+					{showMenu && (
+						<PostOptionMenu
+							closeMenu={() => setShowMenu(false)}
+							postId={postWithUser.post.id}
+							menuItemsType={menuItemsType}
+							onMenuItemClick={(action, postId) => {
+								onOptionClick(action, postId)
+								setShowMenu(false)
+							}}
+						/>
+					)}
+				</div>
+			)}
 		</li>
 	)
 }

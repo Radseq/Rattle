@@ -8,7 +8,7 @@ import { CreatePost } from "~/components/postsPage/CreatePost"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 
 const Home: NextPage = () => {
-	const { user, isLoaded } = useUser()
+	const { user, isLoaded, isSignedIn } = useUser()
 
 	if (!user) {
 		return (
@@ -37,7 +37,11 @@ const Home: NextPage = () => {
 			<div className="pt-2">
 				<CreatePost />
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
-				<FetchPosts userId={user.id} />
+				<FetchPosts
+					isUserFollowProfile={null}
+					signInUser={{ isSignedIn, userId: user.id }}
+					userId={user.id}
+				/>
 			</div>
 		</Layout>
 	)
