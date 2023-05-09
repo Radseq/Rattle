@@ -43,7 +43,7 @@ export const PostItem: FC<{
 						</span>
 					</div>
 					<span>{postWithUser.post.content}</span>
-					<footer className="mt-3 flex">
+					<footer className="mt-3 flex text-gray-500">
 						<div className="mr-4 flex">
 							<Icon iconKind="chat" />
 							<span className="ml-1">{postWithUser.post.replaysCount}</span>
