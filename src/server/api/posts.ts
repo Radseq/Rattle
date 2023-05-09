@@ -56,3 +56,11 @@ export const getPostById = async (postId: string) => {
 		},
 	})
 }
+
+export const GetPostLiksCount = async (postId: string) => {
+	return await prisma.userLikePost.count({
+		where: {
+			postId: postId,
+		},
+	})
+}

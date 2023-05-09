@@ -30,3 +30,11 @@ model Followeed {
     
     @@index([watching,watched])
 }
+
+model UserLikePost {
+    id          Int     @id @default(autoincrement())
+    userId      String  @db.VarChar(32)
+    postId      String  @db.VarChar(32)
+    
+    @@index([userId,postId])
+}

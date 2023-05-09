@@ -115,12 +115,58 @@ export const postsRouter = createTRPCRouter({
 			})
 		}),
 	deletePost: privateProcedure
-		.input(z.string().min(25, { message: "id is too small" }))
+		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
 			return await ctx.prisma.post.deleteMany({
 				where: {
 					id: input,
 					authorId: ctx.authUserId,
+				},
+			})
+		}),
+	setPostLiked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await ctx.prisma.userLikePost.findFirst({
+				where: {
+					userId: ctx.authUserId,
+				},
+			})
+
+			if (alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post already liked!",
+				})
+			}
+
+			return await ctx.prisma.userLikePost.create({
+				data: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+		}),
+	unlikePost: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await ctx.prisma.userLikePost.findFirst({
+				where: {
+					userId: ctx.authUserId,
+				},
+			})
+
+			if (!alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is not liked!",
+				})
+			}
+
+			return await ctx.prisma.userLikePost.deleteMany({
+				where: {
+					postId: input,
+					userId: ctx.authUserId,
 				},
 			})
 		}),
