@@ -1,5 +1,4 @@
 import { getAuth } from "@clerk/nextjs/server"
-import type { Post } from "@prisma/client"
 import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
@@ -7,10 +6,10 @@ import { PostContent } from "~/components/postReplayPage/PostContent"
 import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { PostItem } from "~/components/postsPage/PostItem"
-import type { PostWithUser } from "~/components/postsPage/types"
+import type { Post, PostWithUser } from "~/components/postsPage/types"
 import type { Profile, SignInUser } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
-import { getPostById, getPostReplays } from "~/server/api/posts"
+import { getPostById, getPostLikedByUser, getPostReplays } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
@@ -39,6 +38,13 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	const { user, userId } = getAuth(props.req)
 
+	const postsLikedByUser = user
+		? await getPostLikedByUser(
+				userId,
+				postReplays.replays.map((replay) => replay.post.id)
+		  )
+		: null
+
 	const isUserFollowProfile = user ? await isFolloweed(user.id, author.id) : false
 
 	const signInUser: SignInUser = {
@@ -53,10 +59,12 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 			signInUser,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
 			postWithAutorsReplays: postReplays.replays,
-			replaysCount: postReplays.replaysCount,
+			postsLikedByUser,
 		},
 	}
 }
+
+// todo signInUser, isUserFollowProfile, postsLikedByUser as one object?
 
 const ReplayPost: NextPage<{
 	post: Post
@@ -64,8 +72,15 @@ const ReplayPost: NextPage<{
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
 	postWithAutorsReplays: PostWithUser[]
-	replaysCount: number
-}> = ({ post, author, signInUser, isUserFollowProfile, postWithAutorsReplays, replaysCount }) => {
+	postsLikedByUser: string[] | null
+}> = ({
+	post,
+	author,
+	signInUser,
+	isUserFollowProfile,
+	postWithAutorsReplays,
+	postsLikedByUser,
+}) => {
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
 		onSuccess: () => {
 			window.location.reload()
@@ -126,9 +141,9 @@ const ReplayPost: NextPage<{
 				<PostContent postCreateDate={post.createdAt} message={post.content} />
 				<hr className="my-2" />
 				<footer className="ml-2">
-					<span className="pr-1 font-bold">{replaysCount}</span>
+					<span className="pr-1 font-bold">{post.replaysCount}</span>
 					<span className="text-gray-500">
-						{`Response${replaysCount > 1 ? "s" : ""}`}
+						{`Response${post.replaysCount > 1 ? "s" : ""}`}
 					</span>
 				</footer>
 				<hr className="my-2" />

@@ -3,25 +3,25 @@ import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
 import { filterClarkClientToUser } from "~/utils/helpers"
 import { CONFIG } from "~/config"
+import type { Post } from "~/components/postsPage/types"
 
 export const getPostReplays = async (postId: string) => {
-	const getPostReplaysCount = prisma.post.count({
+	const getPostReplays = await prisma.post.findMany({
 		where: {
 			replayId: postId,
 		},
-	})
-
-	const getPostReplays = prisma.post.findMany({
-		where: {
-			replayId: postId,
-		},
+		orderBy: { createdAt: "desc" },
 		take: CONFIG.MAX_POST_REPLAYS,
+		select: {
+			id: true,
+			authorId: true,
+		},
 	})
 
-	const [postReplaysCount, postReplays] = await Promise.all([getPostReplaysCount, getPostReplays])
+	const postReplays = await Promise.all(getPostReplays.map((post) => getPostById(post.id)))
 
 	const replaysAuthors = await clerkClient.users.getUserList({
-		userId: postReplays.map((post) => post.authorId),
+		userId: getPostReplays.map((post) => post.authorId),
 	})
 
 	if (!replaysAuthors) {
@@ -45,22 +45,72 @@ export const getPostReplays = async (postId: string) => {
 				author: filterClarkClientToUser(postAuthor),
 			}
 		}),
-		replaysCount: postReplaysCount,
 	}
 }
 
 export const getPostById = async (postId: string) => {
-	return await prisma.post.findUnique({
+	const getPost = prisma.post.findUnique({
 		where: {
 			id: postId,
 		},
 	})
+
+	const getLikeCount = getPostLiksCount(postId)
+
+	const getReplayCount = getPostReplayCount(postId)
+
+	const [post, likeCount, replaysCount] = await Promise.all([
+		getPost,
+		getLikeCount,
+		getReplayCount,
+	])
+	if (!post) {
+		throw new TRPCError({
+			code: "INTERNAL_SERVER_ERROR",
+			message: "Post not found",
+		})
+	}
+	return {
+		id: post.id,
+		createdAt: post.createdAt,
+		content: post.content,
+		authorId: post.authorId,
+		imageUrl: post.imageUrl,
+		mediaUrl: post.mediaUrl,
+		replayId: post.replayId,
+		likeCount,
+		replaysCount,
+	} as Post
 }
 
-export const GetPostLiksCount = async (postId: string) => {
+export const getPostLiksCount = async (postId: string) => {
 	return await prisma.userLikePost.count({
 		where: {
 			postId: postId,
 		},
 	})
+}
+
+export const getPostReplayCount = async (postId: string) => {
+	return await prisma.post.count({
+		where: {
+			replayId: postId,
+		},
+	})
+}
+
+export const getPostLikedByUser = async (userId: string, postIds: string[]) => {
+	const posts = await prisma.userLikePost.findMany({
+		where: {
+			userId,
+			postId: {
+				in: postIds,
+			},
+		},
+		select: {
+			postId: true,
+		},
+	})
+
+	return posts.map((post) => post.postId)
 }
