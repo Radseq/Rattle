@@ -5,16 +5,22 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
+import { getPostById } from "../posts"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const posts = await ctx.prisma.post.findMany({
+		const postsIds = await ctx.prisma.post.findMany({
 			where: { authorId: input, replayId: null },
 			orderBy: { createdAt: "desc" },
 			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
+			select: {
+				id: true,
+			},
 		})
+
+		const posts = await Promise.all(postsIds.map((postId) => getPostById(postId.id)))
 
 		const author = await clerkClient.users.getUser(input)
 

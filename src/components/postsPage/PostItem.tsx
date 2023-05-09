@@ -46,11 +46,11 @@ export const PostItem: FC<{
 					<footer className="mt-3 flex">
 						<div className="mr-4 flex">
 							<Icon iconKind="chat" />
-							<span className="ml-1">1</span>
+							<span className="ml-1">{postWithUser.post.replaysCount}</span>
 						</div>
 						<div className="mr-4 flex">
 							<Icon iconKind="heart" />
-							<span className="ml-1">1</span>
+							<span className="ml-1">{postWithUser.post.likeCount}</span>
 						</div>
 					</footer>
 				</div>
