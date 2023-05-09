@@ -3,8 +3,6 @@ import Head from "next/head"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
 
-import Image from "next/image"
-
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
