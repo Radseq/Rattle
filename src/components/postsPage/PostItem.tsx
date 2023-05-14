@@ -1,4 +1,4 @@
-import { type FC, useState } from "react"
+import { type FC, type ReactNode, useState } from "react"
 import type { PostMenuItemsType, PostWithUser } from "./types"
 import Image from "next/image"
 import Link from "next/link"
@@ -14,7 +14,8 @@ export const PostItem: FC<{
 	menuItemsType: PostMenuItemsType
 	onOptionClick: (action: string, postId: string) => void
 	onNavigateToPost: () => void
-}> = ({ postWithUser, onOptionClick, menuItemsType, onNavigateToPost }) => {
+	postFooter: ReactNode
+}> = ({ postWithUser, onOptionClick, menuItemsType, onNavigateToPost, postFooter }) => {
 	const [showMenu, setShowMenu] = useState(false)
 
 	return (
@@ -43,16 +44,7 @@ export const PostItem: FC<{
 						</span>
 					</div>
 					<span>{postWithUser.post.content}</span>
-					<footer className="mt-3 flex text-gray-500">
-						<div className="mr-4 flex">
-							<Icon iconKind="chat" />
-							<span className="ml-1">{postWithUser.post.replaysCount}</span>
-						</div>
-						<div className="mr-4 flex">
-							<Icon iconKind="heart" />
-							<span className="ml-1">{postWithUser.post.likeCount}</span>
-						</div>
-					</footer>
+					{postFooter}
 				</div>
 				{menuItemsType !== "view" && (
 					<div

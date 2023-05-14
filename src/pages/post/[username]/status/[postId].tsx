@@ -16,6 +16,7 @@ import { ParseZodErrorToString } from "~/utils/helpers"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
+import { PostFooter } from "~/components/postsPage/PostFooter"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -43,7 +44,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 				userId,
 				postReplays.replays.map((replay) => replay.post.id)
 		  )
-		: null
+		: []
 
 	const isUserFollowProfile = user ? await isFolloweed(user.id, author.id) : false
 
@@ -72,7 +73,7 @@ const ReplayPost: NextPage<{
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
 	postWithAutorsReplays: PostWithUser[]
-	postsLikedByUser: string[] | null
+	postsLikedByUser: string[]
 }> = ({
 	post,
 	author,
@@ -162,18 +163,23 @@ const ReplayPost: NextPage<{
 				)}
 				{postWithAutorsReplays && postWithAutorsReplays.length > 0 && (
 					<ul className="">
-						{postWithAutorsReplays?.map((postWithAutorsReplays) => (
+						{postWithAutorsReplays?.map((replay) => (
 							<PostItem
-								key={postWithAutorsReplays.post.id}
-								postWithUser={postWithAutorsReplays}
+								key={replay.post.id}
+								postWithUser={replay}
 								onNavigateToPost={() => {
-									handleNavigateToPost(
-										postWithAutorsReplays.post.id,
-										postWithAutorsReplays.author.username
-									)
+									handleNavigateToPost(replay.post.id, replay.author.username)
 								}}
 								menuItemsType={type}
 								onOptionClick={handlePostOptionClick}
+								postFooter={
+									<PostFooter
+										isLikedByUser={postsLikedByUser?.some(
+											(post) => post == replay.post.id
+										)}
+										postWithUser={replay}
+									/>
+								}
 							/>
 						))}
 					</ul>

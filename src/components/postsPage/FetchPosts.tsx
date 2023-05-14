@@ -8,6 +8,7 @@ import { type SignInUser } from "../profilePage/types"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
+import { PostFooter } from "./PostFooter"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -72,6 +73,7 @@ export const FetchPosts: FC<{
 					}}
 					menuItemsType={type}
 					onOptionClick={handlePostOptionClick}
+					postFooter={<PostFooter isLikedByUser={false} postWithUser={postsWithUser} />}
 				/>
 			))}
 		</ul>
