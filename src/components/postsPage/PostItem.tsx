@@ -1,4 +1,4 @@
-import { type FC, type ReactNode, useState } from "react"
+import { type FC, type ReactNode } from "react"
 import type { PostMenuItemsType, PostWithUser } from "./types"
 import Image from "next/image"
 import Link from "next/link"
@@ -16,12 +16,16 @@ export const PostItem: FC<{
 	onNavigateToPost: () => void
 	postFooter: ReactNode
 }> = ({ postWithUser, onOptionClick, menuItemsType, onNavigateToPost, postFooter }) => {
-	const [showMenu, setShowMenu] = useState(false)
-
+	let preventNavigationGuard = false
 	return (
 		<li
 			className="cursor-pointer rounded-lg py-2 hover:bg-gray-100"
-			onMouseUp={() => onNavigateToPost()}
+			onClick={() => {
+				if (!preventNavigationGuard) {
+					onNavigateToPost()
+				}
+				preventNavigationGuard = false
+			}}
 		>
 			<main className="flex">
 				<Image
@@ -35,6 +39,9 @@ export const PostItem: FC<{
 					<div className="font-semibold">
 						<span>
 							<Link
+								onClick={() => {
+									preventNavigationGuard = true
+								}}
 								href={`/${postWithUser.author.username}`}
 							>{`@${postWithUser.author.username}`}</Link>
 						</span>
@@ -47,22 +54,18 @@ export const PostItem: FC<{
 					{postFooter}
 				</div>
 				{menuItemsType !== "view" && (
-					<div
-						className="relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200"
-						onMouseEnter={() => setShowMenu(true)}
-					>
+					<div className="group relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
 						<Icon iconKind="optionDots" />
-						{showMenu && (
+						<div className="hidden group-hover:block">
 							<PostOptionMenu
-								closeMenu={() => setShowMenu(false)}
 								postId={postWithUser.post.id}
 								menuItemsType={menuItemsType}
 								onMenuItemClick={(action, postId) => {
+									preventNavigationGuard = true
 									onOptionClick(action, postId)
-									setShowMenu(false)
 								}}
 							/>
-						)}
+						</div>
 					</div>
 				)}
 			</main>
