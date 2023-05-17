@@ -1,4 +1,4 @@
-import { type FC, type PropsWithChildren } from "react"
+import { type FC } from "react"
 import { Icon } from "../Icon"
 import { Heart } from "../Icons/Heart"
 import Link from "next/link"
