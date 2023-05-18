@@ -35,9 +35,9 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		}
 	}
 
-	const { user, userId } = getAuth(props.req)
+	const { userId } = getAuth(props.req)
 
-	const isUserFollowProfile = user ? await isFolloweed(user.id, profile.id) : false
+	const isUserFollowProfile = userId ? await isFolloweed(userId, profile.id) : false
 
 	const signInUser: SignInUser = {
 		userId: userId ? userId : null,

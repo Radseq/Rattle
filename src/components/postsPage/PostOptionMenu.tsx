@@ -17,7 +17,7 @@ export const PostOptionMenu: FC<{
 			{menuItemsType === "own" && (
 				<ListItem
 					onClick={(e) => {
-						e.stopPropagation();
+						e.stopPropagation()
 						onMenuItemClick("delete", postId)
 					}}
 				>

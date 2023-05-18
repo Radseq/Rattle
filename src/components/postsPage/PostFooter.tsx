@@ -7,7 +7,8 @@ import { type PostWithUser } from "./types"
 export const PostFooter: FC<{
 	isLikedByUser: boolean
 	postWithUser: PostWithUser
-}> = ({ isLikedByUser, postWithUser }) => {
+	onLike: (action: "like" | "unlike") => void
+}> = ({ isLikedByUser, postWithUser, onLike }) => {
 	return (
 		<footer className="mt-3 flex text-gray-500">
 			<Link
@@ -26,6 +27,7 @@ export const PostFooter: FC<{
 				className="group flex"
 				onClick={(e) => {
 					e.stopPropagation()
+					onLike(isLikedByUser ? "unlike" : "like")
 				}}
 			>
 				<Heart
