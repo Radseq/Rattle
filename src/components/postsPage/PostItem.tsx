@@ -16,15 +16,11 @@ export const PostItem: FC<{
 	onNavigateToPost: () => void
 	postFooter: ReactNode
 }> = ({ postWithUser, onOptionClick, menuItemsType, onNavigateToPost, postFooter }) => {
-	let preventNavigationGuard = false
 	return (
 		<li
 			className="cursor-pointer rounded-lg py-2 hover:bg-gray-100"
 			onClick={() => {
-				if (!preventNavigationGuard) {
-					onNavigateToPost()
-				}
-				preventNavigationGuard = false
+				onNavigateToPost()
 			}}
 		>
 			<main className="flex">
@@ -39,9 +35,7 @@ export const PostItem: FC<{
 					<div className="font-semibold">
 						<span>
 							<Link
-								onClick={() => {
-									preventNavigationGuard = true
-								}}
+								onClick={(e) => e.stopPropagation()}
 								href={`/${postWithUser.author.username}`}
 							>{`@${postWithUser.author.username}`}</Link>
 						</span>
@@ -61,7 +55,6 @@ export const PostItem: FC<{
 								postId={postWithUser.post.id}
 								menuItemsType={menuItemsType}
 								onMenuItemClick={(action, postId) => {
-									preventNavigationGuard = true
 									onOptionClick(action, postId)
 								}}
 							/>
