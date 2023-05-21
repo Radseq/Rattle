@@ -23,7 +23,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
 
-	const { user, userId } = getAuth(props.req)
+	const { userId } = getAuth(props.req)
 
 	const [post, author, postReplays] = await Promise.all([
 		getPostById(postId),
@@ -47,7 +47,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		  )
 		: []
 
-	const isUserFollowProfile = user ? await isFolloweed(user.id, author.id) : false
+	const isUserFollowProfile = userId ? await isFolloweed(userId, author.id) : false
 
 	const signInUser: SignInUser = {
 		userId: userId ? userId : null,
