@@ -99,7 +99,7 @@ export const getPostReplayCount = async (postId: string) => {
 	})
 }
 
-export const getPostLikedByUser = async (userId: string, postIds: string[]) => {
+export const getPostsLikedByUser = async (userId: string, postIds: string[]) => {
 	const posts = await prisma.userLikePost.findMany({
 		where: {
 			userId,

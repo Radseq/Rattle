@@ -18,6 +18,12 @@ export const FetchPosts: FC<{
 }> = ({ userId, isUserFollowProfile, signInUser }) => {
 	const { data, isLoading, refetch } = api.posts.getAllByAuthorId.useQuery(userId)
 
+	const postsLiked = api.posts.getPostsLikedByUser.useQuery(
+		data?.map((postAuthor) => {
+			return postAuthor.post.id
+		})
+	)
+
 	const router = useRouter()
 
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
@@ -85,7 +91,11 @@ export const FetchPosts: FC<{
 									likePostHook.unlikePost.mutate(postsWithUser.post.id)
 								}
 							}}
-							isLikedByUser={false}
+							isLikedByUser={
+								postsLiked.data?.some(
+									(postId) => postId == postsWithUser.post.id
+								) ?? false
+							}
 							postWithUser={postsWithUser}
 						/>
 					}

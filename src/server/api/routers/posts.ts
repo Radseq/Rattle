@@ -5,7 +5,7 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
-import { getPostById } from "../posts"
+import { getPostById, getPostsLikedByUser } from "../posts"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -136,6 +136,7 @@ export const postsRouter = createTRPCRouter({
 			const alreadyLikePost = await ctx.prisma.userLikePost.findFirst({
 				where: {
 					userId: ctx.authUserId,
+					postId: input,
 				},
 			})
 
@@ -175,5 +176,13 @@ export const postsRouter = createTRPCRouter({
 					userId: ctx.authUserId,
 				},
 			})
+		}),
+	getPostsLikedByUser: privateProcedure
+		.input(z.string().array().optional())
+		.query(async ({ input, ctx }) => {
+			if (!input) {
+				return []
+			}
+			return await getPostsLikedByUser(ctx.authUserId, input)
 		}),
 })

@@ -9,7 +9,7 @@ import { PostItem } from "~/components/postsPage/PostItem"
 import type { Post, PostWithUser } from "~/components/postsPage/types"
 import type { Profile, SignInUser } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
-import { getPostById, getPostLikedByUser, getPostReplays } from "~/server/api/posts"
+import { getPostById, getPostReplays, getPostsLikedByUser } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
@@ -41,7 +41,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	}
 
 	const postsLikedByUser = userId
-		? await getPostLikedByUser(
+		? await getPostsLikedByUser(
 				userId,
 				postReplays.replays.map((replay) => replay.post.id)
 		  )
