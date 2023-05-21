@@ -31,7 +31,9 @@ export const PostFooter: FC<{
 				}}
 			>
 				<Heart
-					className={"h-9 w-9 rounded-full p-1 group-hover:bg-red-500"}
+					className={`h-9 w-9 rounded-full p-1 ${
+						isLikedByUser ? "group-hover:bg-gray-500" : "group-hover:bg-red-500"
+					}`}
 					fillColor={isLikedByUser ? "red" : ""}
 				/>
 				<span className={"self-center pl-1 text-xl group-hover:text-red-500"}>
