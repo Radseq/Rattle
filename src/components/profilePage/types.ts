@@ -2,11 +2,16 @@ export type Profile = {
 	id: string
 	username: string
 	profileImageUrl: string
-	fullName: string | null
+	fullName: string
 	createdAt: number
+	extended: ProfileExtend | null
+}
+
+export type ProfileExtend = {
 	bannerImgUrl: string | null
 	bio: string | null
 	webPage: string | null
+	country: string | null
 }
 
 export type SignInUser = {

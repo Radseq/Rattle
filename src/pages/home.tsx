@@ -6,6 +6,9 @@ import { LoadingPage } from "~/components/LoadingPage"
 import { api } from "~/utils/api"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
+import { ParseZodErrorToString } from "~/utils/helpers"
+import toast from "react-hot-toast"
+import { CONFIG } from "~/config"
 
 const Home: NextPage = () => {
 	const { user, isLoaded, isSignedIn } = useUser()
@@ -26,16 +29,35 @@ const Home: NextPage = () => {
 	}
 
 	//fetch asap
-	api.posts.getAllByAuthorId.useQuery(user.id)
+	const posts = api.posts.getAllByAuthorId.useQuery(user.id)
 
 	if (!isLoaded) {
 		return <LoadingPage />
 	}
 
+	const { mutate, isLoading: isPosting } = api.posts.createPost.useMutation({
+		onSuccess: async () => {
+			await posts.refetch()
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to update settings! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
 	return (
 		<Layout>
 			<div className="pt-2">
-				<CreatePost />
+				<CreatePost
+					onCreatePost={(message) => {
+						mutate({ content: message })
+					}}
+					profileImageUrl={user.profileImageUrl}
+					isCreating={isPosting}
+					placeholderMessage="Write your message & hit enter"
+				/>
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
 				<FetchPosts
 					isUserFollowProfile={null}

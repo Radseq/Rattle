@@ -18,16 +18,9 @@ model Post {
     authorId    String   @db.VarChar(64)
     imageUrl    String?  @db.VarChar(200)
     mediaUrl    String?  @db.VarChar(200)
-    @@index([authorId])
-}
+    replayId    String?  @db.VarChar(32)
 
-model User {
-    id              String   @id @default(cuid())
-    webPage         String?  @db.VarChar(50)
-    bio             String?  @db.VarChar(500)
-    bannerImageUrl  String?  @db.VarChar(100)
-    profileImageUrl String?  @db.VarChar(100)
-    country         String?  @db.VarChar(100)
+    @@index([authorId])
 }
 
 model Followeed {

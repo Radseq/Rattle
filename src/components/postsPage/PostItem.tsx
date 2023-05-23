@@ -13,10 +13,15 @@ export const PostItem: FC<{
 	postWithUser: PostWithUser
 	menuItemsType: PostMenuItemsType
 	onOptionClick: (action: string, postId: string) => void
-}> = ({ postWithUser, onOptionClick, menuItemsType }) => {
+	onNavigateToPost: () => void
+}> = ({ postWithUser, onOptionClick, menuItemsType, onNavigateToPost }) => {
 	const [showMenu, setShowMenu] = useState(false)
+
 	return (
-		<li className="flex rounded-lg py-2 hover:bg-gray-100 ">
+		<li
+			className="flex cursor-pointer rounded-lg py-2 hover:bg-gray-100"
+			onMouseUp={() => onNavigateToPost()}
+		>
 			<Image
 				className="w-1/12 rounded-full"
 				src={postWithUser.author.profileImageUrl}
@@ -26,9 +31,11 @@ export const PostItem: FC<{
 			></Image>
 			<div className="w-10/12 pl-2">
 				<div className="font-semibold">
-					<Link
-						href={`/${postWithUser.author.username}`}
-					>{`@${postWithUser.author.username}`}</Link>
+					<span>
+						<Link
+							href={`/${postWithUser.author.username}`}
+						>{`@${postWithUser.author.username}`}</Link>
+					</span>
 					<span className="p-1 text-slate-400">·</span>
 					<span className="font-normal text-slate-400">
 						{dayjs(postWithUser.post.createdAt).fromNow()}

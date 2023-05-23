@@ -2,16 +2,18 @@ import clerkClient from "@clerk/clerk-sdk-node"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
+import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
+import { filterClarkClientToUser } from "~/utils/helpers"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
 		const posts = await ctx.prisma.post.findMany({
-			where: { authorId: input },
+			where: { authorId: input, replayId: null },
 			orderBy: { createdAt: "desc" },
-			take: 10,
+			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
 		})
 
 		const author = await clerkClient.users.getUser(input)
@@ -42,11 +44,7 @@ export const postsRouter = createTRPCRouter({
 				userId: posts.map((post) => post.authorId),
 				limit: 10,
 			})
-		).map((user) => ({
-			id: user.id,
-			username: user.username,
-			profileImageUrl: user.profileImageUrl,
-		}))
+		).map((user) => filterClarkClientToUser(user))
 
 		return posts.map((post) => {
 			const postAuthor = users.find((user) => user.id === post.authorId)
@@ -68,7 +66,9 @@ export const postsRouter = createTRPCRouter({
 				content: z
 					.string()
 					.min(1, { message: "Message is too small" })
-					.max(144, { message: "Message is too large, max 144 characters" }),
+					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
+						message: `Message is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
+					}),
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -83,6 +83,34 @@ export const postsRouter = createTRPCRouter({
 				data: {
 					authorId,
 					content: input.content,
+				},
+			})
+		}),
+	createReplayPost: privateProcedure
+		.input(
+			z.object({
+				content: z
+					.string()
+					.min(1, { message: "Replay is too small" })
+					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
+						message: `Replay is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
+					}),
+				replayPostId: z.string().cuid(),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const authorId = ctx.authUserId
+			const { success } = await postRateLimit.limit(authorId)
+
+			if (!success) {
+				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
+			}
+
+			return await ctx.prisma.post.create({
+				data: {
+					authorId,
+					content: input.content,
+					replayId: input.replayPostId,
 				},
 			})
 		}),

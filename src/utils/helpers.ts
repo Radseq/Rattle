@@ -1,3 +1,4 @@
+import { type User } from "@clerk/nextjs/dist/api"
 import { type typeToFlattenedError } from "zod"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -27,4 +28,12 @@ export const getFullName = (frstName: string | null, lastName: string | null) =>
 		fullName += " " + lastName
 	}
 	return fullName
+}
+
+export const filterClarkClientToUser = (user: User) => {
+	return {
+		id: user.id,
+		username: user.username,
+		profileImageUrl: user.profileImageUrl,
+	}
 }
