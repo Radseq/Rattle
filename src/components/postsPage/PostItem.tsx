@@ -1,4 +1,4 @@
-import { type FC, type ReactNode } from "react"
+import { type FC } from "react"
 import type { PostMenuItemsType, PostWithUser } from "./types"
 import Image from "next/image"
 import Link from "next/link"
@@ -6,6 +6,7 @@ import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { PostOptionMenu } from "./PostOptionMenu"
 import { Icon } from "../Icon"
+import { PostFooter } from "./PostFooter"
 
 dayjs.extend(relativeTime)
 
@@ -14,8 +15,8 @@ export const PostItem: FC<{
 	menuItemsType: PostMenuItemsType
 	onOptionClick: (action: string, postId: string) => void
 	onNavigateToPost: () => void
-	postFooter: ReactNode
-}> = ({ postWithUser, onOptionClick, menuItemsType, onNavigateToPost, postFooter }) => {
+	postLiked: boolean
+}> = ({ postWithUser, onOptionClick, menuItemsType, onNavigateToPost, postLiked }) => {
 	return (
 		<li
 			className="cursor-pointer rounded-lg py-2 hover:bg-gray-100"
@@ -45,7 +46,7 @@ export const PostItem: FC<{
 						</span>
 					</div>
 					<span>{postWithUser.post.content}</span>
-					{postFooter}
+					<PostFooter isLikedByUser={postLiked} postWithUser={postWithUser} />
 				</div>
 				{menuItemsType !== "view" && (
 					<div className="group relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">

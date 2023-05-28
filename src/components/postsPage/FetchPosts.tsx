@@ -8,17 +8,16 @@ import { type SignInUser } from "../profilePage/types"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
-import { PostFooter } from "./PostFooter"
 
 export const FetchPosts: FC<{
 	userId: string
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
 }> = ({ userId, isUserFollowProfile, signInUser }) => {
-	const { data, isLoading, refetch } = api.posts.getAllByAuthorId.useQuery(userId)
+	const posts = api.posts.getAllByAuthorId.useQuery(userId)
 
-	const postsLiked = api.posts.getPostsLikedByUser.useQuery(
-		data?.map((postAuthor) => {
+	const postsLikedByUser = api.posts.getPostsLikedByUser.useQuery(
+		posts.data?.map((postAuthor) => {
 			return postAuthor.post.id
 		})
 	)
@@ -30,7 +29,7 @@ export const FetchPosts: FC<{
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			await refetch()
+			await posts.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -51,14 +50,6 @@ export const FetchPosts: FC<{
 		}
 	}
 
-	if (isLoading) {
-		return (
-			<div className="relative">
-				<LoadingPage />
-			</div>
-		)
-	}
-
 	const handleNavigateToPost = (postId: string, authorUsername: string) => {
 		// preventing navigate when user selecting text e.g post content text
 		if (!window.getSelection()?.toString()) {
@@ -68,9 +59,17 @@ export const FetchPosts: FC<{
 		}
 	}
 
+	if (posts.isLoading) {
+		return (
+			<div className="relative">
+				<LoadingPage />
+			</div>
+		)
+	}
+
 	return (
 		<ul className="">
-			{data?.map((postsWithUser) => (
+			{posts.data?.map((postsWithUser) => (
 				<PostItem
 					key={postsWithUser.post.id}
 					postWithUser={postsWithUser}
@@ -79,15 +78,12 @@ export const FetchPosts: FC<{
 					}}
 					menuItemsType={type}
 					onOptionClick={handlePostOptionClick}
-					postFooter={
-						<PostFooter
-							isLikedByUser={
-								postsLiked.data?.some(
-									(postId) => postId == postsWithUser.post.id
-								) ?? false
-							}
-							postWithUser={postsWithUser}
-						/>
+					postLiked={
+						postsLikedByUser.data
+							? postsLikedByUser.data.some(
+									(postId) => postId === postsWithUser.post.id
+							  )
+							: false
 					}
 				/>
 			))}
