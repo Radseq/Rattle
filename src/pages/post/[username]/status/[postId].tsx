@@ -58,18 +58,6 @@ const ReplayPost: NextPage<{
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
 }> = ({ post, author, signInUser, isUserFollowProfile }) => {
-	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
-		onSuccess: () => {
-			window.location.reload()
-		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to update settings! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
-		},
-	})
-
 	const postReplays = api.posts.getPostReplays.useQuery(post.id)
 
 	const postsLikedByUser = api.posts.getPostsLikedByUser.useQuery(
@@ -82,14 +70,17 @@ const ReplayPost: NextPage<{
 
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
 
-	const handleNavigateToPost = (postId: string, authorUsername: string) => {
-		// preventing navigate when user selecting text e.g post content text
-		if (!window.getSelection()?.toString()) {
-			router
-				.push(`/post/${authorUsername}/status/${postId}`)
-				.catch(() => toast.error("Error while navigation to post"))
-		}
-	}
+	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
+		onSuccess: () => {
+			window.location.reload()
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to update settings! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
 
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: () => {
@@ -103,6 +94,15 @@ const ReplayPost: NextPage<{
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
+
+	const handleNavigateToPost = (postId: string, authorUsername: string) => {
+		// preventing navigate when user selecting text e.g post content text
+		if (!window.getSelection()?.toString()) {
+			router
+				.push(`/post/${authorUsername}/status/${postId}`)
+				.catch(() => toast.error("Error while navigation to post"))
+		}
+	}
 
 	const handlePostOptionClick = (action: string, postId: string) => {
 		switch (action) {
