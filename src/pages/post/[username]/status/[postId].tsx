@@ -17,7 +17,6 @@ import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { PostFooter } from "~/components/postsPage/PostFooter"
-import { useLikePost } from "~/hooks/useLikePost"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -132,8 +131,6 @@ const ReplayPost: NextPage<{
 		}
 	}
 
-	const likePostHook = useLikePost()
-
 	return (
 		<Layout>
 			<div className="h-48 flex-col pt-2">
@@ -181,13 +178,6 @@ const ReplayPost: NextPage<{
 											(post) => post == replay.post.id
 										)}
 										postWithUser={replay}
-										onLike={(action: "like" | "unlike") => {
-											if (action === "like") {
-												likePostHook.likePost.mutate(replay.post.id)
-											} else {
-												likePostHook.unlikePost.mutate(replay.post.id)
-											}
-										}}
 									/>
 								}
 							/>

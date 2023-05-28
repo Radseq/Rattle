@@ -9,7 +9,6 @@ import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
 import { PostFooter } from "./PostFooter"
-import { useLikePost } from "~/hooks/useLikePost"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -52,8 +51,6 @@ export const FetchPosts: FC<{
 		}
 	}
 
-	const likePostHook = useLikePost()
-
 	if (isLoading) {
 		return (
 			<div className="relative">
@@ -84,13 +81,6 @@ export const FetchPosts: FC<{
 					onOptionClick={handlePostOptionClick}
 					postFooter={
 						<PostFooter
-							onLike={(action: "like" | "unlike") => {
-								if (action === "like") {
-									likePostHook.likePost.mutate(postsWithUser.post.id)
-								} else {
-									likePostHook.unlikePost.mutate(postsWithUser.post.id)
-								}
-							}}
 							isLikedByUser={
 								postsLiked.data?.some(
 									(postId) => postId == postsWithUser.post.id

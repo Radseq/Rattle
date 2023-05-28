@@ -154,7 +154,7 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
-	unlikePost: privateProcedure
+	setPostUnliked: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
 			const alreadyLikePost = await ctx.prisma.userLikePost.findFirst({
