@@ -6,29 +6,23 @@ import { PostContent } from "~/components/postReplayPage/PostContent"
 import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { PostItem } from "~/components/postsPage/PostItem"
-import type { Post, PostWithUser } from "~/components/postsPage/types"
+import type { Post } from "~/components/postsPage/types"
 import type { Profile, SignInUser } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
-import { getPostById, getPostReplays, getPostsLikedByUser } from "~/server/api/posts"
+import { getPostById } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
-import { PostFooter } from "~/components/postsPage/PostFooter"
-
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
 
 	const { userId } = getAuth(props.req)
 
-	const [post, author, postReplays] = await Promise.all([
-		getPostById(postId),
-		getProfileByUserName(username),
-		getPostReplays(postId),
-	])
+	const [post, author] = await Promise.all([getPostById(postId), getProfileByUserName(username)])
 
 	if (!author || !post) {
 		return {
@@ -38,13 +32,6 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 			},
 		}
 	}
-
-	const postsLikedByUser = userId
-		? await getPostsLikedByUser(
-				userId,
-				postReplays.replays.map((replay) => replay.post.id)
-		  )
-		: []
 
 	const isUserFollowProfile = userId ? await isFolloweed(userId, author.id) : false
 
@@ -59,8 +46,6 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 			author,
 			signInUser,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
-			postWithAutorsReplays: postReplays.replays,
-			postsLikedByUser,
 		},
 	}
 }
@@ -72,16 +57,7 @@ const ReplayPost: NextPage<{
 	author: Profile
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
-	postWithAutorsReplays: PostWithUser[]
-	postsLikedByUser: string[]
-}> = ({
-	post,
-	author,
-	signInUser,
-	isUserFollowProfile,
-	postWithAutorsReplays,
-	postsLikedByUser,
-}) => {
+}> = ({ post, author, signInUser, isUserFollowProfile }) => {
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
 		onSuccess: () => {
 			window.location.reload()
@@ -93,6 +69,14 @@ const ReplayPost: NextPage<{
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
+
+	const postReplays = api.posts.getPostReplays.useQuery(post.id)
+
+	const postsLikedByUser = api.posts.getPostsLikedByUser.useQuery(
+		postReplays.data?.map((postAuthor) => {
+			return postAuthor.post.id
+		})
+	)
 
 	const router = useRouter()
 
@@ -161,24 +145,23 @@ const ReplayPost: NextPage<{
 						<hr className="my-2" />
 					</div>
 				)}
-				{postWithAutorsReplays && postWithAutorsReplays.length > 0 && (
+				{postReplays.data && postReplays.data.length > 0 && (
 					<ul className="">
-						{postWithAutorsReplays?.map((replay) => (
+						{postReplays.data.map((replay) => (
 							<PostItem
 								key={replay.post.id}
 								postWithUser={replay}
 								onNavigateToPost={() => {
-									handleNavigateToPost(replay.post.id, replay.author.username)
+									handleNavigateToPost(replay.post.id, author.username)
 								}}
 								menuItemsType={type}
 								onOptionClick={handlePostOptionClick}
-								postFooter={
-									<PostFooter
-										isLikedByUser={postsLikedByUser?.some(
-											(post) => post == replay.post.id
-										)}
-										postWithUser={replay}
-									/>
+								postLiked={
+									postsLikedByUser.data
+										? postsLikedByUser.data.some(
+												(postId) => postId === replay.post.id
+										  )
+										: false
 								}
 							/>
 						))}
