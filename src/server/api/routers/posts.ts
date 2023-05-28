@@ -31,15 +31,9 @@ export const postsRouter = createTRPCRouter({
 			})
 		}
 
-		const username = author.username
-
 		return posts.map((post) => ({
-			post,
-			author: {
-				id: author.id,
-				username,
-				profileImageUrl: author.profileImageUrl,
-			},
+			post: { ...post, createdAt: post.createdAt.toString() },
+			author: filterClarkClientToUser(author),
 		}))
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
@@ -147,12 +141,13 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			return await ctx.prisma.userLikePost.create({
+			const result = await ctx.prisma.userLikePost.create({
 				data: {
 					postId: input,
 					userId: ctx.authUserId,
 				},
 			})
+			return result.postId
 		}),
 	setPostUnliked: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
@@ -184,5 +179,51 @@ export const postsRouter = createTRPCRouter({
 				return []
 			}
 			return await getPostsLikedByUser(ctx.authUserId, input)
+		}),
+	getPostReplays: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.query(async ({ input, ctx }) => {
+			const getPostReplays = await ctx.prisma.post.findMany({
+				where: {
+					replayId: input,
+				},
+				orderBy: { createdAt: "desc" },
+				take: CONFIG.MAX_POST_REPLAYS,
+				select: {
+					id: true,
+					authorId: true,
+				},
+			})
+
+			const postReplays = await Promise.all(
+				getPostReplays.map((post) => getPostById(post.id))
+			)
+
+			const replaysAuthors = await clerkClient.users.getUserList({
+				userId: getPostReplays.map((post) => post.authorId),
+			})
+
+			if (!replaysAuthors) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Author of posts not found",
+				})
+			}
+
+			//return {
+			return postReplays.map((postReplay) => {
+				const postAuthor = replaysAuthors.find((user) => user.id === postReplay.authorId)
+				if (!postAuthor || !postAuthor.username) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "Author of one of the posts not found",
+					})
+				}
+				return {
+					post: { ...postReplay, createdAt: postReplay.createdAt.toString() },
+					author: filterClarkClientToUser(postAuthor),
+				}
+			})
+			//}
 		}),
 })
