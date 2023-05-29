@@ -46,7 +46,7 @@ export const PostFooter: FC<{
 	return (
 		<footer className="mt-3 flex text-gray-500">
 			<Link
-				className="group mr-2 flex"
+				className="group mr-4 flex"
 				href={`/post/${postWithUser.author.username}/status/${postWithUser.post.id}`}
 			>
 				<div className={"flex rounded-full p-1 group-hover:bg-blue-400"}>
@@ -56,7 +56,27 @@ export const PostFooter: FC<{
 					{postWithUser.post.replaysCount}
 				</span>
 			</Link>
-
+			<div className="group relative mr-4 flex">
+				<div className={"flex rounded-full p-1 group-hover:bg-green-300"}>
+					<Icon iconKind="postForward" />
+				</div>
+				<div className="hidden group-hover:block">
+					<ul
+						className="absolute top-8 left-0 z-10 w-44 flex-col rounded-lg 
+							bg-white shadow-[0px_0px_3px_1px_#00000024] group-hover:flex"
+					>
+						<li className="flex h-full p-3  hover:bg-gray-200">
+							<Icon iconKind="postForward" />
+							<span className="pl-1 font-bold text-black">Forward</span>
+						</li>
+						<li className="flex h-full p-3  hover:bg-gray-200">
+							<Icon iconKind="quote" />
+							<span className="pl-1 font-bold text-black">Quote</span>
+						</li>
+					</ul>
+				</div>
+				<span className={"self-center pl-1 text-xl group-hover:text-green-400"}>{0}</span>
+			</div>
 			<div
 				className="group flex"
 				onClick={(e) => {
