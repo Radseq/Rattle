@@ -77,7 +77,7 @@ const ReplayPost: NextPage<{
 			})
 			setReplays(replays)
 		}
-	}, [setReplays, postReplays.data])
+	}, [postReplays.data])
 
 	const router = useRouter()
 
@@ -112,7 +112,7 @@ const ReplayPost: NextPage<{
 		onSuccess: () => {
 			toast.success("Post Liked!")
 			if (replays) {
-				const copyReplays = replays?.map((replay) => {
+				const copyReplays = replays.map((replay) => {
 					if (replay.post.id === usagePostId) {
 						replay.post.likeCount += 1
 						replay.post.isLikedBySignInUser = true
@@ -135,7 +135,7 @@ const ReplayPost: NextPage<{
 		onSuccess: () => {
 			toast.success("Post Unliked!")
 			if (replays) {
-				const copyReplays = replays?.map((replay) => {
+				const copyReplays = replays.map((replay) => {
 					if (replay.post.id === usagePostId) {
 						replay.post.likeCount -= 1
 						replay.post.isLikedBySignInUser = false
@@ -158,7 +158,7 @@ const ReplayPost: NextPage<{
 		onSuccess: () => {
 			toast.success("Post Forwarded!")
 			if (replays) {
-				const copyReplays = replays?.map((replay) => {
+				const copyReplays = replays.map((replay) => {
 					if (replay.post.id === usagePostId) {
 						replay.post.forwardsCount += 1
 						replay.post.isForwardedPostBySignInUser = true
@@ -181,7 +181,7 @@ const ReplayPost: NextPage<{
 		onSuccess: () => {
 			toast.success("Delete Post Forward!")
 			if (replays) {
-				const copyReplays = replays?.map((replay) => {
+				const copyReplays = replays.map((replay) => {
 					if (replay.post.id === usagePostId) {
 						replay.post.forwardsCount -= 1
 						replay.post.isForwardedPostBySignInUser = false

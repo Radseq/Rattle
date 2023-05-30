@@ -77,7 +77,7 @@ export const FetchPosts: FC<{
 		onSuccess: () => {
 			toast.success("Post Liked!")
 			if (posts) {
-				const copyPosts = posts?.map((post) => {
+				const copyPosts = posts.map((post) => {
 					if (post.post.id === usagePostId) {
 						post.post.likeCount += 1
 						post.post.isLikedBySignInUser = true
@@ -100,7 +100,7 @@ export const FetchPosts: FC<{
 		onSuccess: () => {
 			toast.success("Post Unliked!")
 			if (posts) {
-				const copyPosts = posts?.map((post) => {
+				const copyPosts = posts.map((post) => {
 					if (post.post.id === usagePostId) {
 						post.post.likeCount -= 1
 						post.post.isLikedBySignInUser = false
@@ -123,7 +123,7 @@ export const FetchPosts: FC<{
 		onSuccess: () => {
 			toast.success("Post Forwarded!")
 			if (posts) {
-				const copyPosts = posts?.map((post) => {
+				const copyPosts = posts.map((post) => {
 					if (post.post.id === usagePostId) {
 						post.post.forwardsCount += 1
 						post.post.isForwardedPostBySignInUser = true
@@ -147,7 +147,7 @@ export const FetchPosts: FC<{
 			toast.success("Delete Post Forward!")
 			await getPosts.refetch()
 			if (posts) {
-				const copyPosts = posts?.map((post) => {
+				const copyPosts = posts.map((post) => {
 					if (post.post.id === usagePostId) {
 						post.post.forwardsCount -= 1
 						post.post.isForwardedPostBySignInUser = false
