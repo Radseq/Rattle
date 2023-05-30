@@ -69,7 +69,6 @@ const ReplayPost: NextPage<{
 
 	useEffect(() => {
 		if (postReplays.data) {
-			console.log("rerender")
 			const replays = postReplays.data.map((post) => {
 				post.post.isForwardedPostBySignInUser = postIdsForwardedByUser.some(
 					(postId) => postId === post.post.id
