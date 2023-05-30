@@ -1,4 +1,4 @@
-import { SignIn, useUser } from "@clerk/nextjs"
+import { useUser } from "@clerk/nextjs"
 import { type GetServerSidePropsContext, type NextPage } from "next"
 import { Layout } from "~/components/Layout"
 import { LoadingPage } from "~/components/LoadingPage"

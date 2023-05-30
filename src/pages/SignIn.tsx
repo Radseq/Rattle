@@ -1,6 +1,6 @@
 import { SignIn, useUser } from "@clerk/nextjs"
 import { getAuth } from "@clerk/nextjs/server"
-import { GetServerSidePropsContext, NextPage } from "next"
+import { type GetServerSidePropsContext, type NextPage } from "next"
 import { LoadingPage } from "~/components/LoadingPage"
 
 export const getServerSideProps = (props: GetServerSidePropsContext) => {
@@ -20,7 +20,7 @@ export const getServerSideProps = (props: GetServerSidePropsContext) => {
 	}
 }
 
-const signIn: NextPage = () => {
+const SignInPage: NextPage = () => {
 	const { isLoaded } = useUser()
 
 	if (!isLoaded) {
@@ -41,4 +41,4 @@ const signIn: NextPage = () => {
 	)
 }
 
-export default signIn
+export default SignInPage
