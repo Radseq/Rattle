@@ -11,11 +11,13 @@ export const getPostById = async (postId: string) => {
 
 	const getLikeCount = getPostLikeCount(postId)
 	const getReplayCount = getPostReplayCount(postId)
+	const getForwardsCount = getPostForwatdCount(postId)
 
-	const [post, likeCount, replaysCount] = await Promise.all([
+	const [post, likeCount, replaysCount, forwardsCount] = await Promise.all([
 		getPost,
 		getLikeCount,
 		getReplayCount,
+		getForwardsCount,
 	])
 	if (!post) {
 		throw new TRPCError({
@@ -33,6 +35,7 @@ export const getPostById = async (postId: string) => {
 		replayId: post.replayId,
 		likeCount,
 		replaysCount,
+		forwardsCount,
 	} as Post
 }
 
@@ -80,4 +83,27 @@ export const getPostsLikedByUser = async (userId: string, postIds: string[]) => 
 	})
 
 	return posts.map((post) => post.postId)
+}
+
+export const getPostForwatdCount = async (postId: string) => {
+	return await prisma.userPostForward.count({
+		where: {
+			postId,
+		},
+	})
+}
+
+export const getPostIdsForwardedByUser = async (userId: string) => {
+	const result = await prisma.userPostForward.findMany({
+		where: {
+			userId,
+		},
+		select: {
+			postId: true,
+		},
+	})
+	if (result) {
+		return result.map((post) => post.postId)
+	}
+	return []
 }

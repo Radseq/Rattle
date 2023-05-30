@@ -16,7 +16,15 @@ export const PostItem: FC<{
 	onOptionClick: (action: string, postId: string) => void
 	onNavigateToPost: () => void
 	postLiked: boolean
-}> = ({ postWithUser, onOptionClick, menuItemsType, onNavigateToPost, postLiked }) => {
+	isForwardedByUser: boolean
+}> = ({
+	postWithUser,
+	onOptionClick,
+	menuItemsType,
+	onNavigateToPost,
+	postLiked,
+	isForwardedByUser,
+}) => {
 	return (
 		<li
 			className="cursor-pointer rounded-lg py-2 hover:bg-gray-100"
@@ -46,7 +54,11 @@ export const PostItem: FC<{
 						</span>
 					</div>
 					<span>{postWithUser.post.content}</span>
-					<PostFooter isLikedByUser={postLiked} postWithUser={postWithUser} />
+					<PostFooter
+						isLikedByUser={postLiked}
+						postWithUser={postWithUser}
+						isForwardedByUser={isForwardedByUser}
+					/>
 				</div>
 				{menuItemsType !== "view" && (
 					<div className="group relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">

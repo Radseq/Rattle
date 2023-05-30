@@ -10,10 +10,16 @@ import { CONFIG } from "~/config"
 
 export const PostFooter: FC<{
 	isLikedByUser: boolean
+	isForwardedByUser: boolean
 	postWithUser: PostWithUser
-}> = ({ isLikedByUser, postWithUser }) => {
+}> = ({ isLikedByUser, isForwardedByUser, postWithUser }) => {
 	const [isPostLiked, setPostLiked] = useState<boolean>(isLikedByUser)
 	const [postLikedCount, setPostLikedCount] = useState<number>(postWithUser.post.replaysCount)
+
+	const [isPostForwarded, setPostForwarded] = useState<boolean>(isForwardedByUser)
+	const [postForwardCount, setPostForwardCount] = useState<number>(
+		postWithUser.post.forwardsCount
+	)
 
 	const likePost = api.posts.setPostLiked.useMutation({
 		onSuccess: () => {
@@ -43,6 +49,34 @@ export const PostFooter: FC<{
 		},
 	})
 
+	const forwardPost = api.posts.forwardPost.useMutation({
+		onSuccess: () => {
+			toast.success("Post Forwarded!")
+			setPostForwarded(true)
+			setPostForwardCount(postLikedCount + 1)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to forward post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const removePostForward = api.posts.removePostForward.useMutation({
+		onSuccess: () => {
+			toast.success("Delete Post Forward!")
+			setPostForwarded(false)
+			setPostForwardCount(postLikedCount - 1)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to delete forward! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
 	return (
 		<footer className="mt-3 flex text-gray-500">
 			<Link
@@ -65,17 +99,36 @@ export const PostFooter: FC<{
 						className="absolute top-8 left-0 z-10 w-44 flex-col rounded-lg 
 							bg-white shadow-[0px_0px_3px_1px_#00000024] group-hover:flex"
 					>
-						<li className="flex h-full p-3  hover:bg-gray-200">
+						<li
+							className="flex h-full p-3  hover:bg-gray-200"
+							onClick={(e) => {
+								e.stopPropagation()
+								if (isPostForwarded) {
+									removePostForward.mutate(postWithUser.post.id)
+								} else {
+									forwardPost.mutate(postWithUser.post.id)
+								}
+							}}
+						>
 							<Icon iconKind="postForward" />
-							<span className="pl-1 font-bold text-black">Forward</span>
+							<span className="pl-1 font-bold text-black">
+								{isPostForwarded ? "Delete Forward" : "Forward"}
+							</span>
 						</li>
-						<li className="flex h-full p-3  hover:bg-gray-200">
+						<li
+							className="flex h-full p-3  hover:bg-gray-200"
+							onClick={(e) => {
+								e.stopPropagation()
+							}}
+						>
 							<Icon iconKind="quote" />
 							<span className="pl-1 font-bold text-black">Quote</span>
 						</li>
 					</ul>
 				</div>
-				<span className={"self-center pl-1 text-xl group-hover:text-green-400"}>{0}</span>
+				<span className={"self-center pl-1 text-xl group-hover:text-green-400"}>
+					{postForwardCount}
+				</span>
 			</div>
 			<div
 				className="group flex"

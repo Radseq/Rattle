@@ -38,3 +38,9 @@ model UserLikePost {
     
     @@index([userId,postId])
 }
+
+model UserPostForward {
+    id          Int     @id @default(autoincrement())
+    userId      String  @db.VarChar(32)
+    postId      String  @db.VarChar(32)
+}

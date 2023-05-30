@@ -5,13 +5,14 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
-import { getPostById, getPostsLikedByUser } from "../posts"
+import { getPostById, getPostIdsForwardedByUser, getPostsLikedByUser } from "../posts"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const postsIds = await ctx.prisma.post.findMany({
+		const postIds: string[] = []
+		const postsByAuthorIds = ctx.prisma.post.findMany({
 			where: { authorId: input, replayId: null },
 			orderBy: { createdAt: "desc" },
 			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
@@ -20,7 +21,22 @@ export const postsRouter = createTRPCRouter({
 			},
 		})
 
-		const posts = await Promise.all(postsIds.map((postId) => getPostById(postId.id)))
+		const forwardedPostsIds = getPostIdsForwardedByUser(input)
+
+		const [getPostForwardedIds, getPostsByAuthorIds] = await Promise.all([
+			forwardedPostsIds,
+			postsByAuthorIds,
+		])
+
+		for (const post of getPostsByAuthorIds) {
+			postIds.push(post.id)
+		}
+
+		for (const id of getPostForwardedIds) {
+			postIds.push(id)
+		}
+
+		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
 
 		const author = await clerkClient.users.getUser(input)
 
@@ -31,10 +47,12 @@ export const postsRouter = createTRPCRouter({
 			})
 		}
 
-		return posts.map((post) => ({
-			post: { ...post, createdAt: post.createdAt.toString() },
-			author: filterClarkClientToUser(author),
-		}))
+		return posts
+			.sort((postA, postB) => postB.createdAt.getTime() - postA.createdAt.getTime())
+			.map((post) => ({
+				post: { ...post, createdAt: post.createdAt.toString() },
+				author: filterClarkClientToUser(author),
+			}))
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
@@ -210,7 +228,6 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			//return {
 			return postReplays.map((postReplay) => {
 				const postAuthor = replaysAuthors.find((user) => user.id === postReplay.authorId)
 				if (!postAuthor || !postAuthor.username) {
@@ -224,6 +241,69 @@ export const postsRouter = createTRPCRouter({
 					author: filterClarkClientToUser(postAuthor),
 				}
 			})
-			//}
+		}),
+	forwardPost: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyForwarded = ctx.prisma.userPostForward.findFirst({
+				where: {
+					userId: ctx.authUserId,
+				},
+			})
+
+			const postToForward = ctx.prisma.post.findFirst({
+				where: {
+					id: input,
+					authorId: ctx.authUserId,
+				},
+			})
+
+			const [isAlreadyForwarded, getPostToForward] = await Promise.all([
+				alreadyForwarded,
+				postToForward,
+			])
+
+			// if (isAlreadyForwarded) {
+			// 	throw new TRPCError({
+			// 		code: "INTERNAL_SERVER_ERROR",
+			// 		message: "Can't forward own post!",
+			// 	})
+			// } else
+			if (!getPostToForward) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is already forwarded!",
+				})
+			}
+
+			return await ctx.prisma.userPostForward.create({
+				data: {
+					userId: ctx.authUserId,
+					postId: input,
+				},
+			})
+		}),
+	removePostForward: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const forwardedPost = await ctx.prisma.userPostForward.findFirst({
+				where: {
+					userId: ctx.authUserId,
+				},
+			})
+
+			if (!forwardedPost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is not frowarded!",
+				})
+			}
+
+			return await ctx.prisma.userPostForward.deleteMany({
+				where: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
 		}),
 })

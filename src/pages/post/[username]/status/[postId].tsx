@@ -9,7 +9,7 @@ import { PostItem } from "~/components/postsPage/PostItem"
 import type { Post } from "~/components/postsPage/types"
 import type { Profile, SignInUser } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
-import { getPostById } from "~/server/api/posts"
+import { getPostById, getPostIdsForwardedByUser } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { ParseZodErrorToString } from "~/utils/helpers"
@@ -34,6 +34,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	}
 
 	const isUserFollowProfile = userId ? await isFolloweed(userId, author.id) : false
+	const postIdsForwardedByUser = userId ? await getPostIdsForwardedByUser(userId) : []
 
 	const signInUser: SignInUser = {
 		userId: userId ? userId : null,
@@ -46,6 +47,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 			author,
 			signInUser,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
+			postIdsForwardedByUser,
 		},
 	}
 }
@@ -57,7 +59,8 @@ const ReplayPost: NextPage<{
 	author: Profile
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
-}> = ({ post, author, signInUser, isUserFollowProfile }) => {
+	postIdsForwardedByUser: string[]
+}> = ({ post, author, signInUser, isUserFollowProfile, postIdsForwardedByUser }) => {
 	const postReplays = api.posts.getPostReplays.useQuery(post.id)
 
 	const postsLikedByUser = api.posts.getPostsLikedByUser.useQuery(
@@ -163,6 +166,9 @@ const ReplayPost: NextPage<{
 										  )
 										: false
 								}
+								isForwardedByUser={postIdsForwardedByUser.some(
+									(postId) => postId === replay.post.id
+								)}
 							/>
 						))}
 					</ul>
