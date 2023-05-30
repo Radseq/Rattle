@@ -1,5 +1,5 @@
 import { SignIn, useUser } from "@clerk/nextjs"
-import { type NextPage } from "next"
+import { type GetServerSidePropsContext, type NextPage } from "next"
 import { Layout } from "~/components/Layout"
 import { LoadingPage } from "~/components/LoadingPage"
 
@@ -9,31 +9,32 @@ import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
+import { getAuth } from "@clerk/nextjs/server"
 
-const Home: NextPage = () => {
+export const getServerSideProps = (props: GetServerSidePropsContext) => {
+	const { userId } = getAuth(props.req)
+
+	if (!userId) {
+		return {
+			redirect: {
+				destination: "/signIn",
+				permanent: false,
+			},
+		}
+	}
+
+	return {
+		props: {
+			userId,
+		},
+	}
+}
+
+const Home: NextPage<{ userId: string }> = ({ userId }) => {
 	const { user, isLoaded, isSignedIn } = useUser()
 
-	if (!user) {
-		return (
-			<div>
-				<SignIn
-					appearance={{
-						elements: {
-							rootBox: "mx-auto",
-						},
-					}}
-					redirectUrl={"/home"}
-				/>
-			</div>
-		)
-	}
-
 	//fetch asap
-	const posts = api.posts.getAllByAuthorId.useQuery(user.id)
-
-	if (!isLoaded) {
-		return <LoadingPage />
-	}
+	const posts = api.posts.getAllByAuthorId.useQuery(userId)
 
 	const { mutate, isLoading: isPosting } = api.posts.createPost.useMutation({
 		onSuccess: async () => {
@@ -46,6 +47,10 @@ const Home: NextPage = () => {
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
+
+	if (!isLoaded || !user) {
+		return <LoadingPage />
+	}
 
 	return (
 		<Layout>
