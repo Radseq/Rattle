@@ -1,4 +1,4 @@
-import { type FC } from "react"
+import { useEffect, type FC, useState } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
@@ -8,19 +8,33 @@ import { type SignInUser } from "../profilePage/types"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
+import { PostWithUser } from "./types"
 
 export const FetchPosts: FC<{
 	userId: string
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
 }> = ({ userId, isUserFollowProfile, signInUser }) => {
-	const posts = api.posts.getAllByAuthorId.useQuery(userId)
+	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
+	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
+	const [posts, setPosts] = useState<PostWithUser[]>()
+	const [usagePostId, setUsagePostId] = useState<string | null>()
 
-	const postsLikedByUser = api.posts.getPostsLikedByUser.useQuery(
-		posts.data?.map((postAuthor) => {
-			return postAuthor.post.id
-		})
-	)
+	useEffect(() => {
+		if (getPosts.data) {
+			if (forwardedPostIdsByUser.data) {
+				const posts = getPosts.data.map((post) => {
+					post.post.isForwardedPostBySignInUser = forwardedPostIdsByUser.data.some(
+						(postId) => postId === post.post.id
+					)
+					return post
+				})
+				setPosts(posts)
+			} else {
+				setPosts(getPosts.data)
+			}
+		}
+	}, [getPosts.data])
 
 	const router = useRouter()
 
@@ -29,7 +43,7 @@ export const FetchPosts: FC<{
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			await posts.refetch()
+			await getPosts.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -59,7 +73,100 @@ export const FetchPosts: FC<{
 		}
 	}
 
-	if (posts.isLoading) {
+	const likePost = api.posts.setPostLiked.useMutation({
+		onSuccess: () => {
+			toast.success("Post Liked!")
+			if (posts) {
+				const copyPosts = posts?.map((post) => {
+					if (post.post.id === usagePostId) {
+						post.post.likeCount += 1
+						post.post.isLikedBySignInUser = true
+					}
+					return post
+				})
+				setPosts(copyPosts)
+			}
+			setUsagePostId(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to like post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const unlikePost = api.posts.setPostUnliked.useMutation({
+		onSuccess: () => {
+			toast.success("Post Unliked!")
+			if (posts) {
+				const copyPosts = posts?.map((post) => {
+					if (post.post.id === usagePostId) {
+						post.post.likeCount -= 1
+						post.post.isLikedBySignInUser = false
+					}
+					return post
+				})
+				setPosts(copyPosts)
+			}
+			setUsagePostId(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to unlike post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const forwardPost = api.posts.forwardPost.useMutation({
+		onSuccess: () => {
+			toast.success("Post Forwarded!")
+			if (posts) {
+				const copyPosts = posts?.map((post) => {
+					if (post.post.id === usagePostId) {
+						post.post.forwardsCount += 1
+						post.post.isForwardedPostBySignInUser = true
+					}
+					return post
+				})
+				setPosts(copyPosts)
+			}
+			setUsagePostId(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to forward post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const removePostForward = api.posts.removePostForward.useMutation({
+		onSuccess: async () => {
+			toast.success("Delete Post Forward!")
+			await getPosts.refetch()
+			if (posts) {
+				const copyPosts = posts?.map((post) => {
+					if (post.post.id === usagePostId) {
+						post.post.forwardsCount -= 1
+						post.post.isForwardedPostBySignInUser = false
+					}
+					return post
+				})
+				setPosts(copyPosts)
+			}
+			setUsagePostId(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to delete forward! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	if (getPosts.isLoading) {
 		return (
 			<div className="relative">
 				<LoadingPage />
@@ -69,7 +176,7 @@ export const FetchPosts: FC<{
 
 	return (
 		<ul className="">
-			{posts.data?.map((postsWithUser) => (
+			{posts?.map((postsWithUser) => (
 				<PostItem
 					key={postsWithUser.post.id}
 					postWithUser={postsWithUser}
@@ -78,13 +185,23 @@ export const FetchPosts: FC<{
 					}}
 					menuItemsType={type}
 					onOptionClick={handlePostOptionClick}
-					postLiked={
-						postsLikedByUser.data
-							? postsLikedByUser.data.some(
-									(postId) => postId === postsWithUser.post.id
-							  )
-							: false
-					}
+					isForwardedByUser={postsWithUser.post.isForwardedPostBySignInUser}
+					forwardAction={(forward, postId) => {
+						setUsagePostId(postId)
+						if (forward === "deleteForward") {
+							removePostForward.mutate(postId)
+						} else {
+							forwardPost.mutate(postId)
+						}
+					}}
+					likeAction={(action, postId) => {
+						setUsagePostId(postId)
+						if (action === "like") {
+							likePost.mutate(postId)
+						} else {
+							unlikePost.mutate(postId)
+						}
+					}}
 				/>
 			))}
 		</ul>

@@ -14,4 +14,6 @@ export type Post = PrismaPost & {
 	likeCount: number
 	replaysCount: number
 	forwardsCount: number
+	isLikedBySignInUser: boolean
+	isForwardedPostBySignInUser: boolean
 }

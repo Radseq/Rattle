@@ -36,6 +36,11 @@ export const postsRouter = createTRPCRouter({
 			postIds.push(id)
 		}
 
+		let postsLikedBySignInUser: string[] = []
+		if (ctx.authUserId) {
+			postsLikedBySignInUser = await getPostsLikedByUser(ctx.authUserId, postIds)
+		}
+
 		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
 
 		const author = await clerkClient.users.getUser(input)
@@ -50,7 +55,13 @@ export const postsRouter = createTRPCRouter({
 		return posts
 			.sort((postA, postB) => postB.createdAt.getTime() - postA.createdAt.getTime())
 			.map((post) => ({
-				post: { ...post, createdAt: post.createdAt.toString() },
+				post: {
+					...post,
+					createdAt: post.createdAt.toString(),
+					isLikedBySignInUser: postsLikedBySignInUser.some(
+						(postId) => postId === post.id
+					),
+				},
 				author: filterClarkClientToUser(author),
 			}))
 	}),
@@ -60,7 +71,7 @@ export const postsRouter = createTRPCRouter({
 		const users = (
 			await clerkClient.users.getUserList({
 				userId: posts.map((post) => post.authorId),
-				limit: 10,
+				limit: 10, // todo remove magic number
 			})
 		).map((user) => filterClarkClientToUser(user))
 
@@ -198,7 +209,7 @@ export const postsRouter = createTRPCRouter({
 			}
 			return await getPostsLikedByUser(ctx.authUserId, input)
 		}),
-	getPostReplays: privateProcedure
+	getPostReplays: publicProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.query(async ({ input, ctx }) => {
 			const getPostReplays = await ctx.prisma.post.findMany({
@@ -216,6 +227,15 @@ export const postsRouter = createTRPCRouter({
 			const postReplays = await Promise.all(
 				getPostReplays.map((post) => getPostById(post.id))
 			)
+
+			let postsLikedBySignInUser: string[] = []
+
+			if (ctx.authUserId) {
+				postsLikedBySignInUser = await getPostsLikedByUser(
+					ctx.authUserId,
+					postReplays.map((post) => post.id)
+				)
+			}
 
 			const replaysAuthors = await clerkClient.users.getUserList({
 				userId: getPostReplays.map((post) => post.authorId),
@@ -237,7 +257,13 @@ export const postsRouter = createTRPCRouter({
 					})
 				}
 				return {
-					post: { ...postReplay, createdAt: postReplay.createdAt.toString() },
+					post: {
+						...postReplay,
+						createdAt: postReplay.createdAt.toString(),
+						isLikedBySignInUser: postsLikedBySignInUser.some(
+							(postId) => postId === postReplay.id
+						),
+					},
 					author: filterClarkClientToUser(postAuthor),
 				}
 			})
@@ -262,7 +288,7 @@ export const postsRouter = createTRPCRouter({
 				alreadyForwarded,
 				postToForward,
 			])
-
+			// todo uncomment after test
 			// if (isAlreadyForwarded) {
 			// 	throw new TRPCError({
 			// 		code: "INTERNAL_SERVER_ERROR",
@@ -306,4 +332,7 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
+	getPostIdsForwardedByUser: privateProcedure.query(async ({ ctx }) => {
+		return getPostIdsForwardedByUser(ctx.authUserId)
+	}),
 })

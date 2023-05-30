@@ -6,7 +6,7 @@ import { PostContent } from "~/components/postReplayPage/PostContent"
 import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { PostItem } from "~/components/postsPage/PostItem"
-import type { Post } from "~/components/postsPage/types"
+import type { Post, PostWithUser } from "~/components/postsPage/types"
 import type { Profile, SignInUser } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
 import { getPostById, getPostIdsForwardedByUser } from "~/server/api/posts"
@@ -16,6 +16,8 @@ import { ParseZodErrorToString } from "~/utils/helpers"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
+import { LoadingPage } from "~/components/LoadingPage"
+import { useEffect, useState } from "react"
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
@@ -61,21 +63,30 @@ const ReplayPost: NextPage<{
 	isUserFollowProfile: boolean | null
 	postIdsForwardedByUser: string[]
 }> = ({ post, author, signInUser, isUserFollowProfile, postIdsForwardedByUser }) => {
+	const [replays, setReplays] = useState<PostWithUser[]>()
+	const [usagePostId, setUsagePostId] = useState<string | null>()
 	const postReplays = api.posts.getPostReplays.useQuery(post.id)
 
-	const postsLikedByUser = api.posts.getPostsLikedByUser.useQuery(
-		postReplays.data?.map((postAuthor) => {
-			return postAuthor.post.id
-		})
-	)
+	useEffect(() => {
+		if (postReplays.data) {
+			console.log("rerender")
+			const replays = postReplays.data.map((post) => {
+				post.post.isForwardedPostBySignInUser = postIdsForwardedByUser.some(
+					(postId) => postId === post.post.id
+				)
+				return post
+			})
+			setReplays(replays)
+		}
+	}, [setReplays, postReplays.data])
 
 	const router = useRouter()
 
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
 
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
-		onSuccess: () => {
-			window.location.reload()
+		onSuccess: async () => {
+			await postReplays.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -86,9 +97,9 @@ const ReplayPost: NextPage<{
 	})
 
 	const deletePost = api.posts.deletePost.useMutation({
-		onSuccess: () => {
+		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			window.location.reload()
+			await postReplays.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -97,6 +108,106 @@ const ReplayPost: NextPage<{
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
+
+	const likePost = api.posts.setPostLiked.useMutation({
+		onSuccess: () => {
+			toast.success("Post Liked!")
+			if (replays) {
+				const copyReplays = replays?.map((replay) => {
+					if (replay.post.id === usagePostId) {
+						replay.post.likeCount += 1
+						replay.post.isLikedBySignInUser = true
+					}
+					return replay
+				})
+				setReplays(copyReplays)
+			}
+			setUsagePostId(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to like post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const unlikePost = api.posts.setPostUnliked.useMutation({
+		onSuccess: () => {
+			toast.success("Post Unliked!")
+			if (replays) {
+				const copyReplays = replays?.map((replay) => {
+					if (replay.post.id === usagePostId) {
+						replay.post.likeCount -= 1
+						replay.post.isLikedBySignInUser = false
+					}
+					return replay
+				})
+				setReplays(copyReplays)
+			}
+			setUsagePostId(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to unlike post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const forwardPost = api.posts.forwardPost.useMutation({
+		onSuccess: () => {
+			toast.success("Post Forwarded!")
+			if (replays) {
+				const copyReplays = replays?.map((replay) => {
+					if (replay.post.id === usagePostId) {
+						replay.post.forwardsCount += 1
+						replay.post.isForwardedPostBySignInUser = true
+					}
+					return replay
+				})
+				setReplays(copyReplays)
+			}
+			setUsagePostId(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to forward post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const removePostForward = api.posts.removePostForward.useMutation({
+		onSuccess: () => {
+			toast.success("Delete Post Forward!")
+			if (replays) {
+				const copyReplays = replays?.map((replay) => {
+					if (replay.post.id === usagePostId) {
+						replay.post.forwardsCount -= 1
+						replay.post.isForwardedPostBySignInUser = false
+					}
+					return replay
+				})
+				setReplays(copyReplays)
+			}
+			setUsagePostId(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to delete forward! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	if (postReplays.isLoading) {
+		return (
+			<div className="relative">
+				<LoadingPage />
+			</div>
+		)
+	}
 
 	const handleNavigateToPost = (postId: string, authorUsername: string) => {
 		// preventing navigate when user selecting text e.g post content text
@@ -148,9 +259,9 @@ const ReplayPost: NextPage<{
 						<hr className="my-2" />
 					</div>
 				)}
-				{postReplays.data && postReplays.data.length > 0 && (
+				{replays && replays.length > 0 && (
 					<ul className="">
-						{postReplays.data.map((replay) => (
+						{replays.map((replay) => (
 							<PostItem
 								key={replay.post.id}
 								postWithUser={replay}
@@ -159,16 +270,23 @@ const ReplayPost: NextPage<{
 								}}
 								menuItemsType={type}
 								onOptionClick={handlePostOptionClick}
-								postLiked={
-									postsLikedByUser.data
-										? postsLikedByUser.data.some(
-												(postId) => postId === replay.post.id
-										  )
-										: false
-								}
-								isForwardedByUser={postIdsForwardedByUser.some(
-									(postId) => postId === replay.post.id
-								)}
+								isForwardedByUser={replay.post.isForwardedPostBySignInUser}
+								forwardAction={(forward, postId) => {
+									setUsagePostId(postId)
+									if (forward === "deleteForward") {
+										removePostForward.mutate(postId)
+									} else {
+										forwardPost.mutate(postId)
+									}
+								}}
+								likeAction={(action, postId) => {
+									setUsagePostId(postId)
+									if (action === "like") {
+										likePost.mutate(postId)
+									} else {
+										unlikePost.mutate(postId)
+									}
+								}}
 							/>
 						))}
 					</ul>

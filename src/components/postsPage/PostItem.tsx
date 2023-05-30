@@ -15,15 +15,17 @@ export const PostItem: FC<{
 	menuItemsType: PostMenuItemsType
 	onOptionClick: (action: string, postId: string) => void
 	onNavigateToPost: () => void
-	postLiked: boolean
 	isForwardedByUser: boolean
+	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
+	likeAction: (action: "like" | "unlike", postId: string) => void
 }> = ({
 	postWithUser,
 	onOptionClick,
 	menuItemsType,
 	onNavigateToPost,
-	postLiked,
 	isForwardedByUser,
+	forwardAction,
+	likeAction,
 }) => {
 	return (
 		<li
@@ -55,9 +57,11 @@ export const PostItem: FC<{
 					</div>
 					<span>{postWithUser.post.content}</span>
 					<PostFooter
-						isLikedByUser={postLiked}
+						isLikedByUser={postWithUser.post.isLikedBySignInUser}
 						postWithUser={postWithUser}
 						isForwardedByUser={isForwardedByUser}
+						forwardAction={forwardAction}
+						likeAction={likeAction}
 					/>
 				</div>
 				{menuItemsType !== "view" && (
