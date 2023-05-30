@@ -18,6 +18,7 @@ import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { LoadingPage } from "~/components/LoadingPage"
 import { useEffect, useState } from "react"
+
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
@@ -77,7 +78,7 @@ const ReplayPost: NextPage<{
 			})
 			setReplays(replays)
 		}
-	}, [postReplays.data])
+	}, [postReplays.data, postIdsForwardedByUser])
 
 	const router = useRouter()
 

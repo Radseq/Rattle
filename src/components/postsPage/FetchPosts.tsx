@@ -1,4 +1,4 @@
-import { useEffect, type FC, useState } from "react"
+import { type FC, useEffect, useState } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
@@ -8,7 +8,7 @@ import { type SignInUser } from "../profilePage/types"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
-import { PostWithUser } from "./types"
+import { type PostWithUser } from "./types"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -34,7 +34,7 @@ export const FetchPosts: FC<{
 				setPosts(getPosts.data)
 			}
 		}
-	}, [getPosts.data])
+	}, [getPosts.data, forwardedPostIdsByUser.data])
 
 	const router = useRouter()
 
