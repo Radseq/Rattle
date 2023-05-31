@@ -65,7 +65,6 @@ const ReplayPost: NextPage<{
 	postIdsForwardedByUser: string[]
 }> = ({ post, author, signInUser, isUserFollowProfile, postIdsForwardedByUser }) => {
 	const [replays, setReplays] = useState<PostWithUser[]>()
-	const [usagePostId, setUsagePostId] = useState<string | null>()
 	const postReplays = api.posts.getPostReplays.useQuery(post.id)
 
 	useEffect(() => {
@@ -110,11 +109,11 @@ const ReplayPost: NextPage<{
 	})
 
 	const likePost = api.posts.setPostLiked.useMutation({
-		onSuccess: () => {
+		onSuccess: (postId: string) => {
 			toast.success("Post Liked!")
 			if (replays) {
 				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === usagePostId) {
+					if (replay.post.id === postId) {
 						replay.post.likeCount += 1
 						replay.post.isLikedBySignInUser = true
 					}
@@ -122,7 +121,6 @@ const ReplayPost: NextPage<{
 				})
 				setReplays(copyReplays)
 			}
-			setUsagePostId(null)
 		},
 		onError: (e) => {
 			const error =
@@ -133,11 +131,11 @@ const ReplayPost: NextPage<{
 	})
 
 	const unlikePost = api.posts.setPostUnliked.useMutation({
-		onSuccess: () => {
+		onSuccess: (postId: string) => {
 			toast.success("Post Unliked!")
 			if (replays) {
 				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === usagePostId) {
+					if (replay.post.id === postId) {
 						replay.post.likeCount -= 1
 						replay.post.isLikedBySignInUser = false
 					}
@@ -145,7 +143,6 @@ const ReplayPost: NextPage<{
 				})
 				setReplays(copyReplays)
 			}
-			setUsagePostId(null)
 		},
 		onError: (e) => {
 			const error =
@@ -156,11 +153,11 @@ const ReplayPost: NextPage<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: () => {
+		onSuccess: (postId: string) => {
 			toast.success("Post Forwarded!")
 			if (replays) {
 				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === usagePostId) {
+					if (replay.post.id === postId) {
 						replay.post.forwardsCount += 1
 						replay.post.isForwardedPostBySignInUser = true
 					}
@@ -168,7 +165,6 @@ const ReplayPost: NextPage<{
 				})
 				setReplays(copyReplays)
 			}
-			setUsagePostId(null)
 		},
 		onError: (e) => {
 			const error =
@@ -179,11 +175,11 @@ const ReplayPost: NextPage<{
 	})
 
 	const removePostForward = api.posts.removePostForward.useMutation({
-		onSuccess: () => {
+		onSuccess: (postId: string) => {
 			toast.success("Delete Post Forward!")
 			if (replays) {
 				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === usagePostId) {
+					if (replay.post.id === postId) {
 						replay.post.forwardsCount -= 1
 						replay.post.isForwardedPostBySignInUser = false
 					}
@@ -191,7 +187,6 @@ const ReplayPost: NextPage<{
 				})
 				setReplays(copyReplays)
 			}
-			setUsagePostId(null)
 		},
 		onError: (e) => {
 			const error =
@@ -272,7 +267,6 @@ const ReplayPost: NextPage<{
 								onOptionClick={handlePostOptionClick}
 								isForwardedByUser={replay.post.isForwardedPostBySignInUser}
 								forwardAction={(forward, postId) => {
-									setUsagePostId(postId)
 									if (forward === "deleteForward") {
 										removePostForward.mutate(postId)
 									} else {
@@ -280,7 +274,6 @@ const ReplayPost: NextPage<{
 									}
 								}}
 								likeAction={(action, postId) => {
-									setUsagePostId(postId)
 									if (action === "like") {
 										likePost.mutate(postId)
 									} else {

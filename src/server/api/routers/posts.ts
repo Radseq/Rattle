@@ -194,12 +194,14 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			return await ctx.prisma.userLikePost.deleteMany({
+			await ctx.prisma.userLikePost.deleteMany({
 				where: {
 					postId: input,
 					userId: ctx.authUserId,
 				},
 			})
+
+			return input
 		}),
 	getPostsLikedByUser: privateProcedure
 		.input(z.string().array().optional())
@@ -302,12 +304,13 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			return await ctx.prisma.userPostForward.create({
+			const result = await ctx.prisma.userPostForward.create({
 				data: {
 					userId: ctx.authUserId,
 					postId: input,
 				},
 			})
+			return result.postId
 		}),
 	removePostForward: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
@@ -325,12 +328,14 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			return await ctx.prisma.userPostForward.deleteMany({
+			await ctx.prisma.userPostForward.deleteMany({
 				where: {
 					postId: input,
 					userId: ctx.authUserId,
 				},
 			})
+
+			return input
 		}),
 	getPostIdsForwardedByUser: privateProcedure.query(async ({ ctx }) => {
 		return getPostIdsForwardedByUser(ctx.authUserId)
