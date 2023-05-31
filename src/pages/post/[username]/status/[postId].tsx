@@ -91,7 +91,7 @@ const ReplayPost: NextPage<{
 		onError: (e) => {
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to update settings! Please try again later"
+				"Failed to create replay! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
