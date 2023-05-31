@@ -5,12 +5,14 @@ type HtmlSvgProps = InputHTMLAttributes<SVGSVGElement> & {
 }
 
 export const Heart = (props: HtmlSvgProps) => {
+	//const propsWithoutFillColor = { ...(({ fillColor, ...o }) => o)(props) }
+	const { fillColor, ...propsWithoutFillColor } = props
 	return (
 		<svg
 			className=""
 			viewBox="0 0 1024 1024"
 			fill={props.fillColor}
-			{...props}
+			{...propsWithoutFillColor}
 			version="1.1"
 			xmlns="http://www.w3.org/2000/svg"
 		>
