@@ -3,8 +3,6 @@ import Head from "next/head"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
 
-import Image from "next/image"
-
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
@@ -37,9 +35,9 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		}
 	}
 
-	const { user, userId } = getAuth(props.req)
+	const { userId } = getAuth(props.req)
 
-	const isUserFollowProfile = user ? await isFolloweed(user.id, profile.id) : false
+	const isUserFollowProfile = userId ? await isFolloweed(userId, profile.id) : false
 
 	const signInUser: SignInUser = {
 		userId: userId ? userId : null,

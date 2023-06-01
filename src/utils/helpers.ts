@@ -33,7 +33,7 @@ export const getFullName = (frstName: string | null, lastName: string | null) =>
 export const filterClarkClientToUser = (user: User) => {
 	return {
 		id: user.id,
-		username: user.username,
+		username: user.username ?? "",
 		profileImageUrl: user.profileImageUrl,
 	}
 }

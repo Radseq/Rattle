@@ -5,16 +5,22 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
+import { getPostById, getPostsLikedByUser } from "../posts"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const posts = await ctx.prisma.post.findMany({
+		const postsIds = await ctx.prisma.post.findMany({
 			where: { authorId: input, replayId: null },
 			orderBy: { createdAt: "desc" },
 			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
+			select: {
+				id: true,
+			},
 		})
+
+		const posts = await Promise.all(postsIds.map((postId) => getPostById(postId.id)))
 
 		const author = await clerkClient.users.getUser(input)
 
@@ -25,15 +31,9 @@ export const postsRouter = createTRPCRouter({
 			})
 		}
 
-		const username = author.username
-
 		return posts.map((post) => ({
-			post,
-			author: {
-				id: author.id,
-				username,
-				profileImageUrl: author.profileImageUrl,
-			},
+			post: { ...post, createdAt: post.createdAt.toString() },
+			author: filterClarkClientToUser(author),
 		}))
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
@@ -115,7 +115,7 @@ export const postsRouter = createTRPCRouter({
 			})
 		}),
 	deletePost: privateProcedure
-		.input(z.string().min(25, { message: "id is too small" }))
+		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
 			return await ctx.prisma.post.deleteMany({
 				where: {
@@ -123,5 +123,107 @@ export const postsRouter = createTRPCRouter({
 					authorId: ctx.authUserId,
 				},
 			})
+		}),
+	setPostLiked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await ctx.prisma.userLikePost.findFirst({
+				where: {
+					userId: ctx.authUserId,
+					postId: input,
+				},
+			})
+
+			if (alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post already liked!",
+				})
+			}
+
+			const result = await ctx.prisma.userLikePost.create({
+				data: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+			return result.postId
+		}),
+	setPostUnliked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await ctx.prisma.userLikePost.findFirst({
+				where: {
+					userId: ctx.authUserId,
+				},
+			})
+
+			if (!alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is not liked!",
+				})
+			}
+
+			return await ctx.prisma.userLikePost.deleteMany({
+				where: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+		}),
+	getPostsLikedByUser: privateProcedure
+		.input(z.string().array().optional())
+		.query(async ({ input, ctx }) => {
+			if (!input) {
+				return []
+			}
+			return await getPostsLikedByUser(ctx.authUserId, input)
+		}),
+	getPostReplays: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.query(async ({ input, ctx }) => {
+			const getPostReplays = await ctx.prisma.post.findMany({
+				where: {
+					replayId: input,
+				},
+				orderBy: { createdAt: "desc" },
+				take: CONFIG.MAX_POST_REPLAYS,
+				select: {
+					id: true,
+					authorId: true,
+				},
+			})
+
+			const postReplays = await Promise.all(
+				getPostReplays.map((post) => getPostById(post.id))
+			)
+
+			const replaysAuthors = await clerkClient.users.getUserList({
+				userId: getPostReplays.map((post) => post.authorId),
+			})
+
+			if (!replaysAuthors) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Author of posts not found",
+				})
+			}
+
+			//return {
+			return postReplays.map((postReplay) => {
+				const postAuthor = replaysAuthors.find((user) => user.id === postReplay.authorId)
+				if (!postAuthor || !postAuthor.username) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "Author of one of the posts not found",
+					})
+				}
+				return {
+					post: { ...postReplay, createdAt: postReplay.createdAt.toString() },
+					author: filterClarkClientToUser(postAuthor),
+				}
+			})
+			//}
 		}),
 })

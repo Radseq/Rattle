@@ -4,7 +4,7 @@ type ListItemProps = LiHTMLAttributes<HTMLLIElement>
 
 export const ListItem = (props: ListItemProps) => {
 	return (
-		<li className="flex h-12 w-full cursor-pointer rounded-lg p-2  hover:bg-gray-50">
+		<li {...props} className="flex h-12 w-full cursor-pointer rounded-lg p-2  hover:bg-gray-50">
 			{props.children}
 		</li>
 	)
