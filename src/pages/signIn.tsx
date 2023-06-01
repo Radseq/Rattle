@@ -20,7 +20,7 @@ export const getServerSideProps = (props: GetServerSidePropsContext) => {
 	}
 }
 
-const signIn: NextPage = () => {
+const SignIn: NextPage = () => {
 	const { isLoaded } = useUser()
 
 	if (!isLoaded) {
@@ -41,4 +41,4 @@ const signIn: NextPage = () => {
 	)
 }
 
-export default signIn
+export default SignIn
