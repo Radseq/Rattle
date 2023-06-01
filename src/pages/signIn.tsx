@@ -1,4 +1,4 @@
-import { SignIn, useUser } from "@clerk/nextjs"
+import { SignIn as ClerkSignIn, useUser } from "@clerk/nextjs"
 import { getAuth } from "@clerk/nextjs/server"
 import { type GetServerSidePropsContext, type NextPage } from "next"
 import { LoadingPage } from "~/components/LoadingPage"
@@ -20,7 +20,7 @@ export const getServerSideProps = (props: GetServerSidePropsContext) => {
 	}
 }
 
-const SignInPage: NextPage = () => {
+const signIn: NextPage = () => {
 	const { isLoaded } = useUser()
 
 	if (!isLoaded) {
@@ -29,7 +29,7 @@ const SignInPage: NextPage = () => {
 
 	return (
 		<div>
-			<SignIn
+			<ClerkSignIn
 				appearance={{
 					elements: {
 						rootBox: "mx-auto",
@@ -41,4 +41,4 @@ const SignInPage: NextPage = () => {
 	)
 }
 
-export default SignInPage
+export default signIn
