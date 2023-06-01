@@ -13,4 +13,7 @@ export type PostMenuItemsType = "view" | "followedAuthor" | "notFollowedAuthor" 
 export type Post = PrismaPost & {
 	likeCount: number
 	replaysCount: number
+	forwardsCount: number
+	isLikedBySignInUser: boolean
+	isForwardedPostBySignInUser: boolean
 }

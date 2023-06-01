@@ -4,8 +4,17 @@ import { OptionDots } from "./Icons/OptionDots"
 import { ExternalLink } from "./Icons/ExternalLink"
 import { Calendar } from "./Icons/Calendar"
 import { Chat } from "./Icons/Chat"
+import { PostForward } from "./Icons/PostForward"
+import { Quote } from "./Icons/Quote"
 
-export type IconKindProps = "trash" | "optionDots" | "externalLink" | "calendar" | "chat"
+export type IconKindProps =
+	| "trash"
+	| "postForward"
+	| "quote"
+	| "optionDots"
+	| "externalLink"
+	| "calendar"
+	| "chat"
 
 const GetIconByType = (kind: IconKindProps) => {
 	switch (kind) {
@@ -19,6 +28,10 @@ const GetIconByType = (kind: IconKindProps) => {
 			return <Calendar />
 		case "chat":
 			return <Chat />
+		case "postForward":
+			return <PostForward />
+		case "quote":
+			return <Quote />
 		default:
 			return null
 	}

@@ -5,13 +5,14 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
-import { getPostById, getPostsLikedByUser } from "../posts"
+import { getPostById, getPostIdsForwardedByUser, getPostsLikedByUser } from "../posts"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const postsIds = await ctx.prisma.post.findMany({
+		const postIds: string[] = []
+		const postsByAuthorIds = ctx.prisma.post.findMany({
 			where: { authorId: input, replayId: null },
 			orderBy: { createdAt: "desc" },
 			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
@@ -20,7 +21,27 @@ export const postsRouter = createTRPCRouter({
 			},
 		})
 
-		const posts = await Promise.all(postsIds.map((postId) => getPostById(postId.id)))
+		const forwardedPostsIds = getPostIdsForwardedByUser(input)
+
+		const [getPostForwardedIds, getPostsByAuthorIds] = await Promise.all([
+			forwardedPostsIds,
+			postsByAuthorIds,
+		])
+
+		for (const post of getPostsByAuthorIds) {
+			postIds.push(post.id)
+		}
+
+		for (const id of getPostForwardedIds) {
+			postIds.push(id)
+		}
+
+		let postsLikedBySignInUser: string[] = []
+		if (ctx.authUserId) {
+			postsLikedBySignInUser = await getPostsLikedByUser(ctx.authUserId, postIds)
+		}
+
+		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
 
 		const author = await clerkClient.users.getUser(input)
 
@@ -31,10 +52,18 @@ export const postsRouter = createTRPCRouter({
 			})
 		}
 
-		return posts.map((post) => ({
-			post: { ...post, createdAt: post.createdAt.toString() },
-			author: filterClarkClientToUser(author),
-		}))
+		return posts
+			.sort((postA, postB) => postB.createdAt.getTime() - postA.createdAt.getTime())
+			.map((post) => ({
+				post: {
+					...post,
+					createdAt: post.createdAt.toString(),
+					isLikedBySignInUser: postsLikedBySignInUser.some(
+						(postId) => postId === post.id
+					),
+				},
+				author: filterClarkClientToUser(author),
+			}))
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
@@ -42,7 +71,7 @@ export const postsRouter = createTRPCRouter({
 		const users = (
 			await clerkClient.users.getUserList({
 				userId: posts.map((post) => post.authorId),
-				limit: 10,
+				limit: 10, // todo remove magic number
 			})
 		).map((user) => filterClarkClientToUser(user))
 
@@ -165,12 +194,14 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			return await ctx.prisma.userLikePost.deleteMany({
+			await ctx.prisma.userLikePost.deleteMany({
 				where: {
 					postId: input,
 					userId: ctx.authUserId,
 				},
 			})
+
+			return input
 		}),
 	getPostsLikedByUser: privateProcedure
 		.input(z.string().array().optional())
@@ -180,7 +211,7 @@ export const postsRouter = createTRPCRouter({
 			}
 			return await getPostsLikedByUser(ctx.authUserId, input)
 		}),
-	getPostReplays: privateProcedure
+	getPostReplays: publicProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.query(async ({ input, ctx }) => {
 			const getPostReplays = await ctx.prisma.post.findMany({
@@ -199,6 +230,15 @@ export const postsRouter = createTRPCRouter({
 				getPostReplays.map((post) => getPostById(post.id))
 			)
 
+			let postsLikedBySignInUser: string[] = []
+
+			if (ctx.authUserId) {
+				postsLikedBySignInUser = await getPostsLikedByUser(
+					ctx.authUserId,
+					postReplays.map((post) => post.id)
+				)
+			}
+
 			const replaysAuthors = await clerkClient.users.getUserList({
 				userId: getPostReplays.map((post) => post.authorId),
 			})
@@ -210,7 +250,6 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			//return {
 			return postReplays.map((postReplay) => {
 				const postAuthor = replaysAuthors.find((user) => user.id === postReplay.authorId)
 				if (!postAuthor || !postAuthor.username) {
@@ -220,10 +259,85 @@ export const postsRouter = createTRPCRouter({
 					})
 				}
 				return {
-					post: { ...postReplay, createdAt: postReplay.createdAt.toString() },
+					post: {
+						...postReplay,
+						createdAt: postReplay.createdAt.toString(),
+						isLikedBySignInUser: postsLikedBySignInUser.some(
+							(postId) => postId === postReplay.id
+						),
+					},
 					author: filterClarkClientToUser(postAuthor),
 				}
 			})
-			//}
 		}),
+	forwardPost: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyForwarded = ctx.prisma.userPostForward.findFirst({
+				where: {
+					userId: ctx.authUserId,
+				},
+			})
+
+			const postToForward = ctx.prisma.post.findFirst({
+				where: {
+					id: input,
+					authorId: ctx.authUserId,
+				},
+			})
+
+			const [isAlreadyForwarded, getPostToForward] = await Promise.all([
+				alreadyForwarded,
+				postToForward,
+			])
+			// todo uncomment after test
+			// if (isAlreadyForwarded) {
+			// 	throw new TRPCError({
+			// 		code: "INTERNAL_SERVER_ERROR",
+			// 		message: "Can't forward own post!",
+			// 	})
+			// } else
+			if (!getPostToForward) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is already forwarded!",
+				})
+			}
+
+			const result = await ctx.prisma.userPostForward.create({
+				data: {
+					userId: ctx.authUserId,
+					postId: input,
+				},
+			})
+			return result.postId
+		}),
+	removePostForward: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const forwardedPost = await ctx.prisma.userPostForward.findFirst({
+				where: {
+					userId: ctx.authUserId,
+				},
+			})
+
+			if (!forwardedPost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is not frowarded!",
+				})
+			}
+
+			await ctx.prisma.userPostForward.deleteMany({
+				where: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+
+			return input
+		}),
+	getPostIdsForwardedByUser: privateProcedure.query(async ({ ctx }) => {
+		return getPostIdsForwardedByUser(ctx.authUserId)
+	}),
 })
