@@ -56,7 +56,6 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 }
 
 // todo signInUser, isUserFollowProfile, postsLikedByUser as one object?
-
 const ReplayPost: NextPage<{
 	post: Post
 	author: Profile
@@ -64,6 +63,9 @@ const ReplayPost: NextPage<{
 	isUserFollowProfile: boolean | null
 	postIdsForwardedByUser: string[]
 }> = ({ post, author, signInUser, isUserFollowProfile, postIdsForwardedByUser }) => {
+	const router = useRouter()
+	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
+
 	const [replays, setReplays] = useState<PostWithUser[]>()
 	const postReplays = api.posts.getPostReplays.useQuery(post.id)
 
@@ -78,10 +80,6 @@ const ReplayPost: NextPage<{
 			setReplays(replays)
 		}
 	}, [postReplays.data, postIdsForwardedByUser])
-
-	const router = useRouter()
-
-	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
 
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
 		onSuccess: async () => {
@@ -265,7 +263,6 @@ const ReplayPost: NextPage<{
 								}}
 								menuItemsType={type}
 								onOptionClick={handlePostOptionClick}
-								isForwardedByUser={replay.post.isForwardedPostBySignInUser}
 								forwardAction={(forward, postId) => {
 									if (forward === "deleteForward") {
 										removePostForward.mutate(postId)

@@ -15,6 +15,9 @@ export const FetchPosts: FC<{
 	signInUser: SignInUser
 	isUserFollowProfile: boolean | null
 }> = ({ userId, isUserFollowProfile, signInUser }) => {
+	const router = useRouter()
+	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
+
 	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
 	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
 	const [posts, setPosts] = useState<PostWithUser[]>()
@@ -34,10 +37,6 @@ export const FetchPosts: FC<{
 			}
 		}
 	}, [getPosts.data, forwardedPostIdsByUser.data])
-
-	const router = useRouter()
-
-	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
 
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
@@ -180,7 +179,6 @@ export const FetchPosts: FC<{
 					}}
 					menuItemsType={type}
 					onOptionClick={handlePostOptionClick}
-					isForwardedByUser={postsWithUser.post.isForwardedPostBySignInUser}
 					forwardAction={(forward, postId) => {
 						if (forward === "deleteForward") {
 							removePostForward.mutate(postId)

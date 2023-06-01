@@ -15,7 +15,6 @@ export const PostItem: FC<{
 	menuItemsType: PostMenuItemsType
 	onOptionClick: (action: string, postId: string) => void
 	onNavigateToPost: () => void
-	isForwardedByUser: boolean
 	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
 	likeAction: (action: "like" | "unlike", postId: string) => void
 }> = ({
@@ -23,7 +22,6 @@ export const PostItem: FC<{
 	onOptionClick,
 	menuItemsType,
 	onNavigateToPost,
-	isForwardedByUser,
 	forwardAction,
 	likeAction,
 }) => {
@@ -59,7 +57,7 @@ export const PostItem: FC<{
 					<PostFooter
 						isLikedByUser={postWithUser.post.isLikedBySignInUser}
 						postWithUser={postWithUser}
-						isForwardedByUser={isForwardedByUser}
+						isForwardedByUser={postWithUser.post.isForwardedPostBySignInUser}
 						forwardAction={forwardAction}
 						likeAction={likeAction}
 					/>
