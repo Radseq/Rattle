@@ -276,6 +276,7 @@ export const postsRouter = createTRPCRouter({
 			const alreadyForwarded = ctx.prisma.userPostForward.findFirst({
 				where: {
 					userId: ctx.authUserId,
+					postId: input,
 				},
 			})
 
@@ -290,19 +291,26 @@ export const postsRouter = createTRPCRouter({
 				alreadyForwarded,
 				postToForward,
 			])
-			// todo uncomment after test
-			// if (isAlreadyForwarded) {
-			// 	throw new TRPCError({
-			// 		code: "INTERNAL_SERVER_ERROR",
-			// 		message: "Can't forward own post!",
-			// 	})
-			// } else
-			if (!getPostToForward) {
+
+			if (isAlreadyForwarded) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
 					message: "Post is already forwarded!",
 				})
 			}
+			if (!getPostToForward) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post not exists!",
+				})
+			}
+			// todo uncomment after testing
+			// if (getPostToForward.authorId === ctx.authUserId) {
+			// 	throw new TRPCError({
+			// 		code: "INTERNAL_SERVER_ERROR",
+			// 		message: "Can't forward own post!",
+			// 	})
+			// }
 
 			const result = await ctx.prisma.userPostForward.create({
 				data: {
