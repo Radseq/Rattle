@@ -52,7 +52,7 @@ export const FetchPosts: FC<{
 	})
 
 	const likePost = api.posts.setPostLiked.useMutation({
-		onSuccess: (postId: string) => {
+		onSuccess: (_, postId) => {
 			toast.success("Post Liked!")
 			if (posts) {
 				const copyPosts = posts.map((post) => {
@@ -74,7 +74,7 @@ export const FetchPosts: FC<{
 	})
 
 	const unlikePost = api.posts.setPostUnliked.useMutation({
-		onSuccess: (postId: string) => {
+		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
 			if (posts) {
 				const copyPosts = posts.map((post) => {
@@ -96,7 +96,7 @@ export const FetchPosts: FC<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: (postId: string) => {
+		onSuccess: (_, postId) => {
 			toast.success("Post Forwarded!")
 			if (posts) {
 				const copyPosts = posts.map((post) => {
@@ -118,19 +118,9 @@ export const FetchPosts: FC<{
 	})
 
 	const removePostForward = api.posts.removePostForward.useMutation({
-		onSuccess: async (postId: string) => {
+		onSuccess: async () => {
 			toast.success("Delete Post Forward!")
 			await getPosts.refetch()
-			if (posts) {
-				const copyPosts = posts.map((post) => {
-					if (post.post.id === postId) {
-						post.post.forwardsCount -= 1
-						post.post.isForwardedPostBySignInUser = false
-					}
-					return post
-				})
-				setPosts(copyPosts)
-			}
 		},
 		onError: (e) => {
 			const error =

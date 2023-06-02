@@ -107,7 +107,7 @@ const ReplayPost: NextPage<{
 	})
 
 	const likePost = api.posts.setPostLiked.useMutation({
-		onSuccess: (postId: string) => {
+		onSuccess: (_, postId) => {
 			toast.success("Post Liked!")
 			if (replays) {
 				const copyReplays = replays.map((replay) => {
@@ -129,7 +129,7 @@ const ReplayPost: NextPage<{
 	})
 
 	const unlikePost = api.posts.setPostUnliked.useMutation({
-		onSuccess: (postId: string) => {
+		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
 			if (replays) {
 				const copyReplays = replays.map((replay) => {
@@ -151,7 +151,7 @@ const ReplayPost: NextPage<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: (postId: string) => {
+		onSuccess: (_, postId) => {
 			toast.success("Post Forwarded!")
 			if (replays) {
 				const copyReplays = replays.map((replay) => {
@@ -173,7 +173,7 @@ const ReplayPost: NextPage<{
 	})
 
 	const removePostForward = api.posts.removePostForward.useMutation({
-		onSuccess: (postId: string) => {
+		onSuccess: (_, postId) => {
 			toast.success("Delete Post Forward!")
 			if (replays) {
 				const copyReplays = replays.map((replay) => {
