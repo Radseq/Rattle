@@ -5,7 +5,13 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
-import { getPostById, getPostIdsForwardedByUser, getPostsLikedByUser } from "../posts"
+import {
+	getPostById,
+	getPostIdsForwardedByUser,
+	getPostsLikedByUser,
+	isUserForwardedPost,
+	isUserLikedPost,
+} from "../posts"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -156,12 +162,7 @@ export const postsRouter = createTRPCRouter({
 	setPostLiked: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
-			const alreadyLikePost = await ctx.prisma.userLikePost.findFirst({
-				where: {
-					userId: ctx.authUserId,
-					postId: input,
-				},
-			})
+			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
 
 			if (alreadyLikePost) {
 				throw new TRPCError({
@@ -181,11 +182,7 @@ export const postsRouter = createTRPCRouter({
 	setPostUnliked: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
-			const alreadyLikePost = await ctx.prisma.userLikePost.findFirst({
-				where: {
-					userId: ctx.authUserId,
-				},
-			})
+			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
 
 			if (!alreadyLikePost) {
 				throw new TRPCError({
@@ -273,12 +270,7 @@ export const postsRouter = createTRPCRouter({
 	forwardPost: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
-			const alreadyForwarded = ctx.prisma.userPostForward.findFirst({
-				where: {
-					userId: ctx.authUserId,
-					postId: input,
-				},
-			})
+			const forwardedPostByUser = isUserForwardedPost(ctx.authUserId, input)
 
 			const postToForward = ctx.prisma.post.findFirst({
 				where: {
@@ -288,7 +280,7 @@ export const postsRouter = createTRPCRouter({
 			})
 
 			const [isAlreadyForwarded, getPostToForward] = await Promise.all([
-				alreadyForwarded,
+				forwardedPostByUser,
 				postToForward,
 			])
 
@@ -323,11 +315,7 @@ export const postsRouter = createTRPCRouter({
 	removePostForward: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
-			const forwardedPost = await ctx.prisma.userPostForward.findFirst({
-				where: {
-					userId: ctx.authUserId,
-				},
-			})
+			const forwardedPost = await isUserForwardedPost(ctx.authUserId, input)
 
 			if (!forwardedPost) {
 				throw new TRPCError({
