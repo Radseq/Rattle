@@ -107,3 +107,30 @@ export const getPostIdsForwardedByUser = async (userId: string) => {
 	}
 	return []
 }
+
+export const isUserLikedPost = async (userId: string, postId: string): Promise<boolean> => {
+	const alreadyLikePost = await prisma.userLikePost.findFirst({
+		where: {
+			userId,
+			postId,
+		},
+	})
+
+	if (alreadyLikePost) {
+		return true
+	}
+	return false
+}
+
+export const isUserForwardedPost = async (userId: string, postId: string): Promise<boolean> => {
+	const forwardedPost = await prisma.userPostForward.findFirst({
+		where: {
+			userId,
+			postId,
+		},
+	})
+	if (forwardedPost) {
+		return true
+	}
+	return false
+}
