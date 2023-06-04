@@ -10,7 +10,15 @@ export const PostFooter: FC<{
 	postWithUser: PostWithUser
 	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
 	likeAction: (action: "like" | "unlike", postId: string) => void
-}> = ({ isLikedByUser, isForwardedByUser, postWithUser, forwardAction, likeAction }) => {
+	onQuoteClick: (postId: string) => void
+}> = ({
+	isLikedByUser,
+	isForwardedByUser,
+	postWithUser,
+	forwardAction,
+	likeAction,
+	onQuoteClick,
+}) => {
 	return (
 		<footer className="mt-3 flex text-gray-500">
 			<Link
@@ -50,9 +58,10 @@ export const PostFooter: FC<{
 							</span>
 						</li>
 						<li
-							className="flex h-full p-3  hover:bg-gray-200"
+							className="flex h-full p-3 hover:bg-gray-200"
 							onClick={(e) => {
 								e.stopPropagation()
+								onQuoteClick(postWithUser.post.id)
 							}}
 						>
 							<Icon iconKind="quote" />

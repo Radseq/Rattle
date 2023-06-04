@@ -9,6 +9,7 @@ import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
 import { type PostWithUser } from "./types"
+import { PostQuotePopUp } from "./PostQuotePopUp"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -18,9 +19,11 @@ export const FetchPosts: FC<{
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
 
+	const [quotePopUp, setQuotePopUp] = useState(false)
+	const [posts, setPosts] = useState<PostWithUser[]>()
+
 	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
 	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
-	const [posts, setPosts] = useState<PostWithUser[]>()
 
 	useEffect(() => {
 		if (getPosts.data) {
@@ -159,32 +162,39 @@ export const FetchPosts: FC<{
 	}
 
 	return (
-		<ul className="">
-			{posts?.map((postsWithUser) => (
-				<PostItem
-					key={postsWithUser.post.id}
-					postWithUser={postsWithUser}
-					onNavigateToPost={() => {
-						handleNavigateToPost(postsWithUser.post.id, postsWithUser.author.username)
-					}}
-					menuItemsType={type}
-					onOptionClick={handlePostOptionClick}
-					forwardAction={(forward, postId) => {
-						if (forward === "deleteForward") {
-							removePostForward.mutate(postId)
-						} else {
-							forwardPost.mutate(postId)
-						}
-					}}
-					likeAction={(action, postId) => {
-						if (action === "like") {
-							likePost.mutate(postId)
-						} else {
-							unlikePost.mutate(postId)
-						}
-					}}
-				/>
-			))}
-		</ul>
+		<div>
+			<ul className="">
+				{posts?.map((postsWithUser) => (
+					<PostItem
+						key={postsWithUser.post.id}
+						postWithUser={postsWithUser}
+						onNavigateToPost={() => {
+							handleNavigateToPost(
+								postsWithUser.post.id,
+								postsWithUser.author.username
+							)
+						}}
+						menuItemsType={type}
+						onOptionClick={handlePostOptionClick}
+						forwardAction={(forward, postId) => {
+							if (forward === "deleteForward") {
+								removePostForward.mutate(postId)
+							} else {
+								forwardPost.mutate(postId)
+							}
+						}}
+						likeAction={(action, postId) => {
+							if (action === "like") {
+								likePost.mutate(postId)
+							} else {
+								unlikePost.mutate(postId)
+							}
+						}}
+						onQuoteClick={() => setQuotePopUp(true)}
+					/>
+				))}
+			</ul>
+			{quotePopUp && <PostQuotePopUp onCloseModal={() => setQuotePopUp(false)} />}
+		</div>
 	)
 }

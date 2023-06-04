@@ -18,6 +18,7 @@ import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { LoadingPage } from "~/components/LoadingPage"
 import { useEffect, useState } from "react"
+import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -66,7 +67,9 @@ const ReplayPost: NextPage<{
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
 
+	const [quotePopUp, setQuotePopUp] = useState(false)
 	const [replays, setReplays] = useState<PostWithUser[]>()
+
 	const postReplays = api.posts.getPostReplays.useQuery(post.id)
 
 	useEffect(() => {
@@ -277,11 +280,13 @@ const ReplayPost: NextPage<{
 										unlikePost.mutate(postId)
 									}
 								}}
+								onQuoteClick={() => setQuotePopUp(true)}
 							/>
 						))}
 					</ul>
 				)}
 			</div>
+			{quotePopUp && <PostQuotePopUp onCloseModal={() => setQuotePopUp(false)} />}
 		</Layout>
 	)
 }

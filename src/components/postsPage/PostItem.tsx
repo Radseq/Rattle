@@ -17,6 +17,7 @@ export const PostItem: FC<{
 	onNavigateToPost: () => void
 	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
 	likeAction: (action: "like" | "unlike", postId: string) => void
+	onQuoteClick: (postId: string) => void
 }> = ({
 	postWithUser,
 	onOptionClick,
@@ -24,6 +25,7 @@ export const PostItem: FC<{
 	onNavigateToPost,
 	forwardAction,
 	likeAction,
+	onQuoteClick,
 }) => {
 	return (
 		<li
@@ -60,6 +62,7 @@ export const PostItem: FC<{
 						isForwardedByUser={postWithUser.post.isForwardedPostBySignInUser}
 						forwardAction={forwardAction}
 						likeAction={likeAction}
+						onQuoteClick={onQuoteClick}
 					/>
 				</div>
 				{menuItemsType !== "view" && (
