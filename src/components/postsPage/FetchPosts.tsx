@@ -10,6 +10,7 @@ import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
 import { type PostWithUser } from "./types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
+import { useUser } from "@clerk/nextjs"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -19,11 +20,12 @@ export const FetchPosts: FC<{
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
 
-	const [quotePopUp, setQuotePopUp] = useState(false)
+	const [quotePopUp, setQuotePopUp] = useState<PostWithUser | null>(null)
 	const [posts, setPosts] = useState<PostWithUser[]>()
 
 	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
 	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
+	const { user, isSignedIn } = useUser()
 
 	useEffect(() => {
 		if (getPosts.data) {
@@ -190,11 +192,17 @@ export const FetchPosts: FC<{
 								unlikePost.mutate(postId)
 							}
 						}}
-						onQuoteClick={() => setQuotePopUp(true)}
+						onQuoteClick={() => setQuotePopUp(postsWithUser)}
 					/>
 				))}
 			</ul>
-			{quotePopUp && <PostQuotePopUp onCloseModal={() => setQuotePopUp(false)} />}
+			{quotePopUp && isSignedIn && user && (
+				<PostQuotePopUp
+					profileImageUrl={user.profileImageUrl}
+					onCloseModal={() => setQuotePopUp(null)}
+					post={quotePopUp}
+				/>
+			)}
 		</div>
 	)
 }

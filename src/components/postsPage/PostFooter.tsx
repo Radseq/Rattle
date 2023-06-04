@@ -10,7 +10,7 @@ export const PostFooter: FC<{
 	postWithUser: PostWithUser
 	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
 	likeAction: (action: "like" | "unlike", postId: string) => void
-	onQuoteClick: (postId: string) => void
+	onQuoteClick: () => void
 }> = ({
 	isLikedByUser,
 	isForwardedByUser,
@@ -61,7 +61,7 @@ export const PostFooter: FC<{
 							className="flex h-full p-3 hover:bg-gray-200"
 							onClick={(e) => {
 								e.stopPropagation()
-								onQuoteClick(postWithUser.post.id)
+								onQuoteClick()
 							}}
 						>
 							<Icon iconKind="quote" />
