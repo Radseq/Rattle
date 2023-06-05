@@ -59,7 +59,12 @@ export const PostItem: FC<{
 					</div>
 					<span>{postWithUser.post.content}</span>
 					{postWithUser.post.quotedPost && (
-						<PostQuoteItem postWithAuthor={postWithUser.post.quotedPost} />
+						<Link
+							onClick={(e) => e.stopPropagation()}
+							href={`/post/${postWithUser.post.quotedPost.author.username}/status/${postWithUser.post.quotedPost.post.id}`}
+						>
+							<PostQuoteItem postWithAuthor={postWithUser.post.quotedPost} />
+						</Link>
 					)}
 					<PostFooter
 						isLikedByUser={postWithUser.post.isLikedBySignInUser}
