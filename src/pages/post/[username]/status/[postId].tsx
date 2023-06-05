@@ -70,6 +70,7 @@ const ReplayPost: NextPage<{
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithUser | null>(null)
+	const [quoteMessage, setQuoteMessage] = useState<string>()
 	const [replays, setReplays] = useState<PostWithUser[]>()
 
 	const postReplays = api.posts.getPostReplays.useQuery(post.id)
@@ -89,6 +90,18 @@ const ReplayPost: NextPage<{
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
 		onSuccess: async () => {
 			await postReplays.refetch()
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to create replay! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const quotePost = api.posts.createQuotedPost.useMutation({
+		onSuccess: () => {
+			setQuotePopUp(null)
 		},
 		onError: (e) => {
 			const error =
@@ -293,6 +306,13 @@ const ReplayPost: NextPage<{
 					profileImageUrl={user.profileImageUrl}
 					onCloseModal={() => setQuotePopUp(null)}
 					post={quotePopUp}
+					onPostQuote={() => {
+						quotePost.mutate({
+							content: quoteMessage ?? "",
+							quotedPostId: quotePopUp.post.id,
+						})
+					}}
+					onMessageChange={(message) => setQuoteMessage(message)}
 				/>
 			)}
 		</Layout>

@@ -121,6 +121,34 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
+	createQuotedPost: privateProcedure
+		.input(
+			z.object({
+				content: z
+					.string()
+					.min(1, { message: "Message is too small" })
+					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
+						message: `Message is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
+					}),
+				quotedPostId: z.string().min(25, { message: "wrong quotedPostId" }),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const authorId = ctx.authUserId
+			const { success } = await postRateLimit.limit(authorId)
+
+			if (!success) {
+				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
+			}
+
+			return await ctx.prisma.post.create({
+				data: {
+					authorId,
+					content: input.content,
+					quotedId: input.quotedPostId,
+				},
+			})
+		}),
 	createReplayPost: privateProcedure
 		.input(
 			z.object({

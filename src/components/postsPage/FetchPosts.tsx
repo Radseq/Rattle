@@ -21,6 +21,7 @@ export const FetchPosts: FC<{
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithUser | null>(null)
+	const [quoteMessage, setQuoteMessage] = useState<string>()
 	const [posts, setPosts] = useState<PostWithUser[]>()
 
 	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
@@ -52,6 +53,18 @@ export const FetchPosts: FC<{
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
 				"Failed to delete post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const quotePost = api.posts.createQuotedPost.useMutation({
+		onSuccess: () => {
+			setQuotePopUp(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to create replay! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -201,6 +214,13 @@ export const FetchPosts: FC<{
 					profileImageUrl={user.profileImageUrl}
 					onCloseModal={() => setQuotePopUp(null)}
 					post={quotePopUp}
+					onPostQuote={() => {
+						quotePost.mutate({
+							content: quoteMessage ?? "",
+							quotedPostId: quotePopUp.post.id,
+						})
+					}}
+					onMessageChange={(message) => setQuoteMessage(message)}
 				/>
 			)}
 		</div>

@@ -1,8 +1,7 @@
 import { type FC } from "react"
 import { Icon } from "../Icon"
 import Image from "next/image"
-import { PostWithUser } from "./types"
-import Link from "next/link"
+import { type PostWithUser } from "./types"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 
@@ -12,9 +11,11 @@ export const PostQuotePopUp: FC<{
 	post: PostWithUser
 	profileImageUrl: string
 	onCloseModal: () => void
-}> = ({ post, profileImageUrl, onCloseModal }) => {
+	onPostQuote: () => void
+	onMessageChange: (content: string) => void
+}> = ({ post, profileImageUrl, onCloseModal, onPostQuote, onMessageChange }) => {
 	return (
-		<>
+		<div>
 			<div
 				onClick={(e) => e.stopPropagation()}
 				className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden outline-none focus:outline-none"
@@ -45,9 +46,9 @@ export const PostQuotePopUp: FC<{
 									className="border-none pl-1 text-xl
 									outline-none focus:border-none active:border-none"
 									placeholder="Add a comment!"
+									onChange={(e) => onMessageChange(e.target.value)}
 								/>
 							</div>
-
 							<div className="m-1 rounded-lg border-2 border-b-gray-300 p-2">
 								<div className="flex">
 									<Image
@@ -78,7 +79,7 @@ export const PostQuotePopUp: FC<{
 								type="button"
 								onClick={(e) => {
 									e.stopPropagation()
-									onCloseModal()
+									onPostQuote()
 								}}
 							>
 								Post
@@ -88,6 +89,6 @@ export const PostQuotePopUp: FC<{
 				</div>
 			</div>
 			<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
-		</>
+		</div>
 	)
 }
