@@ -3,6 +3,7 @@ import { Icon } from "../Icon"
 import { Heart } from "../Icons/Heart"
 import Link from "next/link"
 import { type PostWithUser } from "./types"
+import { ListItem } from "../styledHTMLElements/StyledListItem"
 
 export const PostFooter: FC<{
 	isLikedByUser: boolean
@@ -41,8 +42,7 @@ export const PostFooter: FC<{
 						className="absolute top-8 left-0 z-10 w-44 flex-col rounded-lg 
 							bg-white shadow-[0px_0px_3px_1px_#00000024] group-hover:flex"
 					>
-						<li
-							className="flex h-full p-3  hover:bg-gray-200"
+						<ListItem
 							onClick={(e) => {
 								e.stopPropagation()
 								if (isForwardedByUser) {
@@ -56,9 +56,8 @@ export const PostFooter: FC<{
 							<span className="pl-1 font-bold text-black">
 								{isForwardedByUser ? "Delete Forward" : "Forward"}
 							</span>
-						</li>
-						<li
-							className="flex h-full p-3 hover:bg-gray-200"
+						</ListItem>
+						<ListItem
 							onClick={(e) => {
 								e.stopPropagation()
 								onQuoteClick()
@@ -66,7 +65,7 @@ export const PostFooter: FC<{
 						>
 							<Icon iconKind="quote" />
 							<span className="pl-1 font-bold text-black">Quote</span>
-						</li>
+						</ListItem>
 					</ul>
 				</div>
 				<span className={"self-center pl-1 text-xl group-hover:text-green-400"}>
