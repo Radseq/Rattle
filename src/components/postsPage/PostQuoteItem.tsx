@@ -18,6 +18,7 @@ export const PostQuoteItem: FC<{ postWithAuthor: PostWithAuthor }> = ({ postWith
 				></Image>
 				<div className="w-10/12 pl-2">
 					<div className="font-semibold">
+						<span className="pr-1">{postWithAuthor.author.fullName}</span>
 						<span>{`@${postWithAuthor.author.username}`}</span>
 						<span className="p-1 text-slate-400">·</span>
 						<span className="font-normal text-slate-400">
