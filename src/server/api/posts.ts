@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
 import type { Post } from "~/components/postsPage/types"
+import { getPostAuthor } from "./profile"
 
 export const getPostById = async (postId: string) => {
 	const getPost = prisma.post.findUnique({
@@ -12,7 +13,6 @@ export const getPostById = async (postId: string) => {
 	const getLikeCount = getPostLikeCount(postId)
 	const getReplayCount = getPostReplayCount(postId)
 	const getForwardsCount = getPostForwatdCount(postId)
-
 	const [post, likeCount, replaysCount, forwardsCount] = await Promise.all([
 		getPost,
 		getLikeCount,
@@ -25,9 +25,12 @@ export const getPostById = async (postId: string) => {
 			message: "Post not found",
 		})
 	}
+
+	const createdAt = post.createdAt.toString()
+
 	return {
 		id: post.id,
-		createdAt: post.createdAt,
+		createdAt,
 		content: post.content,
 		authorId: post.authorId,
 		imageUrl: post.imageUrl,

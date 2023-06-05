@@ -6,7 +6,7 @@ import { PostContent } from "~/components/postReplayPage/PostContent"
 import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { PostItem } from "~/components/postsPage/PostItem"
-import type { Post, PostWithUser } from "~/components/postsPage/types"
+import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile, SignInUser } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
 import { getPostById, getPostIdsForwardedByUser } from "~/server/api/posts"
@@ -48,7 +48,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	return {
 		props: {
-			post: { ...post, createdAt: post.createdAt.toString() },
+			post,
 			author,
 			signInUser,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
@@ -69,9 +69,9 @@ const ReplayPost: NextPage<{
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
 
-	const [quotePopUp, setQuotePopUp] = useState<PostWithUser | null>(null)
+	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
-	const [replays, setReplays] = useState<PostWithUser[]>()
+	const [replays, setReplays] = useState<PostWithAuthor[]>()
 
 	const postReplays = api.posts.getPostReplays.useQuery(post.id)
 

@@ -1,5 +1,5 @@
 import { type FC } from "react"
-import type { PostMenuItemsType, PostWithUser } from "./types"
+import type { PostMenuItemsType, PostWithAuthor } from "./types"
 import Image from "next/image"
 import Link from "next/link"
 import dayjs from "dayjs"
@@ -11,13 +11,13 @@ import { PostFooter } from "./PostFooter"
 dayjs.extend(relativeTime)
 
 export const PostItem: FC<{
-	postWithUser: PostWithUser
+	postWithUser: PostWithAuthor
 	menuItemsType: PostMenuItemsType
 	onOptionClick: (action: string, postId: string) => void
 	onNavigateToPost: () => void
 	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
 	likeAction: (action: "like" | "unlike", postId: string) => void
-	onQuoteClick: (quotedPost: PostWithUser) => void
+	onQuoteClick: (quotedPost: PostWithAuthor) => void
 }> = ({
 	postWithUser,
 	onOptionClick,

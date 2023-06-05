@@ -1,6 +1,6 @@
 import clerkClient from "@clerk/clerk-sdk-node"
 import type { Profile, ProfileExtend } from "~/components/profilePage/types"
-import { getFullName } from "~/utils/helpers"
+import { filterClarkClientToUser, getFullName } from "~/utils/helpers"
 
 export const getProfileByUserName = async (userName: string) => {
 	const authors = await clerkClient.users.getUserList({
@@ -29,4 +29,13 @@ export const getProfileByUserName = async (userName: string) => {
 		createdAt: author.createdAt,
 		extended,
 	} as Profile
+}
+
+export const getPostAuthor = async (authorId: string) => {
+	const author = await clerkClient.users.getUser(authorId)
+	if (!author) {
+		return null
+	}
+
+	return filterClarkClientToUser(author)
 }

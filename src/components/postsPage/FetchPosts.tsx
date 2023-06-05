@@ -8,7 +8,7 @@ import { type SignInUser } from "../profilePage/types"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PostWithUser } from "./types"
+import { type PostWithAuthor } from "./types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
 import { useUser } from "@clerk/nextjs"
 
@@ -20,9 +20,9 @@ export const FetchPosts: FC<{
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
 
-	const [quotePopUp, setQuotePopUp] = useState<PostWithUser | null>(null)
+	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
-	const [posts, setPosts] = useState<PostWithUser[]>()
+	const [posts, setPosts] = useState<PostWithAuthor[]>()
 
 	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
 	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)

@@ -12,6 +12,7 @@ import {
 	isUserForwardedPost,
 	isUserLikedPost,
 } from "../posts"
+import { PostWithAuthor } from "~/components/postsPage/types"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -59,17 +60,23 @@ export const postsRouter = createTRPCRouter({
 		}
 
 		return posts
-			.sort((postA, postB) => postB.createdAt.getTime() - postA.createdAt.getTime())
-			.map((post) => ({
-				post: {
-					...post,
-					createdAt: post.createdAt.toString(),
-					isLikedBySignInUser: postsLikedBySignInUser.some(
-						(postId) => postId === post.id
-					),
-				},
-				author: filterClarkClientToUser(author),
-			}))
+			.sort(
+				(postA, postB) =>
+					new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
+			)
+			.map(
+				(post) =>
+					({
+						post: {
+							...post,
+							createdAt: post.createdAt.toString(),
+							isLikedBySignInUser: postsLikedBySignInUser.some(
+								(postId) => postId === post.id
+							),
+						},
+						author: filterClarkClientToUser(author),
+					} as PostWithAuthor)
+			)
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
@@ -292,7 +299,7 @@ export const postsRouter = createTRPCRouter({
 						),
 					},
 					author: filterClarkClientToUser(postAuthor),
-				}
+				} as PostWithAuthor
 			})
 		}),
 	forwardPost: privateProcedure

@@ -20,3 +20,10 @@ export type SignInUser = {
 }
 
 export type ProfilePageType = "view" | "own" | "follow" | "unfollow"
+
+export type PostAuthor = {
+	id: string
+	username: string
+	profileImageUrl: string
+	fullName: string
+}

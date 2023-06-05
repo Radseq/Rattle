@@ -1,14 +1,14 @@
 import { type FC } from "react"
 import { Icon } from "../Icon"
 import Image from "next/image"
-import { type PostWithUser } from "./types"
+import { type PostWithAuthor } from "./types"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 
 dayjs.extend(relativeTime)
 
 export const PostQuotePopUp: FC<{
-	post: PostWithUser
+	post: PostWithAuthor
 	profileImageUrl: string
 	onCloseModal: () => void
 	onPostQuote: () => void
