@@ -1,6 +1,6 @@
 import { type User } from "@clerk/nextjs/dist/api"
 import { type typeToFlattenedError } from "zod"
-import { PostAuthor } from "~/components/profilePage/types"
+import { type PostAuthor } from "~/components/profilePage/types"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export const ParseZodErrorToString = (

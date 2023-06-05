@@ -1,6 +1,6 @@
-import { FC } from "react"
+import { type FC } from "react"
 import Image from "next/image"
-import { PostWithAuthor } from "./types"
+import { type PostWithAuthor } from "./types"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 dayjs.extend(relativeTime)

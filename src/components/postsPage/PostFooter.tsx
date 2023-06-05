@@ -2,13 +2,13 @@ import { type FC } from "react"
 import { Icon } from "../Icon"
 import { Heart } from "../Icons/Heart"
 import Link from "next/link"
-import { type PostWithUser } from "./types"
+import { type PostWithAuthor } from "./types"
 import { ListItem } from "../styledHTMLElements/StyledListItem"
 
 export const PostFooter: FC<{
 	isLikedByUser: boolean
 	isForwardedByUser: boolean
-	postWithUser: PostWithUser
+	postWithUser: PostWithAuthor
 	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
 	likeAction: (action: "like" | "unlike", postId: string) => void
 	onQuoteClick: () => void

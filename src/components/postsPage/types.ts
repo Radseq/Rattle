@@ -1,5 +1,5 @@
 import type { Post as PrismaPost } from "@prisma/client"
-import { PostAuthor } from "../profilePage/types"
+import { type PostAuthor } from "../profilePage/types"
 
 export type PostWithAuthor = {
 	author: PostAuthor

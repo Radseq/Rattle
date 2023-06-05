@@ -12,7 +12,7 @@ import {
 	isUserForwardedPost,
 	isUserLikedPost,
 } from "../posts"
-import { PostWithAuthor } from "~/components/postsPage/types"
+import { type PostWithAuthor } from "~/components/postsPage/types"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
