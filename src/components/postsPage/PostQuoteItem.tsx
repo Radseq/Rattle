@@ -9,15 +9,15 @@ export const PostQuoteItem: FC<{ postWithAuthor: PostWithAuthor }> = ({ postWith
 	return (
 		<div className="m-1 rounded-lg border-2 border-b-gray-300 p-2">
 			<div className="flex">
-				<Image
-					className="h-16 w-16 rounded-full"
-					src={postWithAuthor.author.profileImageUrl}
-					alt={"avatar"}
-					width={128}
-					height={128}
-				></Image>
-				<div className="w-10/12 pl-2">
-					<div className="font-semibold">
+				<div className="">
+					<div className="flex text-lg font-semibold">
+						<Image
+							className="h-8 w-8 rounded-full"
+							src={postWithAuthor.author.profileImageUrl}
+							alt={"avatar"}
+							width={32}
+							height={32}
+						></Image>
 						<span className="pr-1">{postWithAuthor.author.fullName}</span>
 						<span>{`@${postWithAuthor.author.username}`}</span>
 						<span className="p-1 text-slate-400">·</span>

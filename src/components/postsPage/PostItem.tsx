@@ -44,7 +44,7 @@ export const PostItem: FC<{
 					height={128}
 				></Image>
 				<div className="w-10/12 pl-2">
-					<div className="font-semibold">
+					<div className="text-lg font-semibold">
 						<span className="pr-1">{postWithUser.author.fullName}</span>
 						<span>
 							<Link
