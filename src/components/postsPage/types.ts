@@ -20,4 +20,5 @@ export type Post = PrismaPost & {
 	forwardsCount: number
 	isLikedBySignInUser: boolean
 	isForwardedPostBySignInUser: boolean
+	quotedPost: PostWithAuthor | null
 }

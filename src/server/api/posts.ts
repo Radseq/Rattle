@@ -13,11 +13,13 @@ export const getPostById = async (postId: string) => {
 	const getLikeCount = getPostLikeCount(postId)
 	const getReplayCount = getPostReplayCount(postId)
 	const getForwardsCount = getPostForwatdCount(postId)
-	const [post, likeCount, replaysCount, forwardsCount] = await Promise.all([
+	const getQuotedPost = getPostQuoteById(postId)
+	const [post, likeCount, replaysCount, forwardsCount, quotedPost] = await Promise.all([
 		getPost,
 		getLikeCount,
 		getReplayCount,
 		getForwardsCount,
+		getQuotedPost,
 	])
 	if (!post) {
 		throw new TRPCError({
@@ -39,7 +41,51 @@ export const getPostById = async (postId: string) => {
 		likeCount,
 		replaysCount,
 		forwardsCount,
+		quotedPost: quotedPost,
 	} as Post
+}
+
+export const getPostQuoteById = async (postId: string) => {
+	const getQuotedPost = await prisma.post.findUnique({
+		where: {
+			id: postId,
+		},
+		select: {
+			quotedId: true,
+		},
+	})
+
+	if (!getQuotedPost?.quotedId) {
+		return null
+	}
+
+	const getPost = await prisma.post.findUnique({
+		where: {
+			id: getQuotedPost?.quotedId,
+		},
+	})
+
+	if (!getPost) {
+		return null
+	}
+
+	const createdAt = getPost.createdAt.toString()
+
+	return {
+		post: {
+			id: getPost.id,
+			createdAt,
+			content: getPost.content,
+			authorId: getPost.authorId,
+			imageUrl: getPost.imageUrl,
+			mediaUrl: getPost.mediaUrl,
+			replayId: getPost.replayId,
+			likeCount: 0,
+			replaysCount: 0,
+			forwardsCount: 0,
+		} as Post,
+		author: await getPostAuthor(getPost.authorId),
+	}
 }
 
 export const getPostLikeCount = async (postId: string) => {

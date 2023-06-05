@@ -2,10 +2,7 @@ import { type FC } from "react"
 import { Icon } from "../Icon"
 import Image from "next/image"
 import { type PostWithAuthor } from "./types"
-import dayjs from "dayjs"
-import relativeTime from "dayjs/plugin/relativeTime"
-
-dayjs.extend(relativeTime)
+import { PostQuoteItem } from "./PostQuoteItem"
 
 export const PostQuotePopUp: FC<{
 	post: PostWithAuthor
@@ -49,27 +46,7 @@ export const PostQuotePopUp: FC<{
 									onChange={(e) => onMessageChange(e.target.value)}
 								/>
 							</div>
-							<div className="m-1 rounded-lg border-2 border-b-gray-300 p-2">
-								<div className="flex">
-									<Image
-										className="h-16 w-16 rounded-full"
-										src={post.author.profileImageUrl}
-										alt={"avatar"}
-										width={128}
-										height={128}
-									></Image>
-									<div className="w-10/12 pl-2">
-										<div className="font-semibold">
-											<span>{`@${post.author.username}`}</span>
-											<span className="p-1 text-slate-400">·</span>
-											<span className="font-normal text-slate-400">
-												{dayjs(post.post.createdAt).fromNow()}
-											</span>
-										</div>
-										<span>{post.post.content}</span>
-									</div>
-								</div>
-							</div>
+							<PostQuoteItem postWithAuthor={post} />
 						</main>
 						<footer className="m-2 flex items-center justify-end rounded-b">
 							<button

@@ -7,6 +7,7 @@ import relativeTime from "dayjs/plugin/relativeTime"
 import { PostOptionMenu } from "./PostOptionMenu"
 import { Icon } from "../Icon"
 import { PostFooter } from "./PostFooter"
+import { PostQuoteItem } from "./PostQuoteItem"
 
 dayjs.extend(relativeTime)
 
@@ -57,6 +58,9 @@ export const PostItem: FC<{
 						</span>
 					</div>
 					<span>{postWithUser.post.content}</span>
+					{postWithUser.post.quotedPost && (
+						<PostQuoteItem postWithAuthor={postWithUser.post.quotedPost} />
+					)}
 					<PostFooter
 						isLikedByUser={postWithUser.post.isLikedBySignInUser}
 						postWithUser={postWithUser}
