@@ -44,6 +44,7 @@ export const PostItem: FC<{
 				></Image>
 				<div className="w-10/12 pl-2">
 					<div className="font-semibold">
+						<span className="pr-1">{postWithUser.author.fullName}</span>
 						<span>
 							<Link
 								onClick={(e) => e.stopPropagation()}

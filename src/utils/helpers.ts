@@ -35,5 +35,6 @@ export const filterClarkClientToUser = (user: User) => {
 		id: user.id,
 		username: user.username ?? "",
 		profileImageUrl: user.profileImageUrl,
+		fullName: getFullName(user.firstName, user.lastName),
 	}
 }
