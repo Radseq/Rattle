@@ -1,17 +1,15 @@
+import { type User } from "@clerk/nextjs/dist/api"
 import type { PostMenuItemsType } from "~/components/postsPage/types"
-import type { SignInUser } from "~/components/profilePage/types"
 
 export const usePostMenuItemsType = (
 	isUserFollowProfile: boolean | null,
-	signInUser: SignInUser,
+	user: User | undefined,
 	authorId: string
 ): PostMenuItemsType => {
-	const { isSignedIn, userId } = signInUser
-
-	if (!isSignedIn) {
-		return "view"
-	} else if (userId === authorId) {
+	if (user?.id === authorId) {
 		return "own"
+	} else if (user) {
+		return "view"
 	} else if (isUserFollowProfile) {
 		return "followedAuthor"
 	}
