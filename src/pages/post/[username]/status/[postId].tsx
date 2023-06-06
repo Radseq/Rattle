@@ -1,4 +1,4 @@
-import { getAuth } from "@clerk/nextjs/server"
+import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
@@ -7,7 +7,7 @@ import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { PostItem } from "~/components/postsPage/PostItem"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
-import type { Profile, SignInUser } from "~/components/profilePage/types"
+import type { Profile } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
 import { getPostById, getPostIdsForwardedByUser } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
@@ -19,7 +19,7 @@ import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { LoadingPage } from "~/components/LoadingPage"
 import { useEffect, useState } from "react"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
-import { useUser } from "@clerk/nextjs"
+import { type User } from "@clerk/nextjs/dist/api"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -41,16 +41,13 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	const isUserFollowProfile = userId ? await isFolloweed(userId, author.id) : false
 	const postIdsForwardedByUser = userId ? await getPostIdsForwardedByUser(userId) : []
 
-	const signInUser: SignInUser = {
-		userId: userId ? userId : null,
-		isSignedIn: !!userId,
-	}
+	const user = userId ? await clerkClient.users.getUser(userId) : undefined
 
 	return {
 		props: {
 			post,
 			author,
-			signInUser,
+			user,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
 			postIdsForwardedByUser,
 		},
@@ -61,13 +58,12 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 const ReplayPost: NextPage<{
 	post: Post
 	author: Profile
-	signInUser: SignInUser
+	user: User | undefined
 	isUserFollowProfile: boolean | null
 	postIdsForwardedByUser: string[]
-}> = ({ post, author, signInUser, isUserFollowProfile, postIdsForwardedByUser }) => {
-	const { user, isSignedIn } = useUser()
+}> = ({ post, author, user, isUserFollowProfile, postIdsForwardedByUser }) => {
 	const router = useRouter()
-	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, author.id)
+	const type = usePostMenuItemsType(isUserFollowProfile, user, author.id)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
@@ -261,7 +257,7 @@ const ReplayPost: NextPage<{
 					</span>
 				</footer>
 				<hr className="my-2" />
-				{signInUser.isSignedIn && signInUser.userId !== post.authorId && (
+				{user?.id !== post.authorId && (
 					<div>
 						<CreatePost
 							isCreating={isPosting}
@@ -305,7 +301,7 @@ const ReplayPost: NextPage<{
 					</ul>
 				)}
 			</div>
-			{quotePopUp && isSignedIn && user && (
+			{quotePopUp && user && (
 				<PostQuotePopUp
 					profileImageUrl={user.profileImageUrl}
 					onCloseModal={() => setQuotePopUp(null)}

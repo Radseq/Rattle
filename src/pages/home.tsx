@@ -1,7 +1,5 @@
-import { useUser } from "@clerk/nextjs"
-import { type GetServerSidePropsContext, type NextPage } from "next"
+import { type GetServerSideProps, type NextPage } from "next"
 import { Layout } from "~/components/Layout"
-import { LoadingPage } from "~/components/LoadingPage"
 
 import { api } from "~/utils/api"
 import { CreatePost } from "~/components/postsPage/CreatePost"
@@ -9,9 +7,10 @@ import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
-import { getAuth } from "@clerk/nextjs/server"
+import { clerkClient, getAuth } from "@clerk/nextjs/server"
+import { type User } from "@clerk/nextjs/dist/api"
 
-export const getServerSideProps = (props: GetServerSidePropsContext) => {
+export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)
 
 	if (!userId) {
@@ -23,18 +22,18 @@ export const getServerSideProps = (props: GetServerSidePropsContext) => {
 		}
 	}
 
+	const user = await clerkClient.users.getUser(userId)
+
 	return {
 		props: {
-			userId,
+			user,
 		},
 	}
 }
 
-const Home: NextPage<{ userId: string }> = ({ userId }) => {
-	const { user, isLoaded, isSignedIn } = useUser()
-
+const Home: NextPage<{ user: User }> = ({ user }) => {
 	//fetch asap
-	const posts = api.posts.getAllByAuthorId.useQuery(userId)
+	const posts = api.posts.getAllByAuthorId.useQuery(user.id)
 
 	const { mutate, isLoading: isPosting } = api.posts.createPost.useMutation({
 		onSuccess: async () => {
@@ -48,10 +47,6 @@ const Home: NextPage<{ userId: string }> = ({ userId }) => {
 		},
 	})
 
-	if (!isLoaded || !user) {
-		return <LoadingPage />
-	}
-
 	return (
 		<Layout>
 			<div className="pt-2">
@@ -64,11 +59,7 @@ const Home: NextPage<{ userId: string }> = ({ userId }) => {
 					placeholderMessage="Write your message & hit enter"
 				/>
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
-				<FetchPosts
-					isUserFollowProfile={null}
-					signInUser={{ isSignedIn, userId: user.id }}
-					userId={user.id}
-				/>
+				<FetchPosts isUserFollowProfile={null} user={user} userId={user.id} />
 			</div>
 		</Layout>
 	)

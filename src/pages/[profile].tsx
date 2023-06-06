@@ -10,7 +10,7 @@ import { LoadingSpinner } from "~/components/LoadingPage"
 import toast from "react-hot-toast"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { getAuth } from "@clerk/nextjs/server"
-import { type Profile, type SignInUser } from "src/components/profilePage/types"
+import { type Profile } from "src/components/profilePage/types"
 import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelector"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 import { useState } from "react"
@@ -19,6 +19,7 @@ import { getProfileByUserName } from "~/server/api/profile"
 import { isFolloweed } from "~/server/api/follow"
 import { CONFIG } from "~/config"
 import { Icon } from "~/components/Icon"
+import { clerkClient, type User } from "@clerk/nextjs/dist/api"
 
 dayjs.extend(relativeTime)
 
@@ -39,15 +40,12 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	const isUserFollowProfile = userId ? await isFolloweed(userId, profile.id) : false
 
-	const signInUser: SignInUser = {
-		userId: userId ? userId : null,
-		isSignedIn: !!userId,
-	}
+	const user = userId ? await clerkClient.users.getUser(userId) : undefined
 
 	return {
 		props: {
 			profile,
-			signInUser,
+			user,
 			isUserFollowProfile,
 		},
 	}
@@ -55,12 +53,12 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 const Profile: NextPage<{
 	profile: Profile
-	signInUser: SignInUser
+	user: User | undefined
 	isUserFollowProfile: boolean
-}> = ({ profile, signInUser, isUserFollowProfile }) => {
+}> = ({ profile, user, isUserFollowProfile }) => {
 	const [showModal, setShowModal] = useState<boolean>()
 
-	const profileType = useProfileType(profile.id, signInUser, isUserFollowProfile)
+	const profileType = useProfileType(profile.id, user, isUserFollowProfile)
 
 	const { mutate: addUserToFollow, isLoading: isFolloweed } =
 		api.follow.addUserToFollow.useMutation({
@@ -182,7 +180,7 @@ const Profile: NextPage<{
 					<div className="pt-4">
 						<FetchPosts
 							userId={profile.id}
-							signInUser={signInUser}
+							user={user}
 							isUserFollowProfile={isUserFollowProfile}
 						/>
 					</div>

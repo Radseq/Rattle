@@ -1,17 +1,16 @@
-import type { ProfilePageType, SignInUser } from "~/components/profilePage/types"
+import { type User } from "@clerk/nextjs/dist/api"
+import type { ProfilePageType } from "~/components/profilePage/types"
 
 export const useProfileType = (
 	profileId: string,
-	signInUser: SignInUser,
+	user: User | undefined,
 	isUserFollowProfile: boolean | null
 ): ProfilePageType => {
-	const { isSignedIn, userId } = signInUser
-
-	if (!isSignedIn) {
+	if (!user) {
 		return "view"
-	} else if (isSignedIn && userId === profileId) {
+	} else if (user.id === profileId) {
 		return "own"
-	} else if (isSignedIn && isUserFollowProfile) {
+	} else if (isUserFollowProfile) {
 		return "follow"
 	}
 	return "unfollow"

@@ -14,11 +14,6 @@ export type ProfileExtend = {
 	country: string | null
 }
 
-export type SignInUser = {
-	userId: string | null
-	isSignedIn: boolean
-}
-
 export type ProfilePageType = "view" | "own" | "follow" | "unfollow"
 
 export type PostAuthor = {

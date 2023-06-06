@@ -4,21 +4,20 @@ import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { type SignInUser } from "../profilePage/types"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
 import { type PostWithAuthor } from "./types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
-import { useUser } from "@clerk/nextjs"
+import { type User } from "@clerk/nextjs/dist/api"
 
 export const FetchPosts: FC<{
 	userId: string
-	signInUser: SignInUser
+	user: User | undefined
 	isUserFollowProfile: boolean | null
-}> = ({ userId, isUserFollowProfile, signInUser }) => {
+}> = ({ userId, isUserFollowProfile, user }) => {
 	const router = useRouter()
-	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
+	const type = usePostMenuItemsType(isUserFollowProfile, user, userId)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
@@ -26,7 +25,6 @@ export const FetchPosts: FC<{
 
 	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
 	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
-	const { user, isSignedIn } = useUser()
 
 	useEffect(() => {
 		if (getPosts.data) {
@@ -209,7 +207,7 @@ export const FetchPosts: FC<{
 					/>
 				))}
 			</ul>
-			{quotePopUp && isSignedIn && user && (
+			{quotePopUp && user && (
 				<PostQuotePopUp
 					profileImageUrl={user.profileImageUrl}
 					onCloseModal={() => setQuotePopUp(null)}
