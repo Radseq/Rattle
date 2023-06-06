@@ -45,7 +45,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	return {
 		props: {
 			profile,
-			user,
+			user: JSON.parse(JSON.stringify(user)) as User,
 			isUserFollowProfile,
 		},
 	}

@@ -47,7 +47,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		props: {
 			post,
 			author,
-			user,
+			user: JSON.parse(JSON.stringify(user)) as User,
 			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
 			postIdsForwardedByUser,
 		},

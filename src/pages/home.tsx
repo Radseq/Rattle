@@ -26,7 +26,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	return {
 		props: {
-			user,
+			user: JSON.parse(JSON.stringify(user)) as User,
 		},
 	}
 }
