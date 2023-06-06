@@ -14,13 +14,16 @@ export const getPostById = async (postId: string) => {
 	const getReplayCount = getPostReplayCount(postId)
 	const getForwardsCount = getPostForwatdCount(postId)
 	const getQuotedPost = getPostQuoteById(postId)
-	const [post, likeCount, replaysCount, forwardsCount, quotedPost] = await Promise.all([
-		getPost,
-		getLikeCount,
-		getReplayCount,
-		getForwardsCount,
-		getQuotedPost,
-	])
+	const getQuotedCount = getPostQuotedCount(postId)
+	const [post, likeCount, replaysCount, forwardsCount, quotedPost, quotedCount] =
+		await Promise.all([
+			getPost,
+			getLikeCount,
+			getReplayCount,
+			getForwardsCount,
+			getQuotedPost,
+			getQuotedCount,
+		])
 	if (!post) {
 		throw new TRPCError({
 			code: "INTERNAL_SERVER_ERROR",
@@ -42,6 +45,7 @@ export const getPostById = async (postId: string) => {
 		replaysCount,
 		forwardsCount,
 		quotedPost: quotedPost,
+		quotedCount: quotedCount,
 	} as Post
 }
 
@@ -86,6 +90,14 @@ export const getPostQuoteById = async (postId: string) => {
 		} as Post,
 		author: await getPostAuthor(getPost.authorId),
 	}
+}
+
+export const getPostQuotedCount = async (postId: string) => {
+	return await prisma.post.count({
+		where: {
+			quotedId: postId,
+		},
+	})
 }
 
 export const getPostLikeCount = async (postId: string) => {

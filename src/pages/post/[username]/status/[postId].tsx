@@ -255,6 +255,10 @@ const ReplayPost: NextPage<{
 					<span className="text-gray-500">
 						{`Response${post.replaysCount > 1 ? "s" : ""}`}
 					</span>
+					<span className="p-2 font-bold">{post.quotedCount}</span>
+					<span className="text-gray-500">
+						{`Quote${post.quotedCount > 1 ? "s" : ""}`}
+					</span>
 				</footer>
 				<hr className="my-2" />
 				{signInUser.isSignedIn && signInUser.userId !== post.authorId && (
