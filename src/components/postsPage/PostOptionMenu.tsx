@@ -22,7 +22,7 @@ export const PostOptionMenu: FC<{
 					}}
 				>
 					<Icon iconKind={"trash"} />
-					<span className="mt-0.5 pl-1 font-bold text-red-500">Delete</span>
+					<span className="pl-1 font-bold text-red-500">Delete</span>
 				</ListItem>
 			)}
 		</ul>

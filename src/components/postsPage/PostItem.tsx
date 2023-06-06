@@ -1,5 +1,5 @@
 import { type FC } from "react"
-import type { PostMenuItemsType, PostWithUser } from "./types"
+import type { PostMenuItemsType, PostWithAuthor } from "./types"
 import Image from "next/image"
 import Link from "next/link"
 import dayjs from "dayjs"
@@ -7,16 +7,18 @@ import relativeTime from "dayjs/plugin/relativeTime"
 import { PostOptionMenu } from "./PostOptionMenu"
 import { Icon } from "../Icon"
 import { PostFooter } from "./PostFooter"
+import { PostQuoteItem } from "./PostQuoteItem"
 
 dayjs.extend(relativeTime)
 
 export const PostItem: FC<{
-	postWithUser: PostWithUser
+	postWithUser: PostWithAuthor
 	menuItemsType: PostMenuItemsType
 	onOptionClick: (action: string, postId: string) => void
 	onNavigateToPost: () => void
 	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
 	likeAction: (action: "like" | "unlike", postId: string) => void
+	onQuoteClick: (quotedPost: PostWithAuthor) => void
 }> = ({
 	postWithUser,
 	onOptionClick,
@@ -24,6 +26,7 @@ export const PostItem: FC<{
 	onNavigateToPost,
 	forwardAction,
 	likeAction,
+	onQuoteClick,
 }) => {
 	return (
 		<li
@@ -41,7 +44,8 @@ export const PostItem: FC<{
 					height={128}
 				></Image>
 				<div className="w-10/12 pl-2">
-					<div className="font-semibold">
+					<div className="text-lg font-semibold">
+						<span className="pr-1">{postWithUser.author.fullName}</span>
 						<span>
 							<Link
 								onClick={(e) => e.stopPropagation()}
@@ -54,12 +58,21 @@ export const PostItem: FC<{
 						</span>
 					</div>
 					<span>{postWithUser.post.content}</span>
+					{postWithUser.post.quotedPost && (
+						<Link
+							onClick={(e) => e.stopPropagation()}
+							href={`/post/${postWithUser.post.quotedPost.author.username}/status/${postWithUser.post.quotedPost.post.id}`}
+						>
+							<PostQuoteItem postWithAuthor={postWithUser.post.quotedPost} />
+						</Link>
+					)}
 					<PostFooter
 						isLikedByUser={postWithUser.post.isLikedBySignInUser}
 						postWithUser={postWithUser}
 						isForwardedByUser={postWithUser.post.isForwardedPostBySignInUser}
 						forwardAction={forwardAction}
 						likeAction={likeAction}
+						onQuoteClick={() => onQuoteClick(postWithUser)}
 					/>
 				</div>
 				{menuItemsType !== "view" && (

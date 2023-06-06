@@ -8,7 +8,9 @@ import { type SignInUser } from "../profilePage/types"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PostWithUser } from "./types"
+import { type PostWithAuthor } from "./types"
+import { PostQuotePopUp } from "./PostQuotePopUp"
+import { useUser } from "@clerk/nextjs"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -18,9 +20,13 @@ export const FetchPosts: FC<{
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, signInUser, userId)
 
+	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
+	const [quoteMessage, setQuoteMessage] = useState<string>()
+	const [posts, setPosts] = useState<PostWithAuthor[]>()
+
 	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
 	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
-	const [posts, setPosts] = useState<PostWithUser[]>()
+	const { user, isSignedIn } = useUser()
 
 	useEffect(() => {
 		if (getPosts.data) {
@@ -47,6 +53,18 @@ export const FetchPosts: FC<{
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
 				"Failed to delete post! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const quotePost = api.posts.createQuotedPost.useMutation({
+		onSuccess: () => {
+			setQuotePopUp(null)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to create replay! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -159,32 +177,52 @@ export const FetchPosts: FC<{
 	}
 
 	return (
-		<ul className="">
-			{posts?.map((postsWithUser) => (
-				<PostItem
-					key={postsWithUser.post.id}
-					postWithUser={postsWithUser}
-					onNavigateToPost={() => {
-						handleNavigateToPost(postsWithUser.post.id, postsWithUser.author.username)
+		<div>
+			<ul className="">
+				{posts?.map((postsWithUser) => (
+					<PostItem
+						key={postsWithUser.post.id}
+						postWithUser={postsWithUser}
+						onNavigateToPost={() => {
+							handleNavigateToPost(
+								postsWithUser.post.id,
+								postsWithUser.author.username
+							)
+						}}
+						menuItemsType={type}
+						onOptionClick={handlePostOptionClick}
+						forwardAction={(forward, postId) => {
+							if (forward === "deleteForward") {
+								removePostForward.mutate(postId)
+							} else {
+								forwardPost.mutate(postId)
+							}
+						}}
+						likeAction={(action, postId) => {
+							if (action === "like") {
+								likePost.mutate(postId)
+							} else {
+								unlikePost.mutate(postId)
+							}
+						}}
+						onQuoteClick={() => setQuotePopUp(postsWithUser)}
+					/>
+				))}
+			</ul>
+			{quotePopUp && isSignedIn && user && (
+				<PostQuotePopUp
+					profileImageUrl={user.profileImageUrl}
+					onCloseModal={() => setQuotePopUp(null)}
+					post={quotePopUp}
+					onPostQuote={() => {
+						quotePost.mutate({
+							content: quoteMessage ?? "",
+							quotedPostId: quotePopUp.post.id,
+						})
 					}}
-					menuItemsType={type}
-					onOptionClick={handlePostOptionClick}
-					forwardAction={(forward, postId) => {
-						if (forward === "deleteForward") {
-							removePostForward.mutate(postId)
-						} else {
-							forwardPost.mutate(postId)
-						}
-					}}
-					likeAction={(action, postId) => {
-						if (action === "like") {
-							likePost.mutate(postId)
-						} else {
-							unlikePost.mutate(postId)
-						}
-					}}
+					onMessageChange={(message) => setQuoteMessage(message)}
 				/>
-			))}
-		</ul>
+			)}
+		</div>
 	)
 }

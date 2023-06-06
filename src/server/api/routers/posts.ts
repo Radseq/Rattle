@@ -12,6 +12,7 @@ import {
 	isUserForwardedPost,
 	isUserLikedPost,
 } from "../posts"
+import { type PostWithAuthor } from "~/components/postsPage/types"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -59,17 +60,23 @@ export const postsRouter = createTRPCRouter({
 		}
 
 		return posts
-			.sort((postA, postB) => postB.createdAt.getTime() - postA.createdAt.getTime())
-			.map((post) => ({
-				post: {
-					...post,
-					createdAt: post.createdAt.toString(),
-					isLikedBySignInUser: postsLikedBySignInUser.some(
-						(postId) => postId === post.id
-					),
-				},
-				author: filterClarkClientToUser(author),
-			}))
+			.sort(
+				(postA, postB) =>
+					new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
+			)
+			.map(
+				(post) =>
+					({
+						post: {
+							...post,
+							createdAt: post.createdAt.toString(),
+							isLikedBySignInUser: postsLikedBySignInUser.some(
+								(postId) => postId === post.id
+							),
+						},
+						author: filterClarkClientToUser(author),
+					} as PostWithAuthor)
+			)
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
@@ -118,6 +125,34 @@ export const postsRouter = createTRPCRouter({
 				data: {
 					authorId,
 					content: input.content,
+				},
+			})
+		}),
+	createQuotedPost: privateProcedure
+		.input(
+			z.object({
+				content: z
+					.string()
+					.min(1, { message: "Message is too small" })
+					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
+						message: `Message is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
+					}),
+				quotedPostId: z.string().min(25, { message: "wrong quotedPostId" }),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const authorId = ctx.authUserId
+			const { success } = await postRateLimit.limit(authorId)
+
+			if (!success) {
+				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
+			}
+
+			return await ctx.prisma.post.create({
+				data: {
+					authorId,
+					content: input.content,
+					quotedId: input.quotedPostId,
 				},
 			})
 		}),
@@ -264,7 +299,7 @@ export const postsRouter = createTRPCRouter({
 						),
 					},
 					author: filterClarkClientToUser(postAuthor),
-				}
+				} as PostWithAuthor
 			})
 		}),
 	forwardPost: privateProcedure
