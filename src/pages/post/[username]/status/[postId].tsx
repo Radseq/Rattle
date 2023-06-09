@@ -303,18 +303,20 @@ const ReplayPost: NextPage<{
 				)}
 			</div>
 			<dialog open={canOpenPostQuoteDialog(quotePopUp, user)}>
-				<PostQuotePopUp
-					profileImageUrl={user!.profileImageUrl}
-					onCloseModal={() => setQuotePopUp(null)}
-					post={quotePopUp!}
-					onPostQuote={() => {
-						quotePost.mutate({
-							content: quoteMessage ?? "",
-							quotedPostId: quotePopUp!.post.id,
-						})
-					}}
-					onMessageChange={(message) => setQuoteMessage(message)}
-				/>
+				{quotePopUp && user && (
+					<PostQuotePopUp
+						profileImageUrl={user.profileImageUrl}
+						onCloseModal={() => setQuotePopUp(null)}
+						post={quotePopUp}
+						onPostQuote={() => {
+							quotePost.mutate({
+								content: quoteMessage ?? "",
+								quotedPostId: quotePopUp.post.id,
+							})
+						}}
+						onMessageChange={(message) => setQuoteMessage(message)}
+					/>
+				)}
 			</dialog>
 		</Layout>
 	)
