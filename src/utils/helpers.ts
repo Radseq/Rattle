@@ -1,5 +1,6 @@
 import { type User } from "@clerk/nextjs/dist/api"
 import { type typeToFlattenedError } from "zod"
+import { PostWithAuthor } from "~/components/postsPage/types"
 import { type PostAuthor } from "~/components/profilePage/types"
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -38,4 +39,11 @@ export const filterClarkClientToUser = (user: User) => {
 		profileImageUrl: user.profileImageUrl,
 		fullName: getFullName(user.firstName, user.lastName),
 	} as PostAuthor
+}
+
+export const canOpenPostQuoteDialog = (post: PostWithAuthor | null, user: User | undefined) => {
+	if (post && user) {
+		return true
+	}
+	return false
 }

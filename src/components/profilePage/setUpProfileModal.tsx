@@ -5,6 +5,7 @@ import { LoadingSpinner } from "../LoadingPage"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import { StyledInput, StyledLabel, StyledTextArea } from "../styledHTMLElements/FloatingStyles"
 import { useRestrictedInput, useRestrictedTextArea } from "~/hooks/useRestrictedInput"
+import { PrimalyButton } from "../styledHTMLElements/StyledButtons"
 
 const BANNER_MAX_LETTERS = 100
 const PROFILE_MAX_LETTERS = 100
@@ -144,11 +145,7 @@ export const SetUpProfileModal: FC<{
 							{isUpdating ? (
 								<LoadingSpinner />
 							) : (
-								<button
-									className="mr-1 mb-1 rounded bg-emerald-500 px-6 py-3 outline-none 
-									transition-all duration-150 ease-linear hover:shadow-lg 
-									focus:outline-none active:bg-emerald-600"
-									type="button"
+								<PrimalyButton
 									onClick={(e) => {
 										e.preventDefault()
 										mutate({
@@ -160,7 +157,7 @@ export const SetUpProfileModal: FC<{
 									}}
 								>
 									Save Changes
-								</button>
+								</PrimalyButton>
 							)}
 						</div>
 					)}
