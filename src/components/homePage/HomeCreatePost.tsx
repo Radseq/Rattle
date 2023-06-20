@@ -4,6 +4,7 @@ import { LoadingSpinner } from "../LoadingPage"
 import Image from "next/image"
 import { Icon } from "../Icon"
 import type { Pool, PostContent } from "./types"
+import PoolContent from "./PoolContent"
 
 export const HomeCreatePost: FC<{
 	onCreatePost: (message: string) => void
@@ -44,7 +45,7 @@ export const HomeCreatePost: FC<{
 					></input>
 				</header>
 				<main className="my-2 flex w-full pl-1">
-			
+					{postPool && <PoolContent choise={postPool.choise} />}
 				</main>
 				<footer className="flex">
 					<div

@@ -47,3 +47,11 @@ export const canOpenPostQuoteDialog = (post: PostWithAuthor | null, user: User |
 	}
 	return false
 }
+
+export const createAndincrementFill = (arrayLength: number) => {
+	const result: number[] = []
+	for (let index = 0; index < arrayLength; index++) {
+		result.push(index)
+	}
+	return result
+}

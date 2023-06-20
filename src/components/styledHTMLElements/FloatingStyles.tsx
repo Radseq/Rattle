@@ -1,4 +1,4 @@
-import { type InputHTMLAttributes } from "react"
+import type { InputHTMLAttributes, SelectHTMLAttributes } from "react"
 
 type HtmlInputProps = InputHTMLAttributes<HTMLInputElement>
 
@@ -43,3 +43,19 @@ export const StyledLabel = (props: HtmlLabelProps) => (
 		{props.children}
 	</label>
 )
+
+type HtmlSelectProps = SelectHTMLAttributes<HTMLSelectElement>
+
+export const StyledSelect = (props: HtmlSelectProps) => {
+	const styledClassName = props.className ? props.className : ""
+	return (
+		<select
+			{...props}
+			className={`${styledClassName} peer block appearance-none rounded-lg border
+		border-gray-300 bg-transparent px-2.5 pb-2.5 pt-4 text-sm 
+		text-gray-900 focus:border-blue-600 focus:ring-0`}
+		>
+			{props.children}
+		</select>
+	)
+}
