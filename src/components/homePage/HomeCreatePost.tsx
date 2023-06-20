@@ -3,22 +3,7 @@ import { PrimalyButton } from "../styledHTMLElements/StyledButtons"
 import { LoadingSpinner } from "../LoadingPage"
 import Image from "next/image"
 import { Icon } from "../Icon"
-
-type PoolLength = {
-	days: number
-	hours: number
-	minutes: number
-}
-
-type Pool = {
-	choise: string[]
-	length: PoolLength
-}
-
-type PostContent = {
-	message: string
-	pool?: Pool
-}
+import type { Pool, PostContent } from "./types"
 
 export const HomeCreatePost: FC<{
 	onCreatePost: (message: string) => void
@@ -27,6 +12,7 @@ export const HomeCreatePost: FC<{
 	placeholderMessage: string
 }> = ({ onCreatePost, isCreating, profileImageUrl, placeholderMessage }) => {
 	const [postContent, setPostContent] = useState<PostContent>()
+	const [postPool, setPostPool] = useState<Pool | null>()
 
 	if (isCreating) {
 		return (
@@ -49,7 +35,7 @@ export const HomeCreatePost: FC<{
 				<header className="flex ">
 					<input
 						className="w-full rounded-xl border-2 border-solid p-1 text-lg outline-none"
-						placeholder={placeholderMessage}
+						placeholder={postPool ? "Ask a question!" : placeholderMessage}
 						onChange={(e) =>
 							setPostContent({ ...postContent, message: e.target.value })
 						}
@@ -57,9 +43,24 @@ export const HomeCreatePost: FC<{
 						value={postContent?.message}
 					></input>
 				</header>
-				<main className="my-2 flex w-full pl-1"></main>
+				<main className="my-2 flex w-full pl-1">
+			
+				</main>
 				<footer className="flex">
-					<div className="flex p-2">
+					<div
+						className="flex p-2"
+						onClick={(e) => {
+							e.stopPropagation()
+							setPostPool({
+								choise: ["", ""],
+								length: {
+									days: 1,
+									hours: 0,
+									minutes: 0,
+								},
+							})
+						}}
+					>
 						<Icon iconKind="pool" />
 					</div>
 					<div className="w-full"></div>
