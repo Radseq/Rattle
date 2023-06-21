@@ -1,8 +1,8 @@
-import { useState, type FC } from "react"
+import { type FC, useState } from "react"
 import { PoolInput } from "./PoolInput"
 import { StyledLabel, StyledSelect } from "../styledHTMLElements/FloatingStyles"
 import { createAndIncrementFill } from "~/utils/helpers"
-import { PoolLength } from "./types"
+import { type PoolLength } from "./types"
 
 const PoolLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	length,
@@ -22,7 +22,7 @@ const PoolLengthOptions: FC<{ length: number; minLength?: number }> = ({
 }
 
 const PoolContent: FC<{ choise: string[] }> = ({ choise }) => {
-	let minPoolMinutes = 0
+	const minPoolMinutes = 0
 	const [poolLength, setPoolLength] = useState<PoolLength>({ days: 1, hours: 0, minutes: 0 })
 	return (
 		<div className="mr-3 box-border w-full rounded-md border p-2">
