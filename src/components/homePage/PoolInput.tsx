@@ -9,7 +9,12 @@ export const PoolInput: FC<{ index: number }> = ({ index }) => {
 	const poolOptionId = `poolOption${index}`
 	return (
 		<div className="relative my-2">
-			<StyledInput id={poolOptionId} placeholder="" {...inputPool} />
+			<StyledInput
+				id={poolOptionId}
+				placeholder=""
+				value={inputPool.value}
+				onChange={inputPool.onChange}
+			/>
 			<StyledLabel htmlFor={poolOptionId} side="left">
 				{`Choice ${index}`}
 			</StyledLabel>

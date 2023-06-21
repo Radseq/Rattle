@@ -48,9 +48,9 @@ export const canOpenPostQuoteDialog = (post: PostWithAuthor | null, user: User |
 	return false
 }
 
-export const createAndincrementFill = (arrayLength: number) => {
+export const createAndIncrementFill = (arrayLength: number, minValue = 0) => {
 	const result: number[] = []
-	for (let index = 0; index < arrayLength; index++) {
+	for (let index = minValue; index < arrayLength; index++) {
 		result.push(index)
 	}
 	return result

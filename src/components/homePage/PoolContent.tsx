@@ -1,7 +1,7 @@
 import { type FC } from "react"
 import { PoolInput } from "./PoolInput"
 import { StyledLabel, StyledSelect } from "../styledHTMLElements/FloatingStyles"
-import { createAndincrementFill } from "~/utils/helpers"
+import { createAndIncrementFill } from "~/utils/helpers"
 
 const PoolContent: FC<{ choise: string[] }> = ({ choise }) => {
 	return (
@@ -10,40 +10,51 @@ const PoolContent: FC<{ choise: string[] }> = ({ choise }) => {
 				return <PoolInput key={index} index={index + 1} />
 			})}
 			<hr className="my-4" />
-			<div className="m-2">
-				<span>Pool length</span>
-			</div>
-			<div className="">
-				<div className="flex">
-					<div className="relative mr-4">
-						<StyledSelect id="days" className="w-20">
-							{createAndincrementFill(8).map((num, index) => {
-								return (
-									<option key={index} selected={index === 0} value={num}>
-										{num}
-									</option>
-								)
-							})}
-						</StyledSelect>
-						<StyledLabel htmlFor="days" side="left">
-							Days
-						</StyledLabel>
-					</div>
-
-					<div className="relative">
-						<StyledSelect id="hours" className="w-20">
-							{createAndincrementFill(24).map((num, index) => {
-								return (
-									<option key={index} selected={index === 0} value={num}>
-										{num}
-									</option>
-								)
-							})}
-						</StyledSelect>
-						<StyledLabel htmlFor="hours" side="left">
-							Hours
-						</StyledLabel>
-					</div>
+			<div className="flex">
+				<div className="m-2">
+					<span>Pool length</span>
+				</div>
+				<div className="relative mr-4">
+					<StyledSelect id="days" className="w-20" defaultValue={0}>
+						{createAndIncrementFill(8).map((num, index) => {
+							return (
+								<option key={index} value={num}>
+									{num}
+								</option>
+							)
+						})}
+					</StyledSelect>
+					<StyledLabel htmlFor="days" side="left">
+						Days
+					</StyledLabel>
+				</div>
+				<div className="relative mr-4">
+					<StyledSelect id="hours" defaultValue={0} className="w-20">
+						{createAndIncrementFill(24).map((num, index) => {
+							return (
+								<option key={index} value={num}>
+									{num}
+								</option>
+							)
+						})}
+					</StyledSelect>
+					<StyledLabel htmlFor="hours" side="left">
+						Hours
+					</StyledLabel>
+				</div>
+				<div className="relative">
+					<StyledSelect id="minutes" defaultValue={0} className="w-20">
+						{createAndIncrementFill(60).map((num, index) => {
+							return (
+								<option key={index} value={num}>
+									{num}
+								</option>
+							)
+						})}
+					</StyledSelect>
+					<StyledLabel htmlFor="minutes" side="left">
+						Minutes
+					</StyledLabel>
 				</div>
 			</div>
 		</div>
