@@ -108,7 +108,6 @@ const Profile: NextPage<{
 									src={profile.profileImageUrl}
 									alt={"avatar"}
 								></img>
-								{/* fix me: to add shadow to icon when mouse hover */}
 								<span
 									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
