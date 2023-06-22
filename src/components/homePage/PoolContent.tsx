@@ -26,6 +26,7 @@ type PoolLengthExt = PoolLength & {
 }
 // todo add to env instead hard coded
 const MIN_POOL_LENGTH = 5
+const MIN_HOUR = 1
 
 const PoolContent: FC<{ choise: string[] }> = ({ choise }) => {
 	const [poolLength, setPoolLength] = useState<PoolLengthExt>({
@@ -34,7 +35,7 @@ const PoolContent: FC<{ choise: string[] }> = ({ choise }) => {
 		minutes: 0,
 		minPoolLength: 0,
 	})
-
+	// todo  do hook instead function?
 	const handlePoolLength = (type: "days" | "hours" | "minutes", value: number) => {
 		if (type === "hours") {
 			let minutes = poolLength.minutes
@@ -50,7 +51,7 @@ const PoolContent: FC<{ choise: string[] }> = ({ choise }) => {
 		} else if (type === "days") {
 			let hours = poolLength.hours
 			if (value === 0 && hours === 0) {
-				hours = 1
+				hours = MIN_HOUR
 			}
 			setPoolLength({ ...poolLength, days: value, hours: hours })
 		} else {
