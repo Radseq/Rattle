@@ -28,12 +28,12 @@ type HtmlLabelProps = InputHTMLAttributes<HTMLLabelElement> & {
 }
 
 export const StyledLabel = (props: HtmlLabelProps) => {
-	const { side: _, ...restProps } = props
+	const { side: side, ...restProps } = props
 	return (
 		<label
 			{...restProps}
 			className={`absolute top-2 ${
-				props.side === "left" ? "left-1" : "right-1"
+				side === "left" ? "left-1" : "right-1"
 			} z-10 origin-[0] -translate-y-4 
 			scale-75 bg-white px-2 text-sm text-gray-500 
 			duration-300 peer-placeholder-shown:top-1/2 

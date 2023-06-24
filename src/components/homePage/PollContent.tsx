@@ -1,4 +1,4 @@
-import { type FC, useState } from "react"
+import { type FC } from "react"
 import { StyledLabel, StyledSelect } from "../styledHTMLElements/FloatingStyles"
 import { createAndIncrementFill } from "~/utils/helpers"
 import { type Poll } from "./types"
@@ -15,10 +15,10 @@ const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 }) => {
 	return (
 		<>
-			{createAndIncrementFill(length, minLength).map((num, index) => {
+			{createAndIncrementFill(length, minLength).map((value, index) => {
 				return (
-					<option key={index} value={num}>
-						{num}
+					<option key={index} value={value}>
+						{value}
 					</option>
 				)
 			})}
@@ -26,77 +26,34 @@ const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	)
 }
 
-// todo add to env instead hard coded
-const MIN_POLL_LENGTH = 5
-const MIN_HOUR = 1
-const MAX_POLL_CHOISES = 6
-
-export const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) => {
-	const [postPoll, setPostPoll] = useState<Poll>({
-		choise: ["", ""],
-		length: {
-			days: 1,
-			hours: 0,
-			minutes: 0,
-		},
-	})
-
-	const handlePollLength = (type: "days" | "hours" | "minutes", value: number) => {
-		const pollLength = postPoll.length
-		if (type === "hours") {
-			let minutes = pollLength.minutes
-			if (value === 0 && minutes < MIN_POLL_LENGTH && pollLength.days === 0) {
-				minutes = MIN_POLL_LENGTH
-			} else {
-				minutes = value
-			}
-			setPostPoll({
-				...postPoll,
-				length: { ...pollLength, hours: value, minutes },
-			})
-		} else if (type === "days") {
-			let hours = pollLength.hours
-			if (value === 0 && hours === 0) {
-				hours = MIN_HOUR
-			}
-			setPostPoll({ ...postPoll, length: { ...pollLength, days: value, hours } })
-		} else {
-			let minutes = value
-			if (value === 0 && pollLength.hours === 0 && pollLength.days === 0) {
-				minutes = MIN_POLL_LENGTH
-			}
-			setPostPoll({ ...postPoll, length: { ...pollLength, minutes } })
-		}
-	}
-
-	const handlePollInputChange = (newValue: string, index: number) => {
-		setPostPoll({
-			...postPoll,
-			choise: postPoll.choise.map((value, ind) => {
-				if (ind === index) {
-					return newValue
-				}
-				return value
-			}),
-		})
-	}
-
-	const handleRemoveInput = (index: number) => {
-		setPostPoll({
-			...postPoll,
-			choise: postPoll.choise.filter((_, ind) => ind !== index),
-		})
-	}
+export const PollContent: FC<{
+	poll: Poll
+	onPollClose: () => void
+	onHandlePoolLength: (type: "days" | "hours" | "minutes", value: number) => void
+	onHandlePollInputChange: (newValue: string, index: number) => void
+	onHandleRemoveInput: (index: number) => void
+	onAddChooise: () => void
+}> = ({
+	poll,
+	onPollClose,
+	onHandlePoolLength,
+	onHandlePollInputChange,
+	onHandleRemoveInput,
+	onAddChooise,
+}) => {
+	// todo add to env instead hard coded
+	const MAX_POLL_CHOISES = 6
+	const MIN_POLL_LENGTH = 5
 
 	return (
 		<div className="mr-3 box-border w-full rounded-md border p-2">
-			{postPoll.choise.map((inputValue, index) => {
+			{poll.choise.map((inputValue, index) => {
 				return (
 					<div key={index} className="flex">
 						<div className="w-full">
 							<PollInput
 								onUpdateInput={(newValue: string) =>
-									handlePollInputChange(newValue, index)
+									onHandlePollInputChange(newValue, index)
 								}
 								initValue={inputValue}
 								index={index + 1}
@@ -104,9 +61,8 @@ export const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) =>
 						</div>
 						{index > 1 && (
 							<DangerButton
-								onClick={(e) => {
-									handleRemoveInput(index)
-									e.preventDefault()
+								onClick={() => {
+									onHandleRemoveInput(index)
 								}}
 								className="my-auto ml-2 h-10 w-10"
 							>
@@ -116,15 +72,8 @@ export const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) =>
 					</div>
 				)
 			})}
-			{postPoll.choise.length < MAX_POLL_CHOISES && (
-				<PrimalyOutlineButton
-					onClick={(e) => {
-						const newChoise = [...postPoll.choise]
-						newChoise.push("")
-						setPostPoll({ ...postPoll, choise: newChoise })
-						e.preventDefault()
-					}}
-				>
+			{poll.choise.length < MAX_POLL_CHOISES && (
+				<PrimalyOutlineButton onClick={() => onAddChooise()}>
 					Add choise
 				</PrimalyOutlineButton>
 			)}
@@ -137,8 +86,8 @@ export const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) =>
 					<StyledSelect
 						id="days"
 						className="w-28"
-						onChange={(e) => handlePollLength("days", Number(e.target.value))}
-						value={postPoll.length.days}
+						onChange={(e) => onHandlePoolLength("days", Number(e.target.value))}
+						value={poll.length.days}
 					>
 						<PollLengthOptions length={8} />
 					</StyledSelect>
@@ -149,8 +98,8 @@ export const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) =>
 				<div className="relative">
 					<StyledSelect
 						id="hours"
-						onChange={(e) => handlePollLength("hours", Number(e.target.value))}
-						value={postPoll.length.hours}
+						onChange={(e) => onHandlePoolLength("hours", Number(e.target.value))}
+						value={poll.length.hours}
 						className="w-28"
 					>
 						<PollLengthOptions length={24} />
@@ -162,14 +111,14 @@ export const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) =>
 				<div className="relative">
 					<StyledSelect
 						id="minutes"
-						onChange={(e) => handlePollLength("minutes", Number(e.target.value))}
-						value={postPoll.length.minutes}
+						onChange={(e) => onHandlePoolLength("minutes", Number(e.target.value))}
+						value={poll.length.minutes}
 						className="w-28"
 					>
 						<PollLengthOptions
 							length={60}
 							minLength={
-								postPoll.length.days === 0 && postPoll.length.hours === 0
+								poll.length.days === 0 && poll.length.hours === 0
 									? MIN_POLL_LENGTH
 									: 0
 							}
