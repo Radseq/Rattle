@@ -4,7 +4,7 @@ import { LoadingSpinner } from "../LoadingPage"
 import Image from "next/image"
 import { Icon } from "../Icon"
 import type { PostContent } from "./types"
-import PollContent from "./PollContent"
+import { PollContent } from "./PollContent"
 
 export const HomeCreatePost: FC<{
 	onCreatePost: (message: string) => void
