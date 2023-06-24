@@ -31,7 +31,7 @@ const MIN_POLL_LENGTH = 5
 const MIN_HOUR = 1
 const MAX_POLL_CHOISES = 6
 
-const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) => {
+export const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) => {
 	const [postPoll, setPostPoll] = useState<Poll>({
 		choise: ["", ""],
 		length: {
@@ -184,5 +184,3 @@ const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) => {
 		</div>
 	)
 }
-
-export default PollContent
