@@ -52,7 +52,7 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 			<div className="pt-2">
 				<HomeCreatePost
 					isCreating={isPosting}
-					placeholderMessage="asdf"
+					placeholderMessage="What is happening?!"
 					profileImageUrl={user.profileImageUrl}
 					onCreatePost={(msg: string) => mutate({ content: msg })}
 				/>

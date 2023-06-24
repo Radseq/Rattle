@@ -2,8 +2,12 @@ import { type FC, useState } from "react"
 import { StyledLabel, StyledSelect } from "../styledHTMLElements/FloatingStyles"
 import { createAndIncrementFill } from "~/utils/helpers"
 import { type Poll } from "./types"
+import {
+	DangerButton,
+	DangerOutlineButton,
+	PrimalyOutlineButton,
+} from "../styledHTMLElements/StyledButtons"
 import { PollInput } from "./PollInput"
-import { DangerOutlineButton } from "../styledHTMLElements/StyledButtons"
 
 const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	length,
@@ -25,6 +29,7 @@ const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 // todo add to env instead hard coded
 const MIN_POLL_LENGTH = 5
 const MIN_HOUR = 1
+const MAX_POLL_CHOISES = 6
 
 const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) => {
 	const [postPoll, setPostPoll] = useState<Poll>({
@@ -63,11 +68,66 @@ const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) => {
 			setPostPoll({ ...postPoll, length: { ...pollLength, minutes } })
 		}
 	}
+
+	const handlePollInputChange = (newValue: string, index: number) => {
+		setPostPoll({
+			...postPoll,
+			choise: postPoll.choise.map((value, ind) => {
+				if (ind === index) {
+					return newValue
+				}
+				return value
+			}),
+		})
+	}
+
+	const handleRemoveInput = (index: number) => {
+		setPostPoll({
+			...postPoll,
+			choise: postPoll.choise.filter((_, ind) => ind !== index),
+		})
+	}
+
 	return (
 		<div className="mr-3 box-border w-full rounded-md border p-2">
-			{postPoll.choise.map((_, index) => {
-				return <PollInput key={index} index={index + 1} />
+			{postPoll.choise.map((inputValue, index) => {
+				return (
+					<div key={index} className="flex">
+						<div className="w-full">
+							<PollInput
+								onUpdateInput={(newValue: string) =>
+									handlePollInputChange(newValue, index)
+								}
+								initValue={inputValue}
+								index={index + 1}
+							/>
+						</div>
+						{index > 1 && (
+							<DangerButton
+								onClick={(e) => {
+									handleRemoveInput(index)
+									e.preventDefault()
+								}}
+								className="my-auto ml-2 h-10 w-10"
+							>
+								X
+							</DangerButton>
+						)}
+					</div>
+				)
 			})}
+			{postPoll.choise.length < MAX_POLL_CHOISES && (
+				<PrimalyOutlineButton
+					onClick={(e) => {
+						const newChoise = [...postPoll.choise]
+						newChoise.push("")
+						setPostPoll({ ...postPoll, choise: newChoise })
+						e.preventDefault()
+					}}
+				>
+					Add choise
+				</PrimalyOutlineButton>
+			)}
 			<hr className="my-4" />
 			<div className="flex justify-between">
 				<div className="m-2">
