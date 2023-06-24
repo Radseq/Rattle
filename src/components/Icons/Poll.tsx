@@ -1,6 +1,6 @@
 import type { InputHTMLAttributes } from "react"
 
-export const Pool = (props: InputHTMLAttributes<SVGSVGElement>) => {
+export const Poll = (props: InputHTMLAttributes<SVGSVGElement>) => {
 	return (
 		<svg
 			{...props}

@@ -1,15 +1,15 @@
-export type PoolLength = {
+export type PollLength = {
 	days: number
 	hours: number
 	minutes: number
 }
 
-export type Pool = {
+export type Poll = {
 	choise: string[]
-	length: PoolLength
+	length: PollLength
 }
 
 export type PostContent = {
 	message: string
-	pool?: Pool
+	poll?: Poll
 }

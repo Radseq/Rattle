@@ -7,7 +7,7 @@ import { Chat } from "./Icons/Chat"
 import { PostForward } from "./Icons/PostForward"
 import { Quote } from "./Icons/Quote"
 import { Cross } from "./Icons/Cross"
-import { Pool } from "./Icons/Pool"
+import { Poll } from "./Icons/Poll"
 
 export type IconKindProps =
 	| "trash"
@@ -18,7 +18,7 @@ export type IconKindProps =
 	| "calendar"
 	| "chat"
 	| "cross"
-	| "pool"
+	| "poll"
 
 const GetIconByType = (kind: IconKindProps) => {
 	switch (kind) {
@@ -38,8 +38,8 @@ const GetIconByType = (kind: IconKindProps) => {
 			return <Quote />
 		case "cross":
 			return <Cross />
-		case "pool":
-			return <Pool />
+		case "poll":
+			return <Poll />
 		default:
 			return null
 	}

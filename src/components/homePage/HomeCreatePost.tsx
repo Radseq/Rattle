@@ -3,8 +3,8 @@ import { PrimalyButton } from "../styledHTMLElements/StyledButtons"
 import { LoadingSpinner } from "../LoadingPage"
 import Image from "next/image"
 import { Icon } from "../Icon"
-import type { Pool, PostContent } from "./types"
-import PoolContent from "./PoolContent"
+import type { Poll, PostContent } from "./types"
+import PollContent from "./PollContent"
 
 export const HomeCreatePost: FC<{
 	onCreatePost: (message: string) => void
@@ -13,7 +13,7 @@ export const HomeCreatePost: FC<{
 	placeholderMessage: string
 }> = ({ onCreatePost, isCreating, profileImageUrl, placeholderMessage }) => {
 	const [postContent, setPostContent] = useState<PostContent>()
-	const [postPool, setPostPool] = useState<Pool | null>()
+	const [postPoll, setPostPoll] = useState<Poll | null>()
 
 	if (isCreating) {
 		return (
@@ -36,7 +36,7 @@ export const HomeCreatePost: FC<{
 				<header className="flex ">
 					<input
 						className="w-full rounded-xl border-2 border-solid p-1 text-lg outline-none"
-						placeholder={postPool ? "Ask a question!" : placeholderMessage}
+						placeholder={postPoll ? "Ask a question!" : placeholderMessage}
 						onChange={(e) =>
 							setPostContent({ ...postContent, message: e.target.value })
 						}
@@ -45,14 +45,14 @@ export const HomeCreatePost: FC<{
 					></input>
 				</header>
 				<main className="my-2 flex w-full pl-1">
-					{postPool && <PoolContent choise={postPool.choise} />}
+					{postPoll && <PollContent choise={postPoll.choise} />}
 				</main>
 				<footer className="flex">
 					<div
 						className="flex p-2"
 						onClick={(e) => {
 							e.stopPropagation()
-							setPostPool({
+							setPostPoll({
 								choise: ["", ""],
 								length: {
 									days: 1,
@@ -62,7 +62,7 @@ export const HomeCreatePost: FC<{
 							})
 						}}
 					>
-						<Icon iconKind="pool" />
+						<Icon iconKind="poll" />
 					</div>
 					<div className="w-full"></div>
 					<div className="mr-2">
