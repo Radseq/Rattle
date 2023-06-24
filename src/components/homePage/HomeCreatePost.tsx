@@ -3,7 +3,7 @@ import { PrimalyButton } from "../styledHTMLElements/StyledButtons"
 import { LoadingSpinner } from "../LoadingPage"
 import Image from "next/image"
 import { Icon } from "../Icon"
-import type { Poll, PostContent } from "./types"
+import type { PostContent } from "./types"
 import PollContent from "./PollContent"
 
 export const HomeCreatePost: FC<{
@@ -13,7 +13,7 @@ export const HomeCreatePost: FC<{
 	placeholderMessage: string
 }> = ({ onCreatePost, isCreating, profileImageUrl, placeholderMessage }) => {
 	const [postContent, setPostContent] = useState<PostContent>()
-	const [postPoll, setPostPoll] = useState<Poll | null>()
+	const [showPoll, setShowPoll] = useState(false)
 
 	if (isCreating) {
 		return (
@@ -36,7 +36,7 @@ export const HomeCreatePost: FC<{
 				<header className="flex ">
 					<input
 						className="w-full rounded-xl border-2 border-solid p-1 text-lg outline-none"
-						placeholder={postPoll ? "Ask a question!" : placeholderMessage}
+						placeholder={showPoll ? "Ask a question!" : placeholderMessage}
 						onChange={(e) =>
 							setPostContent({ ...postContent, message: e.target.value })
 						}
@@ -45,21 +45,14 @@ export const HomeCreatePost: FC<{
 					></input>
 				</header>
 				<main className="my-2 flex w-full pl-1">
-					{postPoll && <PollContent choise={postPoll.choise} />}
+					{showPoll && <PollContent onPollClose={() => setShowPoll((show) => !show)} />}
 				</main>
 				<footer className="flex">
 					<div
 						className="flex p-2"
 						onClick={(e) => {
 							e.stopPropagation()
-							setPostPoll({
-								choise: ["", ""],
-								length: {
-									days: 1,
-									hours: 0,
-									minutes: 0,
-								},
-							})
+							setShowPoll((show) => !show)
 						}}
 					>
 						<Icon iconKind="poll" />

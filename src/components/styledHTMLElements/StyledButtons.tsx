@@ -19,3 +19,11 @@ export const DangerButton = (props: ButtonProps) => {
 		></button>
 	)
 }
+
+export const DangerOutlineButton = (props: ButtonProps) => (
+	<button
+		{...props}
+		className="rounded border border-red-500 bg-transparent py-2 px-4 font-semibold
+		 	text-red-700 hover:border-transparent hover:bg-red-500 hover:text-white"
+	></button>
+)

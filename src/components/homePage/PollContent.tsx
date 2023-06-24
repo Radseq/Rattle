@@ -1,8 +1,9 @@
 import { type FC, useState } from "react"
 import { StyledLabel, StyledSelect } from "../styledHTMLElements/FloatingStyles"
 import { createAndIncrementFill } from "~/utils/helpers"
-import { type PollLength } from "./types"
+import { type Poll } from "./types"
 import { PollInput } from "./PollInput"
+import { DangerOutlineButton } from "../styledHTMLElements/StyledButtons"
 
 const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	length,
@@ -21,64 +22,63 @@ const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	)
 }
 
-type PollLengthExt = PollLength & {
-	minPollLength: number
-}
 // todo add to env instead hard coded
 const MIN_POLL_LENGTH = 5
 const MIN_HOUR = 1
 
-const PollContent: FC<{ choise: string[] }> = ({ choise }) => {
-	const [pollLength, setPollLength] = useState<PollLengthExt>({
-		days: 1,
-		hours: 0,
-		minutes: 0,
-		minPollLength: 0,
+const PollContent: FC<{ onPollClose: () => void }> = ({ onPollClose }) => {
+	const [postPoll, setPostPoll] = useState<Poll>({
+		choise: ["", ""],
+		length: {
+			days: 1,
+			hours: 0,
+			minutes: 0,
+		},
 	})
-	// todo  do hook instead function?
+
 	const handlePollLength = (type: "days" | "hours" | "minutes", value: number) => {
+		const pollLength = postPoll.length
 		if (type === "hours") {
 			let minutes = pollLength.minutes
-			let minPollLength = pollLength.minPollLength
 			if (value === 0 && minutes < MIN_POLL_LENGTH && pollLength.days === 0) {
-				minutes = pollLength.minPollLength
-				minPollLength = MIN_POLL_LENGTH
+				minutes = MIN_POLL_LENGTH
 			} else {
-				minPollLength = 0
-				minutes = pollLength.minutes
+				minutes = value
 			}
-			setPollLength({ ...pollLength, hours: value, minutes: minutes, minPollLength })
+			setPostPoll({
+				...postPoll,
+				length: { ...pollLength, hours: value, minutes },
+			})
 		} else if (type === "days") {
 			let hours = pollLength.hours
 			if (value === 0 && hours === 0) {
 				hours = MIN_HOUR
 			}
-			setPollLength({ ...pollLength, days: value, hours: hours })
+			setPostPoll({ ...postPoll, length: { ...pollLength, days: value, hours } })
 		} else {
 			let minutes = value
 			if (value === 0 && pollLength.hours === 0 && pollLength.days === 0) {
-				minutes = pollLength.minPollLength
+				minutes = MIN_POLL_LENGTH
 			}
-			setPollLength({ ...pollLength, minutes })
+			setPostPoll({ ...postPoll, length: { ...pollLength, minutes } })
 		}
 	}
-
 	return (
 		<div className="mr-3 box-border w-full rounded-md border p-2">
-			{choise.map((_, index) => {
+			{postPoll.choise.map((_, index) => {
 				return <PollInput key={index} index={index + 1} />
 			})}
 			<hr className="my-4" />
-			<div className="flex">
+			<div className="flex justify-between">
 				<div className="m-2">
 					<span>Poll length</span>
 				</div>
-				<div className="relative mr-4">
+				<div className="relative">
 					<StyledSelect
 						id="days"
-						className="w-20"
+						className="w-28"
 						onChange={(e) => handlePollLength("days", Number(e.target.value))}
-						value={pollLength.days}
+						value={postPoll.length.days}
 					>
 						<PollLengthOptions length={8} />
 					</StyledSelect>
@@ -86,12 +86,12 @@ const PollContent: FC<{ choise: string[] }> = ({ choise }) => {
 						Days
 					</StyledLabel>
 				</div>
-				<div className="relative mr-4">
+				<div className="relative">
 					<StyledSelect
 						id="hours"
 						onChange={(e) => handlePollLength("hours", Number(e.target.value))}
-						value={pollLength.hours}
-						className="w-20"
+						value={postPoll.length.hours}
+						className="w-28"
 					>
 						<PollLengthOptions length={24} />
 					</StyledSelect>
@@ -103,15 +103,23 @@ const PollContent: FC<{ choise: string[] }> = ({ choise }) => {
 					<StyledSelect
 						id="minutes"
 						onChange={(e) => handlePollLength("minutes", Number(e.target.value))}
-						value={pollLength.minutes}
-						className="w-20"
+						value={postPoll.length.minutes}
+						className="w-28"
 					>
-						<PollLengthOptions length={60} minLength={pollLength.minPollLength} />
+						<PollLengthOptions
+							length={60}
+							minLength={
+								postPoll.length.days === 0 && postPoll.length.hours === 0
+									? MIN_POLL_LENGTH
+									: 0
+							}
+						/>
 					</StyledSelect>
 					<StyledLabel htmlFor="minutes" side="left">
 						Minutes
 					</StyledLabel>
 				</div>
+				<DangerOutlineButton onClick={onPollClose}>Remove Poll</DangerOutlineButton>
 			</div>
 		</div>
 	)
