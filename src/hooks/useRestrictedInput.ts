@@ -8,10 +8,10 @@ export const useRestrictedInput = (maxLetters: number, initValue: string) => {
 			setValue(newValue)
 		}
 	}
-	const charsLeft = maxLetters - value.length
+	const charsleft = maxLetters - value.length
 	return {
 		value,
-		charsLeft,
+		charsleft,
 		onChange,
 	} as const
 }
@@ -24,10 +24,10 @@ export const useRestrictedTextArea = (maxLetters: number, initValue: string) => 
 			setValue(newValue)
 		}
 	}
-	const charsLeft = maxLetters - value.length
+	const charsleft = maxLetters - value.length
 	return {
 		value,
-		charsLeft,
+		charsleft,
 		onChange,
 	} as const
 }

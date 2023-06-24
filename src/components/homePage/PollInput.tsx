@@ -18,7 +18,7 @@ export const PollInput: FC<{
 				placeholder=""
 				value={initValue}
 				onChange={(e) => {
-					if (inputPoll.charsLeft) {
+					if (inputPoll.charsleft) {
 						inputPoll.onChange(e)
 						onUpdateInput(e.target.value)
 					}
@@ -30,7 +30,7 @@ export const PollInput: FC<{
 			<StyledLabel
 				side="right"
 				htmlFor={pollOptionId}
-			>{`${MAX_CHOISE_LENGTH}/${inputPoll.charsLeft}`}</StyledLabel>
+			>{`${MAX_CHOISE_LENGTH}/${inputPoll.charsleft}`}</StyledLabel>
 		</div>
 	)
 }
