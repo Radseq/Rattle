@@ -30,7 +30,6 @@ export const HomeCreatePost: FC<{
 		if (postContent && postContent.poll) {
 			setPostContent({
 				...postContent,
-				message: postContent.message,
 				poll: {
 					choise: choise ?? postContent.poll.choise,
 					length: length ?? postContent.poll.length,
@@ -115,7 +114,6 @@ export const HomeCreatePost: FC<{
 							setPostContent({ ...postContent, message: e.target.value })
 						}
 						type="text"
-						value={postContent?.message}
 					></input>
 				</header>
 				<main className="my-2 flex w-full pl-1">
@@ -130,7 +128,6 @@ export const HomeCreatePost: FC<{
 							onPollClose={() =>
 								setPostContent({
 									...postContent,
-									message: postContent?.message ?? "",
 									poll: undefined,
 								})
 							}
