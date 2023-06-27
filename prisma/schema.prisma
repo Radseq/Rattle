@@ -28,7 +28,7 @@ model Post {
 model PostPoll {
     id          Int     @id @default(autoincrement())
     days        Int
-    months      Int
+    hours       Int
     minutes     Int
     choices     PostPollChoices[]
 }
