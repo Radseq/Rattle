@@ -72,12 +72,12 @@ export const HomeCreatePost: FC<{
 
 	const handleCreatePost = () => {
 		if (postContent.poll) {
-			const newChoise = [...postContent.poll!.choices].filter((choice) => {
+			const notNullchoices = [...postContent.poll.choices].filter((choice) => {
 				if (choice) {
 					return choice
 				}
 			})
-			updatePool(pollLength.current, newChoise)
+			updatePool(pollLength.current, notNullchoices)
 		}
 		onCreatePost(postContent)
 	}
