@@ -5,7 +5,7 @@ export type PollLength = {
 }
 
 export type Poll = {
-	choise: string[]
+	choices: string[]
 	length: PollLength
 }
 

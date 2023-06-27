@@ -1,14 +1,11 @@
-import { type FC, useState } from "react"
-import { PrimalyButton } from "../styledHTMLElements/StyledButtons"
+import { type FC, useRef, useState } from "react"
+import { DangerOutlineButton, PrimalyButton } from "../styledHTMLElements/StyledButtons"
 import { LoadingSpinner } from "../LoadingPage"
 import Image from "next/image"
 import { Icon } from "../Icon"
 import type { PollLength, PostContent } from "./types"
-import { PollContent } from "./PollContent"
-
-// todo add to env instead hard coded
-const MIN_POLL_LENGTH = 5
-const MIN_HOUR = 1
+import { PollChoices } from "./PollChoices"
+import { PollLengthComp } from "./PollLength"
 
 export const HomeCreatePost: FC<{
 	onCreatePost: (message: string) => void
@@ -17,6 +14,8 @@ export const HomeCreatePost: FC<{
 	placeholderMessage: string
 }> = ({ onCreatePost, isCreating, profileImageUrl, placeholderMessage }) => {
 	const [postContent, setPostContent] = useState<PostContent>()
+
+	const pollLength = useRef(null)
 
 	if (isCreating) {
 		return (
@@ -31,7 +30,7 @@ export const HomeCreatePost: FC<{
 			setPostContent({
 				...postContent,
 				poll: {
-					choise: choise ?? postContent.poll.choise,
+					choices: choise ?? postContent.poll.choices,
 					length: length ?? postContent.poll.length,
 				},
 			})
@@ -40,36 +39,9 @@ export const HomeCreatePost: FC<{
 
 	const handleAddChooise = () => {
 		if (postContent && postContent.poll) {
-			const newChoise = [...postContent.poll.choise]
+			const newChoise = [...postContent.poll.choices]
 			newChoise.push("")
 			updatePool(null, newChoise)
-		}
-	}
-
-	const handlePollLength = (type: "days" | "hours" | "minutes", value: number) => {
-		if (postContent && postContent.poll) {
-			const pollLength = postContent.poll.length
-			if (type === "hours") {
-				let minutes = pollLength.minutes
-				if (value === 0 && minutes < MIN_POLL_LENGTH && pollLength.days === 0) {
-					minutes = MIN_POLL_LENGTH
-				} else {
-					minutes = value
-				}
-				updatePool({ ...pollLength, hours: value, minutes }, null)
-			} else if (type === "days") {
-				let hours = pollLength.hours
-				if (value === 0 && hours === 0) {
-					hours = MIN_HOUR
-				}
-				updatePool({ ...pollLength, days: value, hours }, null)
-			} else {
-				let minutes = value
-				if (value === 0 && pollLength.hours === 0 && pollLength.days === 0) {
-					minutes = MIN_POLL_LENGTH
-				}
-				updatePool({ ...pollLength, minutes }, null)
-			}
 		}
 	}
 
@@ -77,7 +49,7 @@ export const HomeCreatePost: FC<{
 		if (postContent && postContent.poll) {
 			updatePool(
 				null,
-				postContent.poll.choise.map((value, ind) => {
+				postContent.poll.choices.map((value, ind) => {
 					if (ind === index) {
 						return newValue
 					}
@@ -91,7 +63,7 @@ export const HomeCreatePost: FC<{
 		if (postContent && postContent.poll) {
 			updatePool(
 				null,
-				postContent.poll.choise.filter((_, ind) => ind !== index)
+				postContent.poll.choices.filter((_, ind) => ind !== index)
 			)
 		}
 	}
@@ -118,21 +90,28 @@ export const HomeCreatePost: FC<{
 				</header>
 				<main className="my-2 flex w-full pl-1">
 					{postContent?.poll && (
-						<PollContent
-							poll={postContent.poll}
-							onHandlePollInputChange={(newValue, index) =>
-								handlePollInputChange(newValue, index)
-							}
-							onHandlePoolLength={(type, value) => handlePollLength(type, value)}
-							onHandleRemoveInput={(index) => handleRemoveInput(index)}
-							onPollClose={() =>
-								setPostContent({
-									...postContent,
-									poll: undefined,
-								})
-							}
-							onAddChooise={() => handleAddChooise()}
-						/>
+						<div className="mr-3 box-border w-full rounded-md border p-2">
+							<PollChoices
+								choices={postContent.poll.choices}
+								addChooise={() => handleAddChooise()}
+								pollInputChange={(newValue, index) =>
+									handlePollInputChange(newValue, index)
+								}
+								removeInput={(index) => handleRemoveInput(index)}
+							/>
+							<PollLengthComp days={1} hours={0} minutes={0} ref={pollLength} />
+							<hr className="my-4" />
+							<DangerOutlineButton
+								onClick={() =>
+									setPostContent({
+										...postContent,
+										poll: undefined,
+									})
+								}
+							>
+								Remove Poll
+							</DangerOutlineButton>
+						</div>
 					)}
 				</main>
 				<footer className="flex">
@@ -143,7 +122,7 @@ export const HomeCreatePost: FC<{
 								...postContent,
 								message: postContent?.message ?? "",
 								poll: {
-									choise: ["", ""],
+									choices: ["", ""],
 									length: {
 										days: 1,
 										hours: 0,
