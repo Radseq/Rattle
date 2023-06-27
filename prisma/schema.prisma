@@ -37,7 +37,6 @@ model PostPollChoices{
     id          Int         @id @default(autoincrement())
     poll        PostPoll    @relation(fields: [pollId], references: [id])
     pollId      Int
-    checked     Boolean
     choice      String      @db.VarChar(25)
 }
 
