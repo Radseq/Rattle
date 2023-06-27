@@ -6,6 +6,7 @@ import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
 import {
+	createPostPoll,
 	getPostById,
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
@@ -134,10 +135,13 @@ export const postsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
+			const postPollId = input.poll && (await createPostPoll(input.poll))
+
 			return await ctx.prisma.post.create({
 				data: {
 					authorId,
 					content: input.message,
+					pollId: postPollId,
 				},
 			})
 		}),

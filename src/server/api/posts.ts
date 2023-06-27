@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
 import type { Post } from "~/components/postsPage/types"
 import { getPostAuthor } from "./profile"
+import { type Poll } from "~/components/homePage/types"
 
 export const getPostById = async (postId: string) => {
 	const getPost = prisma.post.findUnique({
@@ -194,4 +195,22 @@ export const isUserForwardedPost = async (userId: string, postId: string): Promi
 		return true
 	}
 	return false
+}
+
+export const createPostPoll = async (poll: Poll) => {
+	const pollLength = poll.length
+	const pollChoices = poll.choices.map((choice) => {
+		return { choice: choice }
+	})
+	const createPostPoll = await prisma.postPoll.create({
+		data: {
+			days: pollLength.days,
+			hours: pollLength.hours,
+			minutes: pollLength.minutes,
+			choices: {
+				create: pollChoices,
+			},
+		},
+	})
+	return createPostPoll.id.toString()
 }

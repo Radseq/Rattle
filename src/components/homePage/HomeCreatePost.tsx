@@ -3,7 +3,7 @@ import { DangerOutlineButton, PrimalyButton } from "../styledHTMLElements/Styled
 import { LoadingSpinner } from "../LoadingPage"
 import Image from "next/image"
 import { Icon } from "../Icon"
-import type { PollLength, PostContent } from "./types"
+import type { Poll, PollLength, PostContent } from "./types"
 import { PollChoices } from "./PollChoices"
 import { PollLengthComp } from "./PollLength"
 
@@ -71,15 +71,22 @@ export const HomeCreatePost: FC<{
 	}
 
 	const handleCreatePost = () => {
-		if (postContent.poll) {
+		let pollLengthValue: PollLength | null = null
+		if (pollLength.current) {
+			const lengthRef = pollLength.current as { state: PollLength }
+			pollLengthValue = lengthRef.state
+		}
+
+		let postPoll: Poll | undefined = undefined
+		if (postContent.poll && pollLengthValue) {
 			const notNullchoices = [...postContent.poll.choices].filter((choice) => {
 				if (choice) {
 					return choice
 				}
 			})
-			updatePool(pollLength.current, notNullchoices)
+			postPoll = { choices: notNullchoices, length: pollLengthValue }
 		}
-		onCreatePost(postContent)
+		onCreatePost({ message: postContent.message, poll: postPoll })
 	}
 
 	return (
