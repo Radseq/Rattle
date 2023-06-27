@@ -54,7 +54,7 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 					isCreating={isPosting}
 					placeholderMessage="What is happening?!"
 					profileImageUrl={user.profileImageUrl}
-					onCreatePost={(msg: string) => mutate({ content: msg })}
+					onCreatePost={(postContent) => mutate(postContent)}
 				/>
 
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>

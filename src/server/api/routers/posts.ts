@@ -105,12 +105,25 @@ export const postsRouter = createTRPCRouter({
 	createPost: privateProcedure
 		.input(
 			z.object({
-				content: z
+				message: z
 					.string()
 					.min(1, { message: "Message is too small" })
 					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
 						message: `Message is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
 					}),
+				poll: z
+					.object({
+						choices: z
+							.string()
+							.array()
+							.min(1, { message: "Post poll shoud have at last two elements!" }),
+						length: z.object({
+							days: z.number(),
+							hours: z.number(),
+							minutes: z.number(),
+						}),
+					})
+					.optional(),
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -124,7 +137,7 @@ export const postsRouter = createTRPCRouter({
 			return await ctx.prisma.post.create({
 				data: {
 					authorId,
-					content: input.content,
+					content: input.message,
 				},
 			})
 		}),

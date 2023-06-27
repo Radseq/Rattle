@@ -8,12 +8,14 @@ import { PollChoices } from "./PollChoices"
 import { PollLengthComp } from "./PollLength"
 
 export const HomeCreatePost: FC<{
-	onCreatePost: (message: string) => void
+	onCreatePost: (postContent: PostContent) => void
 	isCreating: boolean
 	profileImageUrl: string
 	placeholderMessage: string
 }> = ({ onCreatePost, isCreating, profileImageUrl, placeholderMessage }) => {
-	const [postContent, setPostContent] = useState<PostContent>()
+	const [postContent, setPostContent] = useState<PostContent>({
+		message: "",
+	})
 
 	const pollLength = useRef(null)
 
@@ -26,7 +28,7 @@ export const HomeCreatePost: FC<{
 	}
 
 	const updatePool = (length: PollLength | null, choise: string[] | null) => {
-		if (postContent && postContent.poll) {
+		if (postContent.poll) {
 			setPostContent({
 				...postContent,
 				poll: {
@@ -38,7 +40,7 @@ export const HomeCreatePost: FC<{
 	}
 
 	const handleAddChooise = () => {
-		if (postContent && postContent.poll) {
+		if (postContent.poll) {
 			const newChoise = [...postContent.poll.choices]
 			newChoise.push("")
 			updatePool(null, newChoise)
@@ -46,7 +48,7 @@ export const HomeCreatePost: FC<{
 	}
 
 	const handlePollInputChange = (newValue: string, index: number) => {
-		if (postContent && postContent.poll) {
+		if (postContent.poll) {
 			updatePool(
 				null,
 				postContent.poll.choices.map((value, ind) => {
@@ -60,12 +62,24 @@ export const HomeCreatePost: FC<{
 	}
 
 	const handleRemoveInput = (index: number) => {
-		if (postContent && postContent.poll) {
+		if (postContent.poll) {
 			updatePool(
 				null,
 				postContent.poll.choices.filter((_, ind) => ind !== index)
 			)
 		}
+	}
+
+	const handleCreatePost = () => {
+		if (postContent.poll) {
+			const newChoise = [...postContent.poll!.choices].filter((choice) => {
+				if (choice) {
+					return choice
+				}
+			})
+			updatePool(pollLength.current, newChoise)
+		}
+		onCreatePost(postContent)
 	}
 
 	return (
@@ -89,7 +103,7 @@ export const HomeCreatePost: FC<{
 					></input>
 				</header>
 				<main className="my-2 flex w-full pl-1">
-					{postContent?.poll && (
+					{postContent.poll && (
 						<div className="mr-3 box-border w-full rounded-md border p-2">
 							<PollChoices
 								choices={postContent.poll.choices}
@@ -120,7 +134,7 @@ export const HomeCreatePost: FC<{
 						onClick={() => {
 							setPostContent({
 								...postContent,
-								message: postContent?.message ?? "",
+								message: postContent.message ?? "",
 								poll: {
 									choices: ["", ""],
 									length: {
@@ -136,9 +150,7 @@ export const HomeCreatePost: FC<{
 					</div>
 					<div className="w-full"></div>
 					<div className="mr-2">
-						<PrimalyButton onClick={() => onCreatePost(postContent?.message ?? "")}>
-							Post
-						</PrimalyButton>
+						<PrimalyButton onClick={() => handleCreatePost()}>Post</PrimalyButton>
 					</div>
 				</footer>
 			</div>
