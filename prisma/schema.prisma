@@ -20,8 +20,31 @@ model Post {
     mediaUrl    String?  @db.VarChar(200)
     replayId    String?  @db.VarChar(32)
     quotedId    String?  @db.VarChar(32)
+    pollId      String?  @db.VarChar(32)
 
     @@index([authorId])
+}
+
+model PostPoll {
+    id          Int     @id @default(autoincrement())
+    days        Int
+    months      Int
+    minutes     Int
+    choices     PostPollChoices[]
+}
+
+model PostPollChoices{
+    id          Int         @id @default(autoincrement())
+    poll        PostPoll    @relation(fields: [pollId], references: [id])
+    pollId      Int
+    checked     Boolean
+    choice      String      @db.VarChar(25)
+}
+
+model UserPollChoice{
+    id          Int     @id @default(autoincrement())
+    userId      String  @db.VarChar(32)
+    choicesId   String  @db.VarChar(32)
 }
 
 model Followeed {
