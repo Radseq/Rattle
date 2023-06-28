@@ -20,13 +20,13 @@ model Post {
     mediaUrl    String?  @db.VarChar(200)
     replayId    String?  @db.VarChar(32)
     quotedId    String?  @db.VarChar(32)
-    pollId      String?  @db.VarChar(32)
 
     @@index([authorId])
 }
 
 model PostPoll {
     id          Int     @id @default(autoincrement())
+    postId      String  @db.VarChar(32) @unique
     days        Int
     hours       Int
     minutes     Int
@@ -40,10 +40,11 @@ model PostPollChoices{
     choice      String      @db.VarChar(25)
 }
 
-model UserPollChoice{
+model UserPollVote{
     id          Int     @id @default(autoincrement())
     userId      String  @db.VarChar(32)
-    choicesId   String  @db.VarChar(32)
+    choiceId    Int
+    postId      String  @db.VarChar(32)
 }
 
 model Followeed {
