@@ -6,7 +6,6 @@ import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { filterClarkClientToUser } from "~/utils/helpers"
 import {
-	createPostPoll,
 	getPostById,
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
@@ -14,6 +13,7 @@ import {
 	isUserLikedPost,
 } from "../posts"
 import { type PostWithAuthor } from "~/components/postsPage/types"
+import { getUserVotedAnyPostsPoll } from "../profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -45,8 +45,17 @@ export const postsRouter = createTRPCRouter({
 		}
 
 		let postsLikedBySignInUser: string[] = []
+		let postsPollVotedByUser: {
+			postId: string
+			choiceId: number
+		}[] = []
 		if (ctx.authUserId) {
-			postsLikedBySignInUser = await getPostsLikedByUser(ctx.authUserId, postIds)
+			const [getPostsLikedBySignInUser, getPostsPollVotedByUser] = await Promise.all([
+				getPostsLikedByUser(ctx.authUserId, postIds),
+				getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
+			])
+			postsLikedBySignInUser = getPostsLikedBySignInUser
+			postsPollVotedByUser = getPostsPollVotedByUser
 		}
 
 		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
@@ -74,6 +83,12 @@ export const postsRouter = createTRPCRouter({
 							isLikedBySignInUser: postsLikedBySignInUser.some(
 								(postId) => postId === post.id
 							),
+							poll: {
+								...post.poll,
+								choiceVotedBySignInUser: postsPollVotedByUser.find(
+									(value) => value.postId === post.id
+								)?.choiceId,
+							},
 						},
 						author: filterClarkClientToUser(author),
 					} as PostWithAuthor)
@@ -135,15 +150,53 @@ export const postsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
-			const postPollId = input.poll && (await createPostPoll(input.poll))
+			if (input.poll) {
+				await ctx.prisma.$transaction(async (tx) => {
+					// input.poll give us belowe error even if code is in quard if (input.poll)
+					if (!input.poll) {
+						throw new Error("Poll is not provided for post!")
+					}
 
-			return await ctx.prisma.post.create({
-				data: {
-					authorId,
-					content: input.message,
-					pollId: postPollId,
-				},
-			})
+					const createPost = await tx.post.create({
+						data: {
+							authorId,
+							content: input.message,
+						},
+					})
+
+					const pollLength = input.poll.length
+					const pollChoices = input.poll.choices.map((choice) => {
+						return { choice: choice }
+					})
+					const createPoll = await tx.postPoll.create({
+						data: {
+							days: pollLength.days,
+							hours: pollLength.hours,
+							minutes: pollLength.minutes,
+							choices: {
+								create: pollChoices,
+							},
+							postId: createPost.id,
+						},
+					})
+
+					if (createPost && createPoll) {
+						return true
+					}
+				})
+			} else {
+				const createPost = await ctx.prisma.post.create({
+					data: {
+						authorId,
+						content: input.message,
+					},
+				})
+				if (createPost) {
+					return true
+				}
+			}
+
+			return false
 		}),
 	createQuotedPost: privateProcedure
 		.input(

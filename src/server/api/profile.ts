@@ -1,6 +1,7 @@
 import clerkClient from "@clerk/clerk-sdk-node"
 import type { Profile, ProfileExtend } from "~/components/profilePage/types"
 import { filterClarkClientToUser, getFullName } from "~/utils/helpers"
+import { prisma } from "../db"
 
 export const getProfileByUserName = async (userName: string) => {
 	const authors = await clerkClient.users.getUserList({
@@ -38,4 +39,29 @@ export const getPostAuthor = async (authorId: string) => {
 	}
 
 	return filterClarkClientToUser(author)
+}
+
+export const getUserVotedAnyPostsPoll = async (
+	userId: string,
+	postsId: string[]
+): Promise<{ postId: string; choiceId: number }[]> => {
+	const pollVoted = await prisma.userPollVote.findMany({
+		where: {
+			userId,
+			postId: {
+				in: postsId,
+			},
+		},
+		select: {
+			choiceId: true,
+			postId: true,
+		},
+	})
+
+	return pollVoted.map((poll) => {
+		return {
+			postId: poll.postId,
+			choiceId: poll.choiceId,
+		}
+	})
 }

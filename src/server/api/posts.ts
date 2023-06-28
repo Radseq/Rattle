@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
 import type { Post } from "~/components/postsPage/types"
 import { getPostAuthor } from "./profile"
-import { type Poll } from "~/components/homePage/types"
 
 export const getPostById = async (postId: string) => {
 	const getPost = prisma.post.findUnique({
@@ -16,7 +15,8 @@ export const getPostById = async (postId: string) => {
 	const getForwardsCount = getPostForwatdCount(postId)
 	const getQuotedPost = getPostQuoteById(postId)
 	const getQuotedCount = getPostQuotedCount(postId)
-	const [post, likeCount, replaysCount, forwardsCount, quotedPost, quotedCount] =
+	const getPostPoll = getPostPollById(postId)
+	const [post, likeCount, replaysCount, forwardsCount, quotedPost, quotedCount, postPoll] =
 		await Promise.all([
 			getPost,
 			getLikeCount,
@@ -24,6 +24,7 @@ export const getPostById = async (postId: string) => {
 			getForwardsCount,
 			getQuotedPost,
 			getQuotedCount,
+			getPostPoll,
 		])
 	if (!post) {
 		throw new TRPCError({
@@ -47,7 +48,42 @@ export const getPostById = async (postId: string) => {
 		forwardsCount,
 		quotedPost: quotedPost,
 		quotedCount: quotedCount,
+		poll: postPoll,
 	} as Post
+}
+
+export const getPostPollById = async (postId: string) => {
+	const getPoll = await prisma.postPoll.findUnique({
+		where: {
+			postId,
+		},
+		include: {
+			choices: true,
+		},
+	})
+
+	if (!getPoll) {
+		return null
+	}
+
+	const getPollVotesByUser = await prisma.userPollVote.findMany({
+		where: {
+			postId: postId,
+		},
+	})
+
+	const userVotes = getPoll.choices.map((pollChoice) => {
+		return {
+			id: pollChoice.id,
+			choice: pollChoice.choice,
+			voteCount: getPollVotesByUser.filter((vote) => vote.choiceId === pollChoice.id).length,
+		}
+	})
+
+	return {
+		length: { days: getPoll.days, hours: getPoll.hours, minutes: getPoll.minutes },
+		userVotes,
+	}
 }
 
 export const getPostQuoteById = async (postId: string) => {
@@ -195,22 +231,4 @@ export const isUserForwardedPost = async (userId: string, postId: string): Promi
 		return true
 	}
 	return false
-}
-
-export const createPostPoll = async (poll: Poll) => {
-	const pollLength = poll.length
-	const pollChoices = poll.choices.map((choice) => {
-		return { choice: choice }
-	})
-	const createPostPoll = await prisma.postPoll.create({
-		data: {
-			days: pollLength.days,
-			hours: pollLength.hours,
-			minutes: pollLength.minutes,
-			choices: {
-				create: pollChoices,
-			},
-		},
-	})
-	return createPostPoll.id.toString()
 }
