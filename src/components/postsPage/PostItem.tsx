@@ -8,6 +8,8 @@ import { PostOptionMenu } from "./PostOptionMenu"
 import { Icon } from "../Icon"
 import { PostFooter } from "./PostFooter"
 import { PostQuoteItem } from "./PostQuoteItem"
+import { PostPoll } from "./PostPoll"
+import { useTimeLeft } from "~/hooks/useTimeLeft"
 
 dayjs.extend(relativeTime)
 
@@ -28,6 +30,8 @@ export const PostItem: FC<{
 	likeAction,
 	onQuoteClick,
 }) => {
+	const useTime = useTimeLeft(postWithUser.post.createdAt, postWithUser.post.poll?.endDate)
+
 	return (
 		<li
 			className="cursor-pointer rounded-lg py-2 hover:bg-gray-100"
@@ -58,6 +62,13 @@ export const PostItem: FC<{
 						</span>
 					</div>
 					<span>{postWithUser.post.content}</span>
+					{postWithUser.post.poll && (
+						<PostPoll
+							pollTimeLeft={useTime}
+							poll={postWithUser.post.poll}
+							pollEndTime={postWithUser.post.poll.endDate}
+						/>
+					)}
 					{postWithUser.post.quotedPost && (
 						<Link
 							onClick={(e) => e.stopPropagation()}

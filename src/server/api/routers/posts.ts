@@ -4,7 +4,7 @@ import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import { filterClarkClientToUser } from "~/utils/helpers"
+import { addTimeToDate, filterClarkClientToUser, type TimeAddToDate } from "~/utils/helpers"
 import {
 	getPostById,
 	getPostIdsForwardedByUser,
@@ -13,7 +13,6 @@ import {
 	isUserLikedPost,
 } from "../posts"
 import { type PostWithAuthor } from "~/components/postsPage/types"
-import { getUserVotedAnyPostsPoll } from "../profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -45,17 +44,8 @@ export const postsRouter = createTRPCRouter({
 		}
 
 		let postsLikedBySignInUser: string[] = []
-		let postsPollVotedByUser: {
-			postId: string
-			choiceId: number
-		}[] = []
 		if (ctx.authUserId) {
-			const [getPostsLikedBySignInUser, getPostsPollVotedByUser] = await Promise.all([
-				getPostsLikedByUser(ctx.authUserId, postIds),
-				getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
-			])
-			postsLikedBySignInUser = getPostsLikedBySignInUser
-			postsPollVotedByUser = getPostsPollVotedByUser
+			postsLikedBySignInUser = await getPostsLikedByUser(ctx.authUserId, postIds)
 		}
 
 		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
@@ -83,12 +73,6 @@ export const postsRouter = createTRPCRouter({
 							isLikedBySignInUser: postsLikedBySignInUser.some(
 								(postId) => postId === post.id
 							),
-							poll: {
-								...post.poll,
-								choiceVotedBySignInUser: postsPollVotedByUser.find(
-									(value) => value.postId === post.id
-								)?.choiceId,
-							},
 						},
 						author: filterClarkClientToUser(author),
 					} as PostWithAuthor)
@@ -164,19 +148,21 @@ export const postsRouter = createTRPCRouter({
 						},
 					})
 
-					const pollLength = input.poll.length
+					const endDate = addTimeToDate(new Date(), input.poll.length as TimeAddToDate)
+					if (!endDate) {
+						throw new Error("Can't set end date for poll!")
+					}
+
 					const pollChoices = input.poll.choices.map((choice) => {
 						return { choice: choice }
 					})
 					const createPoll = await tx.postPoll.create({
 						data: {
-							days: pollLength.days,
-							hours: pollLength.hours,
-							minutes: pollLength.minutes,
 							choices: {
 								create: pollChoices,
 							},
 							postId: createPost.id,
+							endDate,
 						},
 					})
 

@@ -20,6 +20,8 @@ import { LoadingPage } from "~/components/LoadingPage"
 import { useEffect, useState } from "react"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
+import { useTimeLeft } from "~/hooks/useTimeLeft"
+import { PostPoll } from "~/components/postsPage/PostPoll"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -209,6 +211,8 @@ const ReplayPost: NextPage<{
 		},
 	})
 
+	const useTime = useTimeLeft(post.createdAt, post.poll?.endDate)
+
 	if (postReplays.isLoading) {
 		return (
 			<div className="relative">
@@ -245,7 +249,20 @@ const ReplayPost: NextPage<{
 					profileImageUrl={author.profileImageUrl}
 					username={author.username}
 				/>
-				<PostContent postCreateDate={post.createdAt} message={post.content} />
+				<div className="mt-2 ml-2">
+					{post.poll ? (
+						<div>
+							<span className="">{post.content}</span>
+							<PostPoll
+								pollTimeLeft={useTime}
+								poll={post.poll}
+								pollEndTime={post.poll.endDate}
+							/>
+						</div>
+					) : (
+						<PostContent postCreateDate={post.createdAt} message={post.content} />
+					)}
+				</div>
 				<hr className="my-2" />
 				<footer className="ml-2">
 					<span className="pr-1 font-bold">{post.replaysCount}</span>

@@ -9,7 +9,7 @@ export const PostContent: FC<{ postCreateDate: Date; message: string }> = ({
 	const viewCount = useNumberFormatter(58400)
 
 	return (
-		<div className="mt-2 ml-2">
+		<div>
 			<span className="">{message}</span>
 			<div className="mt-4 text-gray-500">
 				<span>{dayjs(postCreateDate).toString()}</span>

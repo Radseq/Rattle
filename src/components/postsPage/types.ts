@@ -1,6 +1,5 @@
 import type { Post as PrismaPost } from "@prisma/client"
 import { type PostAuthor } from "../profilePage/types"
-import { type PollLength } from "../homePage/types"
 
 export type PostWithAuthor = {
 	author: PostAuthor
@@ -20,10 +19,10 @@ type UserPollVotes = {
 	voteCount: number
 }
 
-export type PostPoll = {
-	length: PollLength
+export type Poll = {
+	endDate: string
 	userVotes: UserPollVotes[]
-	choiceVotedBySignInUser: number
+	choiceVotedBySignInUser: number | undefined
 }
 
 export type Post = PrismaPost & {
@@ -35,5 +34,5 @@ export type Post = PrismaPost & {
 	isForwardedPostBySignInUser: boolean
 	quotedPost: PostWithAuthor | null
 	quotedCount: number
-	poll: PostPoll | null
+	poll: Poll | null
 }

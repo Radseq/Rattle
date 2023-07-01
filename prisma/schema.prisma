@@ -27,9 +27,7 @@ model Post {
 model PostPoll {
     id          Int     @id @default(autoincrement())
     postId      String  @db.VarChar(32) @unique
-    days        Int
-    hours       Int
-    minutes     Int
+    endDate     DateTime @default(now())
     choices     PostPollChoices[]
 }
 

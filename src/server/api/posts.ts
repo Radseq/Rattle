@@ -81,7 +81,7 @@ export const getPostPollById = async (postId: string) => {
 	})
 
 	return {
-		length: { days: getPoll.days, hours: getPoll.hours, minutes: getPoll.minutes },
+		endDate: getPoll.endDate.toString(),
 		userVotes,
 	}
 }
