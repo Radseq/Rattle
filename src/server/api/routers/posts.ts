@@ -13,6 +13,7 @@ import {
 	isUserLikedPost,
 } from "../posts"
 import { type PostWithAuthor } from "~/components/postsPage/types"
+import { getUserVotedAnyPostsPoll } from "../profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -44,8 +45,17 @@ export const postsRouter = createTRPCRouter({
 		}
 
 		let postsLikedBySignInUser: string[] = []
+		let postsPollVotedByUser: {
+			postId: string
+			choiceId: number
+		}[] = []
 		if (ctx.authUserId) {
-			postsLikedBySignInUser = await getPostsLikedByUser(ctx.authUserId, postIds)
+			const [getPostsLikedBySignInUser, getPostsPollVotedByUser] = await Promise.all([
+				getPostsLikedByUser(ctx.authUserId, postIds),
+				getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
+			])
+			postsLikedBySignInUser = getPostsLikedBySignInUser
+			postsPollVotedByUser = getPostsPollVotedByUser
 		}
 
 		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
@@ -59,24 +69,31 @@ export const postsRouter = createTRPCRouter({
 			})
 		}
 
-		return posts
-			.sort(
-				(postA, postB) =>
-					new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
-			)
-			.map(
-				(post) =>
-					({
-						post: {
-							...post,
-							createdAt: post.createdAt.toString(),
-							isLikedBySignInUser: postsLikedBySignInUser.some(
-								(postId) => postId === post.id
-							),
-						},
-						author: filterClarkClientToUser(author),
-					} as PostWithAuthor)
-			)
+		const sortedPosts = posts.sort(
+			(postA, postB) =>
+				new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
+		)
+		const result: PostWithAuthor[] = []
+		for (const sortedPost of sortedPosts) {
+			const postWithAuthor = {
+				post: {
+					...sortedPost,
+					createdAt: sortedPost.createdAt.toString(),
+					isLikedBySignInUser: postsLikedBySignInUser.some(
+						(postId) => postId === sortedPost.id
+					),
+				},
+				author: filterClarkClientToUser(author),
+			} as PostWithAuthor
+			if (postWithAuthor.post.poll) {
+				postWithAuthor.post.poll.choiceVotedBySignInUser = postsPollVotedByUser.find(
+					(value) => value.postId === sortedPost.id
+				)?.choiceId
+			}
+			result.push(postWithAuthor)
+		}
+
+		return result
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		const posts = await ctx.prisma.post.findMany({ take: 10 })

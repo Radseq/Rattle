@@ -6,6 +6,14 @@ import relativeTime from "dayjs/plugin/relativeTime"
 import { type TimeLeft } from "~/hooks/useTimeLeft"
 dayjs.extend(relativeTime)
 
+const printTime = (word: "day" | "hour" | "minute", value: number) => {
+	if (value < 1) {
+		return ""
+	}
+
+	return `${value} ${word}${value > 1 ? "s" : ""}`
+}
+
 export const PostPoll: FC<{ poll: Poll; pollTimeLeft: TimeLeft | null; pollEndTime: string }> = ({
 	poll,
 	pollTimeLeft,
@@ -34,9 +42,12 @@ export const PostPoll: FC<{ poll: Poll; pollTimeLeft: TimeLeft | null; pollEndTi
 				<span className="m-1">·</span>
 				{pollTimeLeft ? (
 					<span>
-						{pollTimeLeft.days > 0 && `${pollTimeLeft.days} days `}
-						{pollTimeLeft.hours > 0 && `${pollTimeLeft.hours} hours `}
-						{pollTimeLeft.minutes > 0 && `, ${pollTimeLeft.minutes} minutes`} left
+						{`${printTime("day", pollTimeLeft.days)}${
+							pollTimeLeft.hours > 0 ? ", " : " "
+						}
+						${printTime("hour", pollTimeLeft.hours)}, 
+						${printTime("minute", pollTimeLeft.minutes)} `}
+						left
 					</span>
 				) : (
 					<span>{dayjs(pollEndTime).fromNow()}</span>
