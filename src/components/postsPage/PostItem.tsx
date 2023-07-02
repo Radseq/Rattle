@@ -21,6 +21,7 @@ export const PostItem: FC<{
 	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
 	likeAction: (action: "like" | "unlike", postId: string) => void
 	onQuoteClick: (quotedPost: PostWithAuthor) => void
+	onVotePoll: (postId: string, choiceId: number) => void
 }> = ({
 	postWithUser,
 	onOptionClick,
@@ -29,6 +30,7 @@ export const PostItem: FC<{
 	forwardAction,
 	likeAction,
 	onQuoteClick,
+	onVotePoll,
 }) => {
 	const useTime = useTimeLeft(postWithUser.post.createdAt, postWithUser.post.poll?.endDate)
 
@@ -67,6 +69,7 @@ export const PostItem: FC<{
 							pollTimeLeft={useTime}
 							poll={postWithUser.post.poll}
 							pollEndTime={postWithUser.post.poll.endDate}
+							onClickVote={(id) => onVotePoll(postWithUser.post.id, id)}
 						/>
 					)}
 					{postWithUser.post.quotedPost && (

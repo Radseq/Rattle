@@ -14,25 +14,40 @@ const printTime = (word: "day" | "hour" | "minute", value: number) => {
 	return `${value} ${word}${value > 1 ? "s" : ""}`
 }
 
-export const PostPoll: FC<{ poll: Poll; pollTimeLeft: TimeLeft | null; pollEndTime: string }> = ({
-	poll,
-	pollTimeLeft,
-	pollEndTime,
-}) => {
+export const PostPoll: FC<{
+	poll: Poll
+	pollTimeLeft: TimeLeft | null
+	pollEndTime: string
+	onClickVote: (id: number) => void
+}> = ({ poll, pollTimeLeft, pollEndTime, onClickVote }) => {
 	const totalVotes = poll.userVotes.reduce((init, next) => init + next.voteCount, 0)
 
 	return (
 		<div className="w-full">
 			{poll.userVotes.map((vote) => {
+				const percentageValue = percentageOfTotalValue(vote.voteCount, totalVotes)
 				return (
-					<div key={vote.id} className="flex w-full">
+					<div
+						key={vote.id}
+						className="flex w-full"
+						onClick={(e) => {
+							onClickVote(vote.id)
+							e.stopPropagation()
+						}}
+					>
 						<div className="m-2 w-11/12">
-							<div className="rounded-md bg-slate-400">
-								<span className="p-1">{vote.voteCount}</span>
+							<div className="flex">
+								<span>{vote.choice}</span>
+								<div
+									style={{ width: percentageValue + "%" }}
+									className="mx-2 rounded-md bg-slate-400"
+								>
+									<span className="p-1">{vote.voteCount}</span>
+								</div>
 							</div>
 						</div>
 						<div className="m-auto w-1/12">
-							<span>{percentageOfTotalValue(vote.voteCount, totalVotes)}%</span>
+							<span>{percentageValue}%</span>
 						</div>
 					</div>
 				)

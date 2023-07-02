@@ -205,8 +205,30 @@ const ReplayPost: NextPage<{
 		},
 		onError: (e) => {
 			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to delete forward! Please try again later"
+				ParseZodErrorToString(e.data?.zodError) ?? "Failed to vote! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const pollVote = api.profile.votePostPoll.useMutation({
+		onSuccess: (_, { postId, choiceId }) => {
+			toast.success("Voted!")
+			if (replays) {
+				const copyReplays = replays.map((replay) => {
+					if (replay.post.id === postId && replay.post.poll) {
+						replay.post.poll = {
+							...replay.post.poll,
+							choiceVotedBySignInUser: choiceId,
+						}
+					}
+					return replay
+				})
+				setReplays(copyReplays)
+			}
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ?? "Failed to vote! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -257,6 +279,9 @@ const ReplayPost: NextPage<{
 								pollTimeLeft={useTime}
 								poll={post.poll}
 								pollEndTime={post.poll.endDate}
+								onClickVote={(id) =>
+									pollVote.mutate({ postId: post.id, choiceId: id })
+								}
 							/>
 						</div>
 					) : (
@@ -314,6 +339,9 @@ const ReplayPost: NextPage<{
 									}
 								}}
 								onQuoteClick={() => setQuotePopUp(replay)}
+								onVotePoll={(postId, choiceId) =>
+									pollVote.mutate({ postId, choiceId })
+								}
 							/>
 						))}
 					</ul>

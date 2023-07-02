@@ -94,12 +94,12 @@ export const FetchPosts: FC<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
 			if (posts) {
-				const copyPosts = posts.map((post) => {
-					if (post.post.id === postId) {
-						post.post.likeCount -= 1
-						post.post.isLikedBySignInUser = false
+				const copyPosts = posts.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId) {
+						postWithAuthor.post.likeCount -= 1
+						postWithAuthor.post.isLikedBySignInUser = false
 					}
-					return post
+					return postWithAuthor
 				})
 				setPosts(copyPosts)
 			}
@@ -116,12 +116,12 @@ export const FetchPosts: FC<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Forwarded!")
 			if (posts) {
-				const copyPosts = posts.map((post) => {
-					if (post.post.id === postId) {
-						post.post.forwardsCount += 1
-						post.post.isForwardedPostBySignInUser = true
+				const copyPosts = posts.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId) {
+						postWithAuthor.post.forwardsCount += 1
+						postWithAuthor.post.isForwardedPostBySignInUser = true
 					}
-					return post
+					return postWithAuthor
 				})
 				setPosts(copyPosts)
 			}
@@ -143,6 +143,29 @@ export const FetchPosts: FC<{
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
 				"Failed to delete forward! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
+	const pollVote = api.profile.votePostPoll.useMutation({
+		onSuccess: (_, { postId, choiceId }) => {
+			toast.success("Voted!")
+			if (posts) {
+				const copyPost = posts.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
+						postWithAuthor.post.poll = {
+							...postWithAuthor.post.poll,
+							choiceVotedBySignInUser: choiceId,
+						}
+					}
+					return postWithAuthor
+				})
+				setPosts(copyPost)
+			}
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ?? "Failed to vote! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -205,6 +228,7 @@ export const FetchPosts: FC<{
 							}
 						}}
 						onQuoteClick={() => setQuotePopUp(postsWithUser)}
+						onVotePoll={(postId, choiceId) => pollVote.mutate({ postId, choiceId })}
 					/>
 				))}
 			</ul>

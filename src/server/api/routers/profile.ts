@@ -75,4 +75,45 @@ export const profileRouter = createTRPCRouter({
 
 			return extended
 		}),
+	votePostPoll: privateProcedure
+		.input(
+			z.object({
+				postId: z.string().min(25, { message: "wrong postId" }),
+				choiceId: z.number(),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const alreadyVoted = await ctx.prisma.userPollVote.findFirst({
+				where: {
+					postId: input.postId,
+					userId: ctx.authUserId,
+				},
+			})
+
+			if (alreadyVoted && alreadyVoted.choiceId === input.choiceId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "You already voted this choice",
+				})
+			} else if (alreadyVoted) {
+				const updateVote = await ctx.prisma.userPollVote.update({
+					where: {
+						id: alreadyVoted.id,
+					},
+					data: {
+						choiceId: input.choiceId,
+					},
+				})
+				return updateVote.id
+			} else {
+				const result = await ctx.prisma.userPollVote.create({
+					data: {
+						userId: ctx.authUserId,
+						choiceId: input.choiceId,
+						postId: input.postId,
+					},
+				})
+				return result.id
+			}
+		}),
 })
