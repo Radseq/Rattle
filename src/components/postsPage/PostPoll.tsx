@@ -39,7 +39,7 @@ export const PostPoll: FC<{
 							<div className="flex">
 								<span>{vote.choice}</span>
 								<div
-									style={{ width: percentageValue + "%" }}
+									style={{ width: `${percentageValue}%` }}
 									className="mx-2 rounded-md bg-slate-400"
 								>
 									<span className="p-1">{vote.voteCount}</span>
