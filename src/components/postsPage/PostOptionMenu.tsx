@@ -4,10 +4,9 @@ import { type PostMenuItemsType } from "./types"
 import { ListItem } from "../styledHTMLElements/StyledListItem"
 
 export const PostOptionMenu: FC<{
-	postId: string
-	onMenuItemClick: (action: string, postId: string) => void
+	onMenuItemClick: (action: "delete") => void
 	menuItemsType: PostMenuItemsType
-}> = ({ onMenuItemClick, postId, menuItemsType }) => {
+}> = ({ onMenuItemClick, menuItemsType }) => {
 	return (
 		<ul
 			className="absolute right-1 h-full w-64 flex-col rounded-lg 
@@ -18,7 +17,7 @@ export const PostOptionMenu: FC<{
 				<ListItem
 					onClick={(e) => {
 						e.stopPropagation()
-						onMenuItemClick("delete", postId)
+						onMenuItemClick("delete")
 					}}
 				>
 					<Icon iconKind={"trash"} />

@@ -18,7 +18,7 @@ export const PostPoll: FC<{
 	poll: Poll
 	pollTimeLeft: TimeLeft | null
 	pollEndTime: string
-	onClickVote: (id: number) => void
+	onClickVote: (choiceId: number) => void
 }> = ({ poll, pollTimeLeft, pollEndTime, onClickVote }) => {
 	const totalVotes = poll.userVotes.reduce((init, next) => init + next.voteCount, 0)
 

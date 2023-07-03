@@ -5,7 +5,7 @@ import { Layout } from "~/components/Layout"
 import { PostContent } from "~/components/postReplayPage/PostContent"
 import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
-import { PostItem } from "~/components/postsPage/PostItem"
+import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
@@ -252,12 +252,35 @@ const ReplayPost: NextPage<{
 		}
 	}
 
-	const handlePostOptionClick = (action: string, postId: string) => {
-		switch (action) {
-			case "delete":
-				deletePost.mutate(postId)
+	const handlePostClick = (clickCapture: ClickCapture, postsWithUser: PostWithAuthor) => {
+		const { post } = postsWithUser
+		switch (clickCapture.action) {
+			case "navigation":
+				handleNavigateToPost(post.id, postsWithUser.author.username)
 				break
-
+			case "deletePost":
+				deletePost.mutate(post.id)
+				break
+			case "forward":
+				forwardPost.mutate(post.id)
+				break
+			case "deleteForward":
+				removePostForward.mutate(post.id)
+				break
+			case "like":
+				likePost.mutate(post.id)
+				break
+			case "unlike":
+				unlikePost.mutate(post.id)
+				break
+			case "quote":
+				setQuotePopUp(postsWithUser)
+				break
+			case "vote":
+				if (clickCapture.choiceId) {
+					pollVote.mutate({ postId: post.id, choiceId: clickCapture?.choiceId })
+				}
+				break
 			default:
 				break
 		}
@@ -279,8 +302,8 @@ const ReplayPost: NextPage<{
 								pollTimeLeft={useTime}
 								poll={post.poll}
 								pollEndTime={post.poll.endDate}
-								onClickVote={(id) =>
-									pollVote.mutate({ postId: post.id, choiceId: id })
+								onClickVote={(choiceId) =>
+									pollVote.mutate({ postId: post.id, choiceId })
 								}
 							/>
 						</div>
@@ -319,29 +342,10 @@ const ReplayPost: NextPage<{
 							<PostItem
 								key={replay.post.id}
 								postWithUser={replay}
-								onNavigateToPost={() => {
-									handleNavigateToPost(replay.post.id, author.username)
-								}}
 								menuItemsType={type}
-								onOptionClick={handlePostOptionClick}
-								forwardAction={(forward, postId) => {
-									if (forward === "deleteForward") {
-										removePostForward.mutate(postId)
-									} else {
-										forwardPost.mutate(postId)
-									}
+								onClickCapture={(clickCapture) => {
+									handlePostClick(clickCapture, replay)
 								}}
-								likeAction={(action, postId) => {
-									if (action === "like") {
-										likePost.mutate(postId)
-									} else {
-										unlikePost.mutate(postId)
-									}
-								}}
-								onQuoteClick={() => setQuotePopUp(replay)}
-								onVotePoll={(postId, choiceId) =>
-									pollVote.mutate({ postId, choiceId })
-								}
 							/>
 						))}
 					</ul>

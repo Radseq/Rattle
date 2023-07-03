@@ -9,8 +9,8 @@ export const PostFooter: FC<{
 	isLikedByUser: boolean
 	isForwardedByUser: boolean
 	postWithUser: PostWithAuthor
-	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
-	likeAction: (action: "like" | "unlike", postId: string) => void
+	forwardAction: (action: "forward" | "deleteForward") => void
+	likeAction: (action: "like" | "unlike") => void
 	onQuoteClick: () => void
 }> = ({
 	isLikedByUser,
@@ -20,17 +20,16 @@ export const PostFooter: FC<{
 	likeAction,
 	onQuoteClick,
 }) => {
+	const { post, author } = postWithUser
+
 	return (
 		<footer className="mt-3 flex text-gray-500">
-			<Link
-				className="group mr-4 flex"
-				href={`/post/${postWithUser.author.username}/status/${postWithUser.post.id}`}
-			>
+			<Link className="group mr-4 flex" href={`/post/${author.username}/status/${post.id}`}>
 				<div className={"flex rounded-full p-1 group-hover:bg-blue-400"}>
 					<Icon iconKind="chat" />
 				</div>
 				<span className={"self-center pl-1 text-xl group-hover:text-blue-400"}>
-					{postWithUser.post.replaysCount}
+					{post.replaysCount}
 				</span>
 			</Link>
 			<div className="group relative mr-4 flex">
@@ -46,9 +45,9 @@ export const PostFooter: FC<{
 							onClick={(e) => {
 								e.stopPropagation()
 								if (isForwardedByUser) {
-									forwardAction("deleteForward", postWithUser.post.id)
+									forwardAction("deleteForward")
 								} else {
-									forwardAction("forward", postWithUser.post.id)
+									forwardAction("forward")
 								}
 							}}
 						>
@@ -69,7 +68,7 @@ export const PostFooter: FC<{
 					</ul>
 				</div>
 				<span className={"self-center pl-1 text-xl group-hover:text-green-400"}>
-					{postWithUser.post.forwardsCount}
+					{post.forwardsCount}
 				</span>
 			</div>
 			<div
@@ -77,9 +76,9 @@ export const PostFooter: FC<{
 				onClick={(e) => {
 					e.stopPropagation()
 					if (isLikedByUser) {
-						likeAction("unlike", postWithUser.post.id)
+						likeAction("unlike")
 					} else {
-						likeAction("like", postWithUser.post.id)
+						likeAction("like")
 					}
 				}}
 			>
@@ -90,7 +89,7 @@ export const PostFooter: FC<{
 					fillColor={isLikedByUser ? "red" : ""}
 				/>
 				<span className={"self-center pl-1 text-xl group-hover:text-red-500"}>
-					{postWithUser.post.likeCount}
+					{post.likeCount}
 				</span>
 			</div>
 		</footer>

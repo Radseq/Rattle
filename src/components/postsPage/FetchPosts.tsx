@@ -1,7 +1,7 @@
 import { type FC, useEffect, useState } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../LoadingPage"
-import { PostItem } from "./PostItem"
+import { type ClickCapture, PostItem } from "./PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
 import { canOpenPostQuoteDialog, ParseZodErrorToString } from "~/utils/helpers"
@@ -178,23 +178,47 @@ export const FetchPosts: FC<{
 		)
 	}
 
-	const handlePostOptionClick = (action: string, postId: string) => {
-		switch (action) {
-			case "delete":
-				deletePost.mutate(postId)
-				break
-
-			default:
-				break
-		}
-	}
-
 	const handleNavigateToPost = (postId: string, authorUsername: string) => {
 		// preventing navigate when user selecting text e.g post content text
 		if (!window.getSelection()?.toString()) {
 			router
 				.push(`/post/${authorUsername}/status/${postId}`)
 				.catch(() => toast.error("Error while navigation to post"))
+		}
+	}
+
+	const handlePostClick = (clickCapture: ClickCapture, postsWithUser: PostWithAuthor) => {
+		const { post } = postsWithUser
+
+		switch (clickCapture.action) {
+			case "navigation":
+				handleNavigateToPost(post.id, postsWithUser.author.username)
+				break
+			case "deletePost":
+				deletePost.mutate(post.id)
+				break
+			case "forward":
+				forwardPost.mutate(post.id)
+				break
+			case "deleteForward":
+				removePostForward.mutate(post.id)
+				break
+			case "like":
+				likePost.mutate(post.id)
+				break
+			case "unlike":
+				unlikePost.mutate(post.id)
+				break
+			case "quote":
+				setQuotePopUp(postsWithUser)
+				break
+			case "vote":
+				if (clickCapture.choiceId) {
+					pollVote.mutate({ postId: post.id, choiceId: clickCapture.choiceId })
+				}
+				break
+			default:
+				break
 		}
 	}
 
@@ -205,30 +229,10 @@ export const FetchPosts: FC<{
 					<PostItem
 						key={postsWithUser.post.id}
 						postWithUser={postsWithUser}
-						onNavigateToPost={() => {
-							handleNavigateToPost(
-								postsWithUser.post.id,
-								postsWithUser.author.username
-							)
+						onClickCapture={(clickCapture) => {
+							handlePostClick(clickCapture, postsWithUser)
 						}}
 						menuItemsType={type}
-						onOptionClick={handlePostOptionClick}
-						forwardAction={(forward, postId) => {
-							if (forward === "deleteForward") {
-								removePostForward.mutate(postId)
-							} else {
-								forwardPost.mutate(postId)
-							}
-						}}
-						likeAction={(action, postId) => {
-							if (action === "like") {
-								likePost.mutate(postId)
-							} else {
-								unlikePost.mutate(postId)
-							}
-						}}
-						onQuoteClick={() => setQuotePopUp(postsWithUser)}
-						onVotePoll={(postId, choiceId) => pollVote.mutate({ postId, choiceId })}
 					/>
 				))}
 			</ul>
