@@ -12,7 +12,7 @@ import { isFolloweed } from "~/server/api/follow"
 import { getPostById, getPostIdsForwardedByUser } from "~/server/api/posts"
 import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
-import { ParseZodErrorToString } from "~/utils/helpers"
+import { canOpenPostQuoteDialog, ParseZodErrorToString } from "~/utils/helpers"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
@@ -96,8 +96,9 @@ const ReplayPost: NextPage<{
 	})
 
 	const quotePost = api.posts.createQuotedPost.useMutation({
-		onSuccess: () => {
+		onSuccess: async () => {
 			setQuotePopUp(null)
+			await postReplays.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -301,20 +302,22 @@ const ReplayPost: NextPage<{
 					</ul>
 				)}
 			</div>
-			{quotePopUp && user && (
-				<PostQuotePopUp
-					profileImageUrl={user.profileImageUrl}
-					onCloseModal={() => setQuotePopUp(null)}
-					post={quotePopUp}
-					onPostQuote={() => {
-						quotePost.mutate({
-							content: quoteMessage ?? "",
-							quotedPostId: quotePopUp.post.id,
-						})
-					}}
-					onMessageChange={(message) => setQuoteMessage(message)}
-				/>
-			)}
+			<dialog open={canOpenPostQuoteDialog(quotePopUp, user)}>
+				{quotePopUp && user && (
+					<PostQuotePopUp
+						profileImageUrl={user.profileImageUrl}
+						onCloseModal={() => setQuotePopUp(null)}
+						post={quotePopUp}
+						onPostQuote={() => {
+							quotePost.mutate({
+								content: quoteMessage ?? "",
+								quotedPostId: quotePopUp.post.id,
+							})
+						}}
+						onMessageChange={(message) => setQuoteMessage(message)}
+					/>
+				)}
+			</dialog>
 		</Layout>
 	)
 }

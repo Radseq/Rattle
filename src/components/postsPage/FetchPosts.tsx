@@ -4,7 +4,7 @@ import { LoadingPage } from "../LoadingPage"
 import { PostItem } from "./PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { ParseZodErrorToString } from "~/utils/helpers"
+import { canOpenPostQuoteDialog, ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
 import { type PostWithAuthor } from "./types"
@@ -56,8 +56,9 @@ export const FetchPosts: FC<{
 	})
 
 	const quotePost = api.posts.createQuotedPost.useMutation({
-		onSuccess: () => {
+		onSuccess: async () => {
 			setQuotePopUp(null)
+			await getPosts.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -207,20 +208,22 @@ export const FetchPosts: FC<{
 					/>
 				))}
 			</ul>
-			{quotePopUp && user && (
-				<PostQuotePopUp
-					profileImageUrl={user.profileImageUrl}
-					onCloseModal={() => setQuotePopUp(null)}
-					post={quotePopUp}
-					onPostQuote={() => {
-						quotePost.mutate({
-							content: quoteMessage ?? "",
-							quotedPostId: quotePopUp.post.id,
-						})
-					}}
-					onMessageChange={(message) => setQuoteMessage(message)}
-				/>
-			)}
+			<dialog open={canOpenPostQuoteDialog(quotePopUp, user)}>
+				{quotePopUp && user && (
+					<PostQuotePopUp
+						profileImageUrl={user.profileImageUrl}
+						onCloseModal={() => setQuotePopUp(null)}
+						post={quotePopUp}
+						onPostQuote={() => {
+							quotePost.mutate({
+								content: quoteMessage ?? "",
+								quotedPostId: quotePopUp.post.id,
+							})
+						}}
+						onMessageChange={(message) => setQuoteMessage(message)}
+					/>
+				)}
+			</dialog>
 		</div>
 	)
 }
