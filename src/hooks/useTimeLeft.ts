@@ -17,5 +17,9 @@ export const useTimeLeft = (startDate: string | undefined, endDate: string | und
 
 	const timeLeft = calculateTimeLeft(Date.parse(endDate))
 
-	return createOngoingTimer(timeLeft)
+	const result = createOngoingTimer(timeLeft)
+	if (result.days < 0 || result.hours < 0 || result.minutes < 0) {
+		return null
+	}
+	return result
 }

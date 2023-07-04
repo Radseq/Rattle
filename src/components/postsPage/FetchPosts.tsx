@@ -7,7 +7,7 @@ import toast from "react-hot-toast"
 import { canOpenPostQuoteDialog, ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PostWithAuthor } from "./types"
+import { type PollVote, type PostWithAuthor } from "./types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 
@@ -148,20 +148,47 @@ export const FetchPosts: FC<{
 	})
 
 	const pollVote = api.profile.votePostPoll.useMutation({
-		onSuccess: (_, { postId, choiceId }) => {
+		onSuccess: (result: PollVote, { postId }) => {
 			toast.success("Voted!")
-			if (posts) {
-				const copyPost = posts.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
-						postWithAuthor.post.poll = {
-							...postWithAuthor.post.poll,
-							choiceVotedBySignInUser: choiceId,
-						}
-					}
-					return postWithAuthor
-				})
-				setPosts(copyPost)
+			if (!posts) {
+				return
 			}
+
+			const copyPost = posts.map((postWithAuthor) => {
+				if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
+					const poll = { ...postWithAuthor.post.poll }
+					if (result.newChoiceId && !result.oldChoiceId) {
+						poll.choiceVotedBySignInUser = result.newChoiceId
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.newChoiceId) {
+								userVote.voteCount += 1
+							}
+							return userVote
+						})
+					} else if (result.newChoiceId && result.oldChoiceId) {
+						poll.choiceVotedBySignInUser = result.newChoiceId
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.newChoiceId) {
+								userVote.voteCount += 1
+							} else if (userVote.id === result.oldChoiceId) {
+								userVote.voteCount -= 1
+							}
+							return userVote
+						})
+					} else {
+						poll.choiceVotedBySignInUser = undefined
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.oldChoiceId) {
+								userVote.voteCount -= 1
+							}
+							return userVote
+						})
+					}
+					postWithAuthor.post.poll = poll
+				}
+				return postWithAuthor
+			})
+			setPosts(copyPost)
 		},
 		onError: (e) => {
 			const error =
@@ -218,13 +245,16 @@ export const FetchPosts: FC<{
 				}
 				break
 			default:
+				toast.error("Error while post click", {
+					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
 				break
 		}
 	}
 
 	return (
 		<div>
-			<ul className="">
+			<ul>
 				{posts?.map((postsWithUser) => (
 					<PostItem
 						key={postsWithUser.post.id}

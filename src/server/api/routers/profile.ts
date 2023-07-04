@@ -90,11 +90,27 @@ export const profileRouter = createTRPCRouter({
 				},
 			})
 
+			const result: { oldChoiceId: number | null; newChoiceId: number | null } = {
+				newChoiceId: null,
+				oldChoiceId: null,
+			}
+
 			if (alreadyVoted && alreadyVoted.choiceId === input.choiceId) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "You already voted this choice",
+				const deletedVote = await ctx.prisma.userPollVote.delete({
+					where: {
+						id: alreadyVoted.id,
+					},
 				})
+				if (!deletedVote) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "Can't delete vote",
+					})
+				}
+
+				result.newChoiceId = null
+				result.oldChoiceId = alreadyVoted.choiceId
+				return result
 			} else if (alreadyVoted) {
 				const updateVote = await ctx.prisma.userPollVote.update({
 					where: {
@@ -104,16 +120,20 @@ export const profileRouter = createTRPCRouter({
 						choiceId: input.choiceId,
 					},
 				})
-				return updateVote.id
-			} else {
-				const result = await ctx.prisma.userPollVote.create({
-					data: {
-						userId: ctx.authUserId,
-						choiceId: input.choiceId,
-						postId: input.postId,
-					},
-				})
-				return result.id
+				result.newChoiceId = updateVote.choiceId
+				result.oldChoiceId = alreadyVoted.choiceId
+				return result
 			}
+			const addVote = await ctx.prisma.userPollVote.create({
+				data: {
+					userId: ctx.authUserId,
+					choiceId: input.choiceId,
+					postId: input.postId,
+				},
+			})
+
+			result.newChoiceId = addVote.choiceId
+			result.oldChoiceId = null
+			return result
 		}),
 })

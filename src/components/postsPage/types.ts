@@ -1,5 +1,6 @@
 import type { Post as PrismaPost } from "@prisma/client"
 import { type PostAuthor } from "../profilePage/types"
+import { type RouterOutputs } from "~/utils/api"
 
 export type PostWithAuthor = {
 	author: PostAuthor
@@ -36,3 +37,5 @@ export type Post = PrismaPost & {
 	quotedCount: number
 	poll: Poll | null
 }
+
+export type PollVote = RouterOutputs["profile"]["votePostPoll"]

@@ -6,7 +6,7 @@ import { PostContent } from "~/components/postReplayPage/PostContent"
 import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
-import type { Post, PostWithAuthor } from "~/components/postsPage/types"
+import type { PollVote, Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
 import { getPostById, getPostIdsForwardedByUser } from "~/server/api/posts"
@@ -211,20 +211,49 @@ const ReplayPost: NextPage<{
 	})
 
 	const pollVote = api.profile.votePostPoll.useMutation({
-		onSuccess: (_, { postId, choiceId }) => {
+		onSuccess: (result: PollVote, { postId }) => {
 			toast.success("Voted!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === postId && replay.post.poll) {
-						replay.post.poll = {
-							...replay.post.poll,
-							choiceVotedBySignInUser: choiceId,
-						}
-					}
-					return replay
-				})
-				setReplays(copyReplays)
+			if (!replays) {
+				return
 			}
+			const copyPost = replays.map((postWithAuthor) => {
+				if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
+					const poll = {
+						...postWithAuthor.post.poll,
+					}
+
+					if (result.newChoiceId && !result.oldChoiceId) {
+						poll.choiceVotedBySignInUser = result.newChoiceId
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.newChoiceId) {
+								userVote.voteCount += 1
+							}
+							return userVote
+						})
+					} else if (result.newChoiceId && result.oldChoiceId) {
+						poll.choiceVotedBySignInUser = result.newChoiceId
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.newChoiceId) {
+								userVote.voteCount += 1
+							} else if (userVote.id === result.oldChoiceId) {
+								userVote.voteCount -= 1
+							}
+							return userVote
+						})
+					} else {
+						poll.choiceVotedBySignInUser = undefined
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.oldChoiceId) {
+								userVote.voteCount -= 1
+							}
+							return userVote
+						})
+					}
+					postWithAuthor.post.poll = poll
+				}
+				return postWithAuthor
+			})
+			setReplays(copyPost)
 		},
 		onError: (e) => {
 			const error =
