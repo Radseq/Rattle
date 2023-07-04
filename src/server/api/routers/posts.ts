@@ -9,6 +9,7 @@ import {
 	getPostById,
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
+	isPostExists,
 	isUserForwardedPost,
 	isUserLikedPost,
 } from "../posts"
@@ -221,6 +222,14 @@ export const postsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
+			const postExists = await isPostExists(input.quotedPostId)
+			if (!postExists) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Quoted post not exists",
+				})
+			}
+
 			return await ctx.prisma.post.create({
 				data: {
 					authorId,
@@ -378,18 +387,9 @@ export const postsRouter = createTRPCRouter({
 	forwardPost: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
-			const forwardedPostByUser = isUserForwardedPost(ctx.authUserId, input)
-
-			const postToForward = ctx.prisma.post.findFirst({
-				where: {
-					id: input,
-					authorId: ctx.authUserId,
-				},
-			})
-
-			const [isAlreadyForwarded, getPostToForward] = await Promise.all([
-				forwardedPostByUser,
-				postToForward,
+			const [isAlreadyForwarded, postExists] = await Promise.all([
+				isUserForwardedPost(ctx.authUserId, input),
+				isPostExists(input),
 			])
 
 			if (isAlreadyForwarded) {
@@ -398,7 +398,7 @@ export const postsRouter = createTRPCRouter({
 					message: "Post is already forwarded!",
 				})
 			}
-			if (!getPostToForward) {
+			if (!postExists) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
 					message: "Post not exists!",

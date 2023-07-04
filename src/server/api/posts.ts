@@ -232,3 +232,16 @@ export const isUserForwardedPost = async (userId: string, postId: string): Promi
 	}
 	return false
 }
+
+export const isPostExists = async (postId: string): Promise<boolean> => {
+	const post = await prisma.post.count({
+		where: {
+			id: postId,
+		},
+	})
+
+	if (post) {
+		return true
+	}
+	return false
+}
