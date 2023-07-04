@@ -31,8 +31,10 @@ export const PostPoll: FC<{
 						key={vote.id}
 						className="flex w-full"
 						onClick={(e) => {
-							onClickVote(vote.id)
-							e.stopPropagation()
+							if (pollTimeLeft) {
+								onClickVote(vote.id)
+								e.stopPropagation()
+							}
 						}}
 					>
 						<div className="m-2 w-11/12">

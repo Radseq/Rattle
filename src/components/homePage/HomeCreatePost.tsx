@@ -139,18 +139,26 @@ export const HomeCreatePost: FC<{
 					<div
 						className="flex p-2"
 						onClick={() => {
-							setPostContent({
-								...postContent,
-								message: postContent.message ?? "",
-								poll: {
-									choices: ["", ""],
-									length: {
-										days: 1,
-										hours: 0,
-										minutes: 0,
+							if (postContent.poll) {
+								setPostContent({
+									...postContent,
+									message: postContent.message ?? "",
+									poll: undefined,
+								})
+							} else {
+								setPostContent({
+									...postContent,
+									message: postContent.message ?? "",
+									poll: {
+										choices: ["", ""],
+										length: {
+											days: 1,
+											hours: 0,
+											minutes: 0,
+										},
 									},
-								},
-							})
+								})
+							}
 						}}
 					>
 						<Icon iconKind="poll" />

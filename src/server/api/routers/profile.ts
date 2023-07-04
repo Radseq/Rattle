@@ -83,12 +83,27 @@ export const profileRouter = createTRPCRouter({
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
-			const alreadyVoted = await ctx.prisma.userPollVote.findFirst({
+			const getPostAlreadyVoted = ctx.prisma.userPollVote.findFirst({
 				where: {
 					postId: input.postId,
 					userId: ctx.authUserId,
 				},
 			})
+
+			const getPostPoll = ctx.prisma.postPoll.findFirst({
+				where: {
+					postId: input.postId,
+				},
+			})
+
+			const [alreadyVoted, postPoll] = await Promise.all([getPostAlreadyVoted, getPostPoll])
+
+			if (postPoll && new Date(postPoll.endDate) < new Date()) {
+				throw new TRPCError({
+					code: "CONFLICT",
+					message: "Can't vote ended poll",
+				})
+			}
 
 			const result: { oldChoiceId: number | null; newChoiceId: number | null } = {
 				newChoiceId: null,
