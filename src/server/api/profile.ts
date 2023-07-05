@@ -65,3 +65,48 @@ export const getUserVotedAnyPostsPoll = async (
 		}
 	})
 }
+
+export const getPostsLikedByUser = async (userId: string, postIds: string[]) => {
+	const posts = await prisma.userLikePost.findMany({
+		where: {
+			userId,
+			postId: {
+				in: postIds,
+			},
+		},
+		select: {
+			postId: true,
+		},
+	})
+
+	return posts.map((post) => post.postId)
+}
+
+export const isUserLikedPost = async (userId: string, postId: string): Promise<boolean> => {
+	const alreadyLikePost = await prisma.userLikePost.findFirst({
+		where: {
+			userId,
+			postId,
+		},
+	})
+
+	if (alreadyLikePost) {
+		return true
+	}
+	return false
+}
+
+export const getPostIdsForwardedByUser = async (userId: string) => {
+	const result = await prisma.userPostForward.findMany({
+		where: {
+			userId,
+		},
+		select: {
+			postId: true,
+		},
+	})
+	if (result) {
+		return result.map((post) => post.postId)
+	}
+	return []
+}

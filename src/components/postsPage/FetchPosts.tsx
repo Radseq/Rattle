@@ -23,7 +23,7 @@ export const FetchPosts: FC<{
 	const [quoteMessage, setQuoteMessage] = useState<string>()
 	const [posts, setPosts] = useState<PostWithAuthor[]>()
 
-	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
+	const forwardedPostIdsByUser = api.profile.getPostIdsForwardedByUser.useQuery()
 	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
 
 	useEffect(() => {
@@ -68,7 +68,7 @@ export const FetchPosts: FC<{
 		},
 	})
 
-	const likePost = api.posts.setPostLiked.useMutation({
+	const likePost = api.profile.setPostLiked.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Liked!")
 			if (posts) {
@@ -90,7 +90,7 @@ export const FetchPosts: FC<{
 		},
 	})
 
-	const unlikePost = api.posts.setPostUnliked.useMutation({
+	const unlikePost = api.profile.setPostUnliked.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
 			if (posts) {

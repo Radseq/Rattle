@@ -5,16 +5,13 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { addTimeToDate, filterClarkClientToUser, type TimeAddToDate } from "~/utils/helpers"
+import { getPostById, isPostExists, isUserForwardedPost } from "../posts"
+import { type PostWithAuthor } from "~/components/postsPage/types"
 import {
-	getPostById,
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
-	isPostExists,
-	isUserForwardedPost,
-	isUserLikedPost,
-} from "../posts"
-import { type PostWithAuthor } from "~/components/postsPage/types"
-import { getUserVotedAnyPostsPoll } from "../profile"
+	getUserVotedAnyPostsPoll,
+} from "../profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -276,55 +273,6 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
-	setPostLiked: privateProcedure
-		.input(z.string().min(25, { message: "wrong postId" }))
-		.mutation(async ({ ctx, input }) => {
-			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
-
-			if (alreadyLikePost) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Post already liked!",
-				})
-			}
-
-			const result = await ctx.prisma.userLikePost.create({
-				data: {
-					postId: input,
-					userId: ctx.authUserId,
-				},
-			})
-			return result.postId
-		}),
-	setPostUnliked: privateProcedure
-		.input(z.string().min(25, { message: "wrong postId" }))
-		.mutation(async ({ ctx, input }) => {
-			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
-
-			if (!alreadyLikePost) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Post is not liked!",
-				})
-			}
-
-			await ctx.prisma.userLikePost.deleteMany({
-				where: {
-					postId: input,
-					userId: ctx.authUserId,
-				},
-			})
-
-			return input
-		}),
-	getPostsLikedByUser: privateProcedure
-		.input(z.string().array().optional())
-		.query(async ({ input, ctx }) => {
-			if (!input) {
-				return []
-			}
-			return await getPostsLikedByUser(ctx.authUserId, input)
-		}),
 	getPostReplays: publicProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.query(async ({ input, ctx }) => {
@@ -441,7 +389,4 @@ export const postsRouter = createTRPCRouter({
 
 			return input
 		}),
-	getPostIdsForwardedByUser: privateProcedure.query(async ({ ctx }) => {
-		return getPostIdsForwardedByUser(ctx.authUserId)
-	}),
 })

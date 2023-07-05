@@ -2,7 +2,12 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import { getProfileByUserName } from "../profile"
+import {
+	getPostIdsForwardedByUser,
+	getPostsLikedByUser,
+	getProfileByUserName,
+	isUserLikedPost,
+} from "../profile"
 
 import type { ProfileExtend } from "~/components/profilePage/types"
 import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
@@ -151,4 +156,56 @@ export const profileRouter = createTRPCRouter({
 			result.oldChoiceId = null
 			return result
 		}),
+	setPostLiked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
+
+			if (alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post already liked!",
+				})
+			}
+
+			const result = await ctx.prisma.userLikePost.create({
+				data: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+			return result.postId
+		}),
+	setPostUnliked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
+
+			if (!alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is not liked!",
+				})
+			}
+
+			await ctx.prisma.userLikePost.deleteMany({
+				where: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+
+			return input
+		}),
+	getPostsLikedByUser: privateProcedure
+		.input(z.string().array().optional())
+		.query(async ({ input, ctx }) => {
+			if (!input) {
+				return []
+			}
+			return await getPostsLikedByUser(ctx.authUserId, input)
+		}),
+	getPostIdsForwardedByUser: privateProcedure.query(async ({ ctx }) => {
+		return getPostIdsForwardedByUser(ctx.authUserId)
+	}),
 })

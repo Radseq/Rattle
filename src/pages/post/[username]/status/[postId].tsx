@@ -9,8 +9,8 @@ import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
 import type { PollVote, Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
-import { getPostById, getPostIdsForwardedByUser } from "~/server/api/posts"
-import { getProfileByUserName } from "~/server/api/profile"
+import { getPostById } from "~/server/api/posts"
+import { getPostIdsForwardedByUser, getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { canOpenPostQuoteDialog, ParseZodErrorToString } from "~/utils/helpers"
 import { CONFIG } from "~/config"
@@ -123,7 +123,7 @@ const ReplayPost: NextPage<{
 		},
 	})
 
-	const likePost = api.posts.setPostLiked.useMutation({
+	const likePost = api.profile.setPostLiked.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Liked!")
 			if (replays) {
@@ -145,7 +145,7 @@ const ReplayPost: NextPage<{
 		},
 	})
 
-	const unlikePost = api.posts.setPostUnliked.useMutation({
+	const unlikePost = api.profile.setPostUnliked.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
 			if (replays) {
