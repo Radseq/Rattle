@@ -10,6 +10,7 @@ import { PostFooter } from "./PostFooter"
 import { PostQuoteItem } from "./PostQuoteItem"
 import { PostPoll } from "./PostPoll"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
+import { PostTitle } from "./PostTitle"
 
 dayjs.extend(relativeTime)
 
@@ -51,19 +52,7 @@ export const PostItem: FC<{
 					height={128}
 				></Image>
 				<div className="w-full pl-2">
-					<div className="text-lg font-semibold">
-						<span className="pr-1">{author.fullName}</span>
-						<span>
-							<Link
-								onClick={(e) => e.stopPropagation()}
-								href={`/${author.username}`}
-							>{`@${author.username}`}</Link>
-						</span>
-						<span className="p-1 text-slate-400">·</span>
-						<span className="font-normal text-slate-400">
-							{dayjs(post.createdAt).fromNow()}
-						</span>
-					</div>
+					<PostTitle author={author} createdAt={post.createdAt} />
 					<span>{post.content}</span>
 					{post.poll && (
 						<PostPoll
