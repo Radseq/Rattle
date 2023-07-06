@@ -67,7 +67,7 @@ export const PostPoll: FC<{
 						left
 					</span>
 				) : (
-					<span>Ended {dayjs(pollEndTime).fromNow()}</span>
+					<span>{dayjs(pollEndTime).fromNow()}</span>
 				)}
 			</div>
 		</div>
