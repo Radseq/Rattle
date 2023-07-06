@@ -15,7 +15,8 @@ export const getPostById = async (postId: string) => {
 	const getForwardsCount = getPostForwatdCount(postId)
 	const getQuotedPost = getPostQuoteById(postId)
 	const getQuotedCount = getPostQuotedCount(postId)
-	const [post, likeCount, replaysCount, forwardsCount, quotedPost, quotedCount] =
+	const getPostPoll = getPostPollById(postId)
+	const [post, likeCount, replaysCount, forwardsCount, quotedPost, quotedCount, postPoll] =
 		await Promise.all([
 			getPost,
 			getLikeCount,
@@ -23,6 +24,7 @@ export const getPostById = async (postId: string) => {
 			getForwardsCount,
 			getQuotedPost,
 			getQuotedCount,
+			getPostPoll,
 		])
 	if (!post) {
 		throw new TRPCError({
@@ -46,7 +48,42 @@ export const getPostById = async (postId: string) => {
 		forwardsCount,
 		quotedPost: quotedPost,
 		quotedCount: quotedCount,
+		poll: postPoll,
 	} as Post
+}
+
+export const getPostPollById = async (postId: string) => {
+	const getPoll = await prisma.postPoll.findUnique({
+		where: {
+			postId,
+		},
+		include: {
+			choices: true,
+		},
+	})
+
+	if (!getPoll) {
+		return null
+	}
+
+	const getPollVotesByUser = await prisma.userPollVote.findMany({
+		where: {
+			postId: postId,
+		},
+	})
+
+	const userVotes = getPoll.choices.map((pollChoice) => {
+		return {
+			id: pollChoice.id,
+			choice: pollChoice.choice,
+			voteCount: getPollVotesByUser.filter((vote) => vote.choiceId === pollChoice.id).length,
+		}
+	})
+
+	return {
+		endDate: getPoll.endDate.toString(),
+		userVotes,
+	}
 }
 
 export const getPostQuoteById = async (postId: string) => {
@@ -130,57 +167,12 @@ export const getPostReplayCount = async (postId: string) => {
 	})
 }
 
-export const getPostsLikedByUser = async (userId: string, postIds: string[]) => {
-	const posts = await prisma.userLikePost.findMany({
-		where: {
-			userId,
-			postId: {
-				in: postIds,
-			},
-		},
-		select: {
-			postId: true,
-		},
-	})
-
-	return posts.map((post) => post.postId)
-}
-
 export const getPostForwatdCount = async (postId: string) => {
 	return await prisma.userPostForward.count({
 		where: {
 			postId,
 		},
 	})
-}
-
-export const getPostIdsForwardedByUser = async (userId: string) => {
-	const result = await prisma.userPostForward.findMany({
-		where: {
-			userId,
-		},
-		select: {
-			postId: true,
-		},
-	})
-	if (result) {
-		return result.map((post) => post.postId)
-	}
-	return []
-}
-
-export const isUserLikedPost = async (userId: string, postId: string): Promise<boolean> => {
-	const alreadyLikePost = await prisma.userLikePost.findFirst({
-		where: {
-			userId,
-			postId,
-		},
-	})
-
-	if (alreadyLikePost) {
-		return true
-	}
-	return false
 }
 
 export const isUserForwardedPost = async (userId: string, postId: string): Promise<boolean> => {

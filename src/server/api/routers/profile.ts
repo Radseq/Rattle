@@ -2,7 +2,12 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import { getProfileByUserName } from "../profile"
+import {
+	getPostIdsForwardedByUser,
+	getPostsLikedByUser,
+	getProfileByUserName,
+	isUserLikedPost,
+} from "../profile"
 
 import type { ProfileExtend } from "~/components/profilePage/types"
 import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
@@ -75,4 +80,132 @@ export const profileRouter = createTRPCRouter({
 
 			return extended
 		}),
+	votePostPoll: privateProcedure
+		.input(
+			z.object({
+				postId: z.string().min(25, { message: "wrong postId" }),
+				choiceId: z.number(),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const getPostAlreadyVoted = ctx.prisma.userPollVote.findFirst({
+				where: {
+					postId: input.postId,
+					userId: ctx.authUserId,
+				},
+			})
+
+			const getPostPoll = ctx.prisma.postPoll.findFirst({
+				where: {
+					postId: input.postId,
+				},
+			})
+
+			const [alreadyVoted, postPoll] = await Promise.all([getPostAlreadyVoted, getPostPoll])
+
+			if (postPoll && new Date(postPoll.endDate) < new Date()) {
+				throw new TRPCError({
+					code: "CONFLICT",
+					message: "Can't vote ended poll",
+				})
+			}
+
+			const result: { oldChoiceId: number | null; newChoiceId: number | null } = {
+				newChoiceId: null,
+				oldChoiceId: null,
+			}
+
+			if (alreadyVoted && alreadyVoted.choiceId === input.choiceId) {
+				const deletedVote = await ctx.prisma.userPollVote.delete({
+					where: {
+						id: alreadyVoted.id,
+					},
+				})
+				if (!deletedVote) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "Can't delete vote",
+					})
+				}
+
+				result.newChoiceId = null
+				result.oldChoiceId = alreadyVoted.choiceId
+				return result
+			} else if (alreadyVoted) {
+				const updateVote = await ctx.prisma.userPollVote.update({
+					where: {
+						id: alreadyVoted.id,
+					},
+					data: {
+						choiceId: input.choiceId,
+					},
+				})
+				result.newChoiceId = updateVote.choiceId
+				result.oldChoiceId = alreadyVoted.choiceId
+				return result
+			}
+			const addVote = await ctx.prisma.userPollVote.create({
+				data: {
+					userId: ctx.authUserId,
+					choiceId: input.choiceId,
+					postId: input.postId,
+				},
+			})
+
+			result.newChoiceId = addVote.choiceId
+			result.oldChoiceId = null
+			return result
+		}),
+	setPostLiked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
+
+			if (alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post already liked!",
+				})
+			}
+
+			const result = await ctx.prisma.userLikePost.create({
+				data: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+			return result.postId
+		}),
+	setPostUnliked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
+
+			if (!alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is not liked!",
+				})
+			}
+
+			await ctx.prisma.userLikePost.deleteMany({
+				where: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+
+			return input
+		}),
+	getPostsLikedByUser: privateProcedure
+		.input(z.string().array().optional())
+		.query(async ({ input, ctx }) => {
+			if (!input) {
+				return []
+			}
+			return await getPostsLikedByUser(ctx.authUserId, input)
+		}),
+	getPostIdsForwardedByUser: privateProcedure.query(async ({ ctx }) => {
+		return getPostIdsForwardedByUser(ctx.authUserId)
+	}),
 })

@@ -4,16 +4,14 @@ import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import { filterClarkClientToUser } from "~/utils/helpers"
+import { addTimeToDate, filterClarkClientToUser, type TimeAddToDate } from "~/utils/helpers"
+import { getPostById, isPostExists, isUserForwardedPost } from "../posts"
+import { type PostWithAuthor } from "~/components/postsPage/types"
 import {
-	getPostById,
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
-	isPostExists,
-	isUserForwardedPost,
-	isUserLikedPost,
-} from "../posts"
-import { type PostWithAuthor } from "~/components/postsPage/types"
+	getUserVotedAnyPostsPoll,
+} from "../profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -45,8 +43,17 @@ export const postsRouter = createTRPCRouter({
 		}
 
 		let postsLikedBySignInUser: string[] = []
+		let postsPollVotedByUser: {
+			postId: string
+			choiceId: number
+		}[] = []
 		if (ctx.authUserId) {
-			postsLikedBySignInUser = await getPostsLikedByUser(ctx.authUserId, postIds)
+			const [getPostsLikedBySignInUser, getPostsPollVotedByUser] = await Promise.all([
+				getPostsLikedByUser(ctx.authUserId, postIds),
+				getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
+			])
+			postsLikedBySignInUser = getPostsLikedBySignInUser
+			postsPollVotedByUser = getPostsPollVotedByUser
 		}
 
 		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
@@ -60,24 +67,31 @@ export const postsRouter = createTRPCRouter({
 			})
 		}
 
-		return posts
-			.sort(
-				(postA, postB) =>
-					new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
-			)
-			.map(
-				(post) =>
-					({
-						post: {
-							...post,
-							createdAt: post.createdAt.toString(),
-							isLikedBySignInUser: postsLikedBySignInUser.some(
-								(postId) => postId === post.id
-							),
-						},
-						author: filterClarkClientToUser(author),
-					} as PostWithAuthor)
-			)
+		const sortedPosts = posts.sort(
+			(postA, postB) =>
+				new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
+		)
+		const result: PostWithAuthor[] = []
+		for (const sortedPost of sortedPosts) {
+			const postWithAuthor = {
+				post: {
+					...sortedPost,
+					createdAt: sortedPost.createdAt.toString(),
+					isLikedBySignInUser: postsLikedBySignInUser.some(
+						(postId) => postId === sortedPost.id
+					),
+				},
+				author: filterClarkClientToUser(author),
+			} as PostWithAuthor
+			if (postWithAuthor.post.poll) {
+				postWithAuthor.post.poll.choiceVotedBySignInUser = postsPollVotedByUser.find(
+					(value) => value.postId === sortedPost.id
+				)?.choiceId
+			}
+			result.push(postWithAuthor)
+		}
+
+		return result
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
@@ -106,12 +120,25 @@ export const postsRouter = createTRPCRouter({
 	createPost: privateProcedure
 		.input(
 			z.object({
-				content: z
+				message: z
 					.string()
 					.min(1, { message: "Message is too small" })
 					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
 						message: `Message is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
 					}),
+				poll: z
+					.object({
+						choices: z
+							.string()
+							.array()
+							.min(1, { message: "Post poll shoud have at last two elements!" }),
+						length: z.object({
+							days: z.number(),
+							hours: z.number(),
+							minutes: z.number(),
+						}),
+					})
+					.optional(),
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -122,12 +149,55 @@ export const postsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
-			return await ctx.prisma.post.create({
-				data: {
-					authorId,
-					content: input.content,
-				},
-			})
+			if (input.poll) {
+				await ctx.prisma.$transaction(async (tx) => {
+					// input.poll give us belowe error even if code is in quard if (input.poll)
+					if (!input.poll) {
+						throw new Error("Poll is not provided for post!")
+					}
+
+					const createPost = await tx.post.create({
+						data: {
+							authorId,
+							content: input.message,
+						},
+					})
+
+					const endDate = addTimeToDate(new Date(), input.poll.length as TimeAddToDate)
+					if (!endDate) {
+						throw new Error("Can't set end date for poll!")
+					}
+
+					const pollChoices = input.poll.choices.map((choice) => {
+						return { choice: choice }
+					})
+					const createPoll = await tx.postPoll.create({
+						data: {
+							choices: {
+								create: pollChoices,
+							},
+							postId: createPost.id,
+							endDate,
+						},
+					})
+
+					if (createPost && createPoll) {
+						return true
+					}
+				})
+			} else {
+				const createPost = await ctx.prisma.post.create({
+					data: {
+						authorId,
+						content: input.message,
+					},
+				})
+				if (createPost) {
+					return true
+				}
+			}
+
+			return false
 		}),
 	createQuotedPost: privateProcedure
 		.input(
@@ -202,55 +272,6 @@ export const postsRouter = createTRPCRouter({
 					authorId: ctx.authUserId,
 				},
 			})
-		}),
-	setPostLiked: privateProcedure
-		.input(z.string().min(25, { message: "wrong postId" }))
-		.mutation(async ({ ctx, input }) => {
-			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
-
-			if (alreadyLikePost) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Post already liked!",
-				})
-			}
-
-			const result = await ctx.prisma.userLikePost.create({
-				data: {
-					postId: input,
-					userId: ctx.authUserId,
-				},
-			})
-			return result.postId
-		}),
-	setPostUnliked: privateProcedure
-		.input(z.string().min(25, { message: "wrong postId" }))
-		.mutation(async ({ ctx, input }) => {
-			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
-
-			if (!alreadyLikePost) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Post is not liked!",
-				})
-			}
-
-			await ctx.prisma.userLikePost.deleteMany({
-				where: {
-					postId: input,
-					userId: ctx.authUserId,
-				},
-			})
-
-			return input
-		}),
-	getPostsLikedByUser: privateProcedure
-		.input(z.string().array().optional())
-		.query(async ({ input, ctx }) => {
-			if (!input) {
-				return []
-			}
-			return await getPostsLikedByUser(ctx.authUserId, input)
 		}),
 	getPostReplays: publicProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
@@ -368,7 +389,4 @@ export const postsRouter = createTRPCRouter({
 
 			return input
 		}),
-	getPostIdsForwardedByUser: privateProcedure.query(async ({ ctx }) => {
-		return getPostIdsForwardedByUser(ctx.authUserId)
-	}),
 })

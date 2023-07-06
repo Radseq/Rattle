@@ -8,71 +8,92 @@ import { PostOptionMenu } from "./PostOptionMenu"
 import { Icon } from "../Icon"
 import { PostFooter } from "./PostFooter"
 import { PostQuoteItem } from "./PostQuoteItem"
+import { PostPoll } from "./PostPoll"
+import { useTimeLeft } from "~/hooks/useTimeLeft"
+import { PostTitle } from "./PostTitle"
 
 dayjs.extend(relativeTime)
+
+export type ClickCapture = {
+	action:
+		| "deletePost"
+		| "quote"
+		| "forward"
+		| "deleteForward"
+		| "like"
+		| "unlike"
+		| "navigation"
+		| "vote"
+	choiceId?: number
+}
 
 export const PostItem: FC<{
 	postWithUser: PostWithAuthor
 	menuItemsType: PostMenuItemsType
-	onOptionClick: (action: string, postId: string) => void
-	onNavigateToPost: () => void
-	forwardAction: (action: "forward" | "deleteForward", postId: string) => void
-	likeAction: (action: "like" | "unlike", postId: string) => void
-	onQuoteClick: (quotedPost: PostWithAuthor) => void
-}> = ({
-	postWithUser,
-	onOptionClick,
-	menuItemsType,
-	onNavigateToPost,
-	forwardAction,
-	likeAction,
-	onQuoteClick,
-}) => {
+	onClickCapture: (clickCapture: ClickCapture) => void
+}> = ({ postWithUser, menuItemsType, onClickCapture }) => {
+	const useTime = useTimeLeft(postWithUser.post.createdAt, postWithUser.post.poll?.endDate)
+	const { post, author } = postWithUser
 	return (
 		<li
 			className="cursor-pointer rounded-lg py-2 hover:bg-gray-100"
 			onClick={() => {
-				onNavigateToPost()
+				onClickCapture({
+					action: "navigation",
+				})
 			}}
 		>
 			<main className="flex">
 				<Image
 					className="h-16 w-16 rounded-full"
-					src={postWithUser.author.profileImageUrl}
+					src={author.profileImageUrl}
 					alt={"avatar"}
 					width={128}
 					height={128}
 				></Image>
 				<div className="w-full pl-2">
-					<div className="text-lg font-semibold">
-						<span className="pr-1">{postWithUser.author.fullName}</span>
-						<span>
-							<Link
-								onClick={(e) => e.stopPropagation()}
-								href={`/${postWithUser.author.username}`}
-							>{`@${postWithUser.author.username}`}</Link>
-						</span>
-						<span className="p-1 text-slate-400">·</span>
-						<span className="font-normal text-slate-400">
-							{dayjs(postWithUser.post.createdAt).fromNow()}
-						</span>
-					</div>
-					<span>{postWithUser.post.content}</span>
-					{postWithUser.post.quotedPost && (
+					<PostTitle author={author} createdAt={post.createdAt} />
+					<span>{post.content}</span>
+					{post.poll && (
+						<PostPoll
+							pollTimeLeft={useTime}
+							poll={post.poll}
+							pollEndTime={post.poll.endDate}
+							onClickVote={(id) =>
+								onClickCapture({
+									action: "vote",
+									choiceId: id,
+								})
+							}
+						/>
+					)}
+					{post.quotedPost && (
 						<Link
 							onClick={(e) => e.stopPropagation()}
-							href={`/post/${postWithUser.post.quotedPost.author.username}/status/${postWithUser.post.quotedPost.post.id}`}
+							href={`/post/${post.quotedPost.author.username}/status/${post.quotedPost.post.id}`}
 						>
-							<PostQuoteItem postWithAuthor={postWithUser.post.quotedPost} />
+							<PostQuoteItem postWithAuthor={post.quotedPost} />
 						</Link>
 					)}
 					<PostFooter
-						isLikedByUser={postWithUser.post.isLikedBySignInUser}
+						isLikedByUser={post.isLikedBySignInUser}
 						postWithUser={postWithUser}
-						isForwardedByUser={postWithUser.post.isForwardedPostBySignInUser}
-						forwardAction={forwardAction}
-						likeAction={likeAction}
-						onQuoteClick={() => onQuoteClick(postWithUser)}
+						isForwardedByUser={post.isForwardedPostBySignInUser}
+						forwardAction={(action) =>
+							onClickCapture({
+								action,
+							})
+						}
+						likeAction={(action) =>
+							onClickCapture({
+								action,
+							})
+						}
+						onQuoteClick={() =>
+							onClickCapture({
+								action: "quote",
+							})
+						}
 					/>
 				</div>
 				{menuItemsType !== "view" && (
@@ -80,11 +101,12 @@ export const PostItem: FC<{
 						<Icon iconKind="optionDots" />
 						<div className="hidden group-hover:block">
 							<PostOptionMenu
-								postId={postWithUser.post.id}
 								menuItemsType={menuItemsType}
-								onMenuItemClick={(action, postId) => {
-									onOptionClick(action, postId)
-								}}
+								onMenuItemClick={(_) =>
+									onClickCapture({
+										action: "deletePost",
+									})
+								}
 							/>
 						</div>
 					</div>

@@ -76,12 +76,10 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel htmlFor="bannerImageUrl" side="left">
 									Profile Image URL
 								</StyledLabel>
-								{bannerInput.charsLeft && (
-									<StyledLabel
-										side="right"
-										htmlFor="bannerImageUrl"
-									>{`${BANNER_MAX_LETTERS}/${bannerInput.charsLeft}`}</StyledLabel>
-								)}
+								<StyledLabel
+									side="right"
+									htmlFor="bannerImageUrl"
+								>{`${BANNER_MAX_LETTERS}/${bannerInput.charsleft}`}</StyledLabel>
 							</div>
 						</div>
 
@@ -95,12 +93,10 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel htmlFor="profileImageUrl" side="left">
 									Profile Image URL
 								</StyledLabel>
-								{profileInput.charsLeft && (
-									<StyledLabel
-										side="right"
-										htmlFor="profileImageUrl"
-									>{`${PROFILE_MAX_LETTERS}/${profileInput.charsLeft}`}</StyledLabel>
-								)}
+								<StyledLabel
+									side="right"
+									htmlFor="profileImageUrl"
+								>{`${PROFILE_MAX_LETTERS}/${profileInput.charsleft}`}</StyledLabel>
 							</div>
 						</div>
 						<div className="mt-2">
@@ -109,12 +105,10 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel htmlFor="webpageUrl" side="left">
 									Webpage URL
 								</StyledLabel>
-								{webPageInput.charsLeft && (
-									<StyledLabel
-										side="right"
-										htmlFor="webpageUrl"
-									>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsLeft}`}</StyledLabel>
-								)}
+								<StyledLabel
+									side="right"
+									htmlFor="webpageUrl"
+								>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsleft}`}</StyledLabel>
 							</div>
 						</div>
 
@@ -124,12 +118,10 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel htmlFor="bio" side="left">
 									Bio
 								</StyledLabel>
-								{bioTextArea.charsLeft && (
-									<StyledLabel
-										side="right"
-										htmlFor="bio"
-									>{`${BIO_MAX_LETTERS}/${bioTextArea.charsLeft}`}</StyledLabel>
-								)}
+								<StyledLabel
+									side="right"
+									htmlFor="bio"
+								>{`${BIO_MAX_LETTERS}/${bioTextArea.charsleft}`}</StyledLabel>
 							</div>
 						</div>
 					</div>

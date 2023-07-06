@@ -1,5 +1,6 @@
 import type { Post as PrismaPost } from "@prisma/client"
 import { type PostAuthor } from "../profilePage/types"
+import { type RouterOutputs } from "~/utils/api"
 
 export type PostWithAuthor = {
 	author: PostAuthor
@@ -13,6 +14,18 @@ export type PostReplays = {
 
 export type PostMenuItemsType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
 
+type UserPollVotes = {
+	id: number
+	choice: string
+	voteCount: number
+}
+
+export type Poll = {
+	endDate: string
+	userVotes: UserPollVotes[]
+	choiceVotedBySignInUser: number | undefined
+}
+
 export type Post = PrismaPost & {
 	createdAt: string
 	likeCount: number
@@ -22,4 +35,7 @@ export type Post = PrismaPost & {
 	isForwardedPostBySignInUser: boolean
 	quotedPost: PostWithAuthor | null
 	quotedCount: number
+	poll: Poll | null
 }
+
+export type PollVote = RouterOutputs["profile"]["votePostPoll"]

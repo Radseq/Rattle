@@ -1,13 +1,13 @@
 import { type FC, useEffect, useState } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../LoadingPage"
-import { PostItem } from "./PostItem"
+import { type ClickCapture, PostItem } from "./PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
 import { canOpenPostQuoteDialog, ParseZodErrorToString } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PostWithAuthor } from "./types"
+import { type PollVote, type PostWithAuthor } from "./types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 
@@ -23,7 +23,7 @@ export const FetchPosts: FC<{
 	const [quoteMessage, setQuoteMessage] = useState<string>()
 	const [posts, setPosts] = useState<PostWithAuthor[]>()
 
-	const forwardedPostIdsByUser = api.posts.getPostIdsForwardedByUser.useQuery()
+	const forwardedPostIdsByUser = api.profile.getPostIdsForwardedByUser.useQuery()
 	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
 
 	useEffect(() => {
@@ -68,7 +68,7 @@ export const FetchPosts: FC<{
 		},
 	})
 
-	const likePost = api.posts.setPostLiked.useMutation({
+	const likePost = api.profile.setPostLiked.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Liked!")
 			if (posts) {
@@ -90,16 +90,16 @@ export const FetchPosts: FC<{
 		},
 	})
 
-	const unlikePost = api.posts.setPostUnliked.useMutation({
+	const unlikePost = api.profile.setPostUnliked.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
 			if (posts) {
-				const copyPosts = posts.map((post) => {
-					if (post.post.id === postId) {
-						post.post.likeCount -= 1
-						post.post.isLikedBySignInUser = false
+				const copyPosts = posts.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId) {
+						postWithAuthor.post.likeCount -= 1
+						postWithAuthor.post.isLikedBySignInUser = false
 					}
-					return post
+					return postWithAuthor
 				})
 				setPosts(copyPosts)
 			}
@@ -116,12 +116,12 @@ export const FetchPosts: FC<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Forwarded!")
 			if (posts) {
-				const copyPosts = posts.map((post) => {
-					if (post.post.id === postId) {
-						post.post.forwardsCount += 1
-						post.post.isForwardedPostBySignInUser = true
+				const copyPosts = posts.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId) {
+						postWithAuthor.post.forwardsCount += 1
+						postWithAuthor.post.isForwardedPostBySignInUser = true
 					}
-					return post
+					return postWithAuthor
 				})
 				setPosts(copyPosts)
 			}
@@ -147,23 +147,62 @@ export const FetchPosts: FC<{
 		},
 	})
 
+	const pollVote = api.profile.votePostPoll.useMutation({
+		onSuccess: (result: PollVote, { postId }) => {
+			toast.success("Voted!")
+			if (!posts) {
+				return
+			}
+
+			const copyPost = posts.map((postWithAuthor) => {
+				if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
+					const poll = { ...postWithAuthor.post.poll }
+					if (result.newChoiceId && !result.oldChoiceId) {
+						poll.choiceVotedBySignInUser = result.newChoiceId
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.newChoiceId) {
+								userVote.voteCount += 1
+							}
+							return userVote
+						})
+					} else if (result.newChoiceId && result.oldChoiceId) {
+						poll.choiceVotedBySignInUser = result.newChoiceId
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.newChoiceId) {
+								userVote.voteCount += 1
+							} else if (userVote.id === result.oldChoiceId) {
+								userVote.voteCount -= 1
+							}
+							return userVote
+						})
+					} else {
+						poll.choiceVotedBySignInUser = undefined
+						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
+							if (userVote.id === result.oldChoiceId) {
+								userVote.voteCount -= 1
+							}
+							return userVote
+						})
+					}
+					postWithAuthor.post.poll = poll
+				}
+				return postWithAuthor
+			})
+			setPosts(copyPost)
+		},
+		onError: (e) => {
+			const error =
+				ParseZodErrorToString(e.data?.zodError) ?? "Failed to vote! Please try again later"
+			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		},
+	})
+
 	if (getPosts.isLoading) {
 		return (
 			<div className="relative">
 				<LoadingPage />
 			</div>
 		)
-	}
-
-	const handlePostOptionClick = (action: string, postId: string) => {
-		switch (action) {
-			case "delete":
-				deletePost.mutate(postId)
-				break
-
-			default:
-				break
-		}
 	}
 
 	const handleNavigateToPost = (postId: string, authorUsername: string) => {
@@ -175,36 +214,55 @@ export const FetchPosts: FC<{
 		}
 	}
 
+	const handlePostClick = (clickCapture: ClickCapture, postsWithUser: PostWithAuthor) => {
+		const { post } = postsWithUser
+
+		switch (clickCapture.action) {
+			case "navigation":
+				handleNavigateToPost(post.id, postsWithUser.author.username)
+				break
+			case "deletePost":
+				deletePost.mutate(post.id)
+				break
+			case "forward":
+				forwardPost.mutate(post.id)
+				break
+			case "deleteForward":
+				removePostForward.mutate(post.id)
+				break
+			case "like":
+				likePost.mutate(post.id)
+				break
+			case "unlike":
+				unlikePost.mutate(post.id)
+				break
+			case "quote":
+				setQuotePopUp(postsWithUser)
+				break
+			case "vote":
+				if (clickCapture.choiceId) {
+					pollVote.mutate({ postId: post.id, choiceId: clickCapture.choiceId })
+				}
+				break
+			default:
+				toast.error("Error while post click", {
+					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
+				break
+		}
+	}
+
 	return (
 		<div>
-			<ul className="">
+			<ul>
 				{posts?.map((postsWithUser) => (
 					<PostItem
 						key={postsWithUser.post.id}
 						postWithUser={postsWithUser}
-						onNavigateToPost={() => {
-							handleNavigateToPost(
-								postsWithUser.post.id,
-								postsWithUser.author.username
-							)
+						onClickCapture={(clickCapture) => {
+							handlePostClick(clickCapture, postsWithUser)
 						}}
 						menuItemsType={type}
-						onOptionClick={handlePostOptionClick}
-						forwardAction={(forward, postId) => {
-							if (forward === "deleteForward") {
-								removePostForward.mutate(postId)
-							} else {
-								forwardPost.mutate(postId)
-							}
-						}}
-						likeAction={(action, postId) => {
-							if (action === "like") {
-								likePost.mutate(postId)
-							} else {
-								unlikePost.mutate(postId)
-							}
-						}}
-						onQuoteClick={() => setQuotePopUp(postsWithUser)}
 					/>
 				))}
 			</ul>

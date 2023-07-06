@@ -2,13 +2,13 @@ import { type GetServerSideProps, type NextPage } from "next"
 import { Layout } from "~/components/Layout"
 
 import { api } from "~/utils/api"
-import { CreatePost } from "~/components/postsPage/CreatePost"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { ParseZodErrorToString } from "~/utils/helpers"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
 import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import { type User } from "@clerk/nextjs/dist/api"
+import { HomeCreatePost } from "~/components/homePage/HomeCreatePost"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)
@@ -50,14 +50,13 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 	return (
 		<Layout>
 			<div className="pt-2">
-				<CreatePost
-					onCreatePost={(message) => {
-						mutate({ content: message })
-					}}
-					profileImageUrl={user.profileImageUrl}
+				<HomeCreatePost
 					isCreating={isPosting}
-					placeholderMessage="Write your message & hit enter"
+					placeholderMessage="What is happening?!"
+					profileImageUrl={user.profileImageUrl}
+					onCreatePost={(postContent) => mutate(postContent)}
 				/>
+
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
 				<FetchPosts isUserFollowProfile={null} user={user} userId={user.id} />
 			</div>
