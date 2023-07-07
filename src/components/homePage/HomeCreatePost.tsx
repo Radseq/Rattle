@@ -1,11 +1,18 @@
-import { type FC, useRef, useState } from "react"
+import { type FC, useState, useReducer } from "react"
 import { DangerOutlineButton, PrimalyButton } from "../styledHTMLElements/StyledButtons"
 import { LoadingSpinner } from "../LoadingPage"
 import Image from "next/image"
 import { Icon } from "../Icon"
 import type { Poll, PollLength, PostContent } from "./types"
 import { PollChoices } from "./PollChoices"
-import { PollLengthComp } from "./PollLength"
+import { pollLengthReducer } from "~/reducers/pollLengthReducer"
+import { PollLen } from "./PollLength"
+
+const INIT_POLL_LENGTH = {
+	days: 1,
+	hours: 0,
+	minutes: 0,
+}
 
 export const HomeCreatePost: FC<{
 	onCreatePost: (postContent: PostContent) => void
@@ -17,7 +24,7 @@ export const HomeCreatePost: FC<{
 		message: "",
 	})
 
-	const pollLength = useRef(null)
+	const [state, dispatch] = useReducer(pollLengthReducer, INIT_POLL_LENGTH)
 
 	if (isCreating) {
 		return (
@@ -71,22 +78,23 @@ export const HomeCreatePost: FC<{
 	}
 
 	const handleCreatePost = () => {
-		let pollLengthValue: PollLength | null = null
-		if (pollLength.current) {
-			const lengthRef = pollLength.current as { state: PollLength }
-			pollLengthValue = lengthRef.state
-		}
-
-		let postPoll: Poll | undefined = undefined
-		if (postContent.poll && pollLengthValue) {
+		if (postContent.poll) {
 			const notNullchoices = [...postContent.poll.choices].filter((choice) => {
 				if (choice) {
 					return choice
 				}
 			})
-			postPoll = { choices: notNullchoices, length: pollLengthValue }
+			updatePool(state, notNullchoices)
 		}
-		onCreatePost({ message: postContent.message, poll: postPoll })
+
+		onCreatePost(postContent)
+	}
+
+	const handleRemovePoll = () => {
+		setPostContent({
+			...postContent,
+			poll: undefined,
+		})
 	}
 
 	return (
@@ -120,16 +128,9 @@ export const HomeCreatePost: FC<{
 								}
 								removeInput={(index) => handleRemoveInput(index)}
 							/>
-							<PollLengthComp days={1} hours={0} minutes={0} ref={pollLength} />
+							<PollLen dispatch={dispatch} state={state} />
 							<hr className="my-4" />
-							<DangerOutlineButton
-								onClick={() =>
-									setPostContent({
-										...postContent,
-										poll: undefined,
-									})
-								}
-							>
+							<DangerOutlineButton onClick={() => handleRemovePoll}>
 								Remove Poll
 							</DangerOutlineButton>
 						</div>
@@ -140,22 +141,14 @@ export const HomeCreatePost: FC<{
 						className="flex p-2"
 						onClick={() => {
 							if (postContent.poll) {
-								setPostContent({
-									...postContent,
-									message: postContent.message ?? "",
-									poll: undefined,
-								})
+								handleRemovePoll()
 							} else {
 								setPostContent({
 									...postContent,
 									message: postContent.message ?? "",
 									poll: {
 										choices: ["", ""],
-										length: {
-											days: 1,
-											hours: 0,
-											minutes: 0,
-										},
+										length: INIT_POLL_LENGTH,
 									},
 								})
 							}

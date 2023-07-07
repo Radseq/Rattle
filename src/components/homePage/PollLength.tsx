@@ -1,9 +1,9 @@
-import { type FC, useImperativeHandle, useReducer } from "react"
+import { type FC, Dispatch } from "react"
 import { StyledLabel, StyledSelect } from "../styledHTMLElements/FloatingStyles"
 import { createAndIncrementFill } from "~/utils/helpers"
-import { pollLengthReducer } from "~/reducers/pollLengthReducer"
 import React from "react"
 import { type PollLength } from "./types"
+import { PollLengthAction } from "~/reducers/pollLengthReducer"
 
 const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	length,
@@ -26,15 +26,10 @@ const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 const MIN_POLL_LENGTH = 5
 
 // export const PollLength: FC<{}> = () => {
-export const PollLengthComp = React.forwardRef<{ state: PollLength }, PollLength>((props, ref) => {
-	const [state, dispatch] = useReducer(pollLengthReducer, props)
-
-	useImperativeHandle(ref, () => {
-		return {
-			state,
-		}
-	})
-
+export const PollLen: FC<{ state: PollLength; dispatch: Dispatch<PollLengthAction> }> = ({
+	state,
+	dispatch,
+}) => {
 	return (
 		<div>
 			<div className="m-2 flex h-full">
@@ -96,4 +91,4 @@ export const PollLengthComp = React.forwardRef<{ state: PollLength }, PollLength
 			</div>
 		</div>
 	)
-})
+}
