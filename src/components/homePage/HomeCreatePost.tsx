@@ -46,7 +46,7 @@ export const HomeCreatePost: FC<{
 		}
 	}
 
-	const handleAddChooise = () => {
+	const handleAddChoice = () => {
 		if (postContent.poll) {
 			const newChoise = [...postContent.poll.choices]
 			newChoise.push("")
@@ -122,7 +122,7 @@ export const HomeCreatePost: FC<{
 						<div className="mr-3 box-border w-full rounded-md border p-2">
 							<PollChoices
 								choices={postContent.poll.choices}
-								addChooise={() => handleAddChooise()}
+								addChooise={() => handleAddChoice()}
 								pollInputChange={(newValue, index) =>
 									handlePollInputChange(newValue, index)
 								}
