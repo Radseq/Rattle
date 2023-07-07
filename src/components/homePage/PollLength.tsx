@@ -1,9 +1,9 @@
-import { type FC, Dispatch } from "react"
+import type { Dispatch, FC } from "react"
 import { StyledLabel, StyledSelect } from "../styledHTMLElements/FloatingStyles"
 import { createAndIncrementFill } from "~/utils/helpers"
 import React from "react"
 import { type PollLength } from "./types"
-import { PollLengthAction } from "~/reducers/pollLengthReducer"
+import { type PollLengthAction } from "~/reducers/pollLengthReducer"
 
 const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	length,
