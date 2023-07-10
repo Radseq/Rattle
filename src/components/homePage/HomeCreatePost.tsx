@@ -6,7 +6,7 @@ import { Icon } from "../Icon"
 import type { PollLength, PostContent } from "./types"
 import { PollChoices } from "./PollChoices"
 import { pollLengthReducer } from "~/reducers/pollLengthReducer"
-import { PollLen } from "./PollLength"
+import { PollTimeLength } from "./PollTimeLength"
 
 const INIT_POLL_LENGTH = {
 	days: 1,
@@ -128,7 +128,7 @@ export const HomeCreatePost: FC<{
 								}
 								removeInput={(index) => handleRemoveInput(index)}
 							/>
-							<PollLen dispatch={dispatch} state={state} />
+							<PollTimeLength dispatch={dispatch} state={state} />
 							<hr className="my-4" />
 							<DangerOutlineButton onClick={() => handleRemovePoll}>
 								Remove Poll

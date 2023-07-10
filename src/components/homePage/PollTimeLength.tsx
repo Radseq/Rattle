@@ -26,7 +26,7 @@ const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 const MIN_POLL_LENGTH = 5
 
 // export const PollLength: FC<{}> = () => {
-export const PollLen: FC<{ state: PollLength; dispatch: Dispatch<PollLengthAction> }> = ({
+export const PollTimeLength: FC<{ state: PollLength; dispatch: Dispatch<PollLengthAction> }> = ({
 	state,
 	dispatch,
 }) => {

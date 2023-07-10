@@ -16,10 +16,10 @@ export const PollInput: FC<{
 			<StyledInput
 				id={pollOptionId}
 				placeholder=""
-				value={initValue}
+				value={inputPoll.value}
 				onChange={(e) => {
+					inputPoll.onChange(e)
 					if (inputPoll.charsleft) {
-						inputPoll.onChange(e)
 						onUpdateInput(e.target.value)
 					}
 				}}
