@@ -111,6 +111,19 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 	koronny przykład jak hujowo jest to zrobione to komponent Post Item
 	chociaż tu mogę zrobić kompozycję
 	oraz komponent FetchPosts
+
+	CreatePoll składa się z:
+		PollChoices składa się z:
+			PollInput
+			DangerButton
+			PrimalyOutlineButton
+		PollTimeLength
+		DangerOutlineButton
+	
+	a CreatePoll chcę jeszcze opakować w 
+	kompoent w stylu CreatePost
+	pamiętając że CreatePost będzie miało w sobie logikę
+	że post może mieć message + poll | message | message + image id | message + viedeo id
 	*/
 
 	return (
