@@ -102,8 +102,8 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 	}
 
 	/*
-	PS jeszcze chcę od linii 111 do linii 165 zrobić dodatkowy komponent, 
-	i teraz cała logika CreatePoll + logika z linii 132 + z linii 186
+	PS jeszcze chcę od linii 132 do linii 186 zrobić dodatkowy komponent, 
+	i teraz cała logika CreatePoll + logika z linii 166 - 178
 	zwrócić jako props
 
 	więc chcąc trzymać logikę tylko na "stronie głównej" musze zwracać 
