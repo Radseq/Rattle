@@ -42,7 +42,7 @@ export const getPostById = async (postId: string) => {
 		authorId: post.authorId,
 		imageUrl: post.imageUrl,
 		mediaUrl: post.mediaUrl,
-		replayId: post.replayId,
+		replyId: post.replyId,
 		likeCount,
 		replyCount: replyCount,
 		forwardsCount,
@@ -120,7 +120,7 @@ export const getPostQuoteById = async (postId: string) => {
 			authorId: getPost.authorId,
 			imageUrl: getPost.imageUrl,
 			mediaUrl: getPost.mediaUrl,
-			replayId: getPost.replayId,
+			replyId: getPost.replyId,
 			likeCount: 0,
 			replyCount: 0,
 			forwardsCount: 0,
@@ -162,7 +162,7 @@ export const getPostLikedByUser = async (postId: string, signInUserId: string) =
 export const getPostReplyCount = async (postId: string) => {
 	return await prisma.post.count({
 		where: {
-			replayId: postId,
+			replyId: postId,
 		},
 	})
 }

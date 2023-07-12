@@ -19,7 +19,7 @@ export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
 		const postIds: string[] = []
 		const postsByAuthorIds = ctx.prisma.post.findMany({
-			where: { authorId: input, replayId: null },
+			where: { authorId: input, replyId: null },
 			orderBy: { createdAt: "desc" },
 			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
 			select: {
@@ -244,7 +244,7 @@ export const postsRouter = createTRPCRouter({
 					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
 						message: `Reply is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
 					}),
-				replayPostId: z.string().cuid(),
+				replyPostId: z.string().cuid(),
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -259,7 +259,7 @@ export const postsRouter = createTRPCRouter({
 				data: {
 					authorId,
 					content: input.content,
-					replayId: input.replayPostId,
+					replyId: input.replyPostId,
 				},
 			})
 		}),
@@ -278,7 +278,7 @@ export const postsRouter = createTRPCRouter({
 		.query(async ({ input, ctx }) => {
 			const getPostReplies = await ctx.prisma.post.findMany({
 				where: {
-					replayId: input,
+					replyId: input,
 				},
 				orderBy: { createdAt: "desc" },
 				take: CONFIG.MAX_POST_REPLIES,

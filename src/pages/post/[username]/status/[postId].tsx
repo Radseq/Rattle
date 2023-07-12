@@ -92,7 +92,7 @@ const PostReplies: NextPage<{
 		onError: (e) => {
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create replay! Please try again later"
+				"Failed to create reply! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -105,7 +105,7 @@ const PostReplies: NextPage<{
 		onError: (e) => {
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create replay! Please try again later"
+				"Failed to create reply! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -360,7 +360,7 @@ const PostReplies: NextPage<{
 						<CreatePost
 							isCreating={isPosting}
 							onCreatePost={(respondMessage) =>
-								mutate({ content: respondMessage, replayPostId: post.id })
+								mutate({ content: respondMessage, replyPostId: post.id })
 							}
 							placeholderMessage="Reply & Hit Enter!"
 							profileImageUrl={author.profileImageUrl}
@@ -370,13 +370,13 @@ const PostReplies: NextPage<{
 				)}
 				{replies && replies.length > 0 && (
 					<ul className="">
-						{replies.map((replay) => (
+						{replies.map((reply) => (
 							<PostItem
-								key={replay.post.id}
-								postWithUser={replay}
+								key={reply.post.id}
+								postWithUser={reply}
 								menuItemsType={type}
 								onClickCapture={(clickCapture) => {
-									handlePostClick(clickCapture, replay)
+									handlePostClick(clickCapture, reply)
 								}}
 							/>
 						))}
