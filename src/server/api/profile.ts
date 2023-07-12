@@ -1,7 +1,10 @@
 import clerkClient from "@clerk/clerk-sdk-node"
-import type { Profile, ProfileExtend } from "~/components/profilePage/types"
-import { filterClarkClientToUser, getFullName } from "~/utils/helpers"
+import type { PostAuthor, Profile, ProfileExtend } from "~/components/profilePage/types"
+import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
+import { CacheSpecialKey, getCacheData, setCacheData } from "../cache"
+
+const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const getProfileByUserName = async (userName: string) => {
 	const authors = await clerkClient.users.getUserList({
@@ -33,12 +36,14 @@ export const getProfileByUserName = async (userName: string) => {
 }
 
 export const getPostAuthor = async (authorId: string) => {
-	const author = await clerkClient.users.getUser(authorId)
+	const authorCacheKey: CacheSpecialKey = { id: authorId, type: "author" }
+	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 	if (!author) {
-		return null
+		author = filterClarkClientToAuthor(await clerkClient.users.getUser(authorId))
+		void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
 	}
 
-	return filterClarkClientToUser(author)
+	return author
 }
 
 export const getUserVotedAnyPostsPoll = async (

@@ -8,6 +8,7 @@ import { addTimeToDate, filterClarkClientToAuthor, type TimeAddToDate } from "~/
 import { getPostById, isPostExists, isUserForwardedPost } from "../posts"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
+	getPostAuthor,
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
 	getUserVotedAnyPostsPoll,
@@ -64,7 +65,7 @@ export const postsRouter = createTRPCRouter({
 		const authorCacheKey: CacheSpecialKey = { id: input, type: "author" }
 		let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 		if (!author) {
-			author = filterClarkClientToAuthor(await clerkClient.users.getUser(input))
+			author = await getPostAuthor(input)
 			void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
 		}
 
@@ -104,6 +105,7 @@ export const postsRouter = createTRPCRouter({
 		return result
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
+		// todo delete
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
 
 		const users = (
@@ -324,19 +326,12 @@ export const postsRouter = createTRPCRouter({
 				)
 			}
 
-			const repliesAuthors = await clerkClient.users.getUserList({
-				userId: getPostReplies.map((post) => post.authorId),
-			})
-
-			if (!repliesAuthors) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Author of posts not found",
-				})
-			}
+			const postAuthors = await Promise.all(
+				getPostReplies.map((post) => getPostAuthor(post.authorId))
+			)
 
 			return postReplies.map((postReply) => {
-				const postAuthor = repliesAuthors.find((user) => user.id === postReply.authorId)
+				const postAuthor = postAuthors.find((user) => user.id === postReply.authorId)
 				if (!postAuthor || !postAuthor.username) {
 					throw new TRPCError({
 						code: "INTERNAL_SERVER_ERROR",
@@ -351,7 +346,7 @@ export const postsRouter = createTRPCRouter({
 							(postId) => postId === postReply.id
 						),
 					},
-					author: filterClarkClientToAuthor(postAuthor),
+					author: postAuthor,
 				} as PostWithAuthor
 			})
 		}),
@@ -403,7 +398,7 @@ export const postsRouter = createTRPCRouter({
 			const authorCacheKey: CacheSpecialKey = { id: post.authorId, type: "author" }
 			let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 			if (!author) {
-				author = filterClarkClientToAuthor(await clerkClient.users.getUser(post.authorId))
+				author = await getPostAuthor(post.authorId)
 
 				void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
 			}
