@@ -235,14 +235,14 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
-	createReplayPost: privateProcedure
+	createReplyPost: privateProcedure
 		.input(
 			z.object({
 				content: z
 					.string()
-					.min(1, { message: "Replay is too small" })
+					.min(1, { message: "Reply is too small" })
 					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
-						message: `Replay is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
+						message: `Reply is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
 					}),
 				replayPostId: z.string().cuid(),
 			})
@@ -312,8 +312,8 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			return postReplies.map((postReplay) => {
-				const postAuthor = repliesAuthors.find((user) => user.id === postReplay.authorId)
+			return postReplies.map((postReply) => {
+				const postAuthor = repliesAuthors.find((user) => user.id === postReply.authorId)
 				if (!postAuthor || !postAuthor.username) {
 					throw new TRPCError({
 						code: "INTERNAL_SERVER_ERROR",
@@ -322,10 +322,10 @@ export const postsRouter = createTRPCRouter({
 				}
 				return {
 					post: {
-						...postReplay,
-						createdAt: postReplay.createdAt.toString(),
+						...postReply,
+						createdAt: postReply.createdAt.toString(),
 						isLikedBySignInUser: postsLikedBySignInUser.some(
-							(postId) => postId === postReplay.id
+							(postId) => postId === postReply.id
 						),
 					},
 					author: filterClarkClientToUser(postAuthor),

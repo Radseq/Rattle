@@ -63,7 +63,7 @@ export const FetchPosts: FC<{
 		onError: (e) => {
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create replay! Please try again later"
+				"Failed to create reply! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})

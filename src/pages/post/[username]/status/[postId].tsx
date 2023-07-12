@@ -2,8 +2,6 @@ import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
-import { PostContent } from "~/components/postReplayPage/PostContent"
-import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
 import type { PollVote, Post, PostWithAuthor } from "~/components/postsPage/types"
@@ -22,6 +20,8 @@ import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { PostPoll } from "~/components/postsPage/PostPoll"
+import { PostSummary } from "~/components/postRepliesPage/PostSummary"
+import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -57,7 +57,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 }
 
 // todo signInUser, isUserFollowProfile, postsLikedByUser as one object?
-const ReplayPost: NextPage<{
+const PostReplies: NextPage<{
 	post: Post
 	author: Profile
 	user: User | undefined
@@ -85,7 +85,7 @@ const ReplayPost: NextPage<{
 		}
 	}, [postReplies.data, postIdsForwardedByUser])
 
-	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
+	const { mutate, isLoading: isPosting } = api.posts.createReplyPost.useMutation({
 		onSuccess: async () => {
 			await postReplies.refetch()
 		},
@@ -127,14 +127,14 @@ const ReplayPost: NextPage<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Liked!")
 			if (replies) {
-				const copyReplays = replies.map((replay) => {
+				const copyReplys = replies.map((replay) => {
 					if (replay.post.id === postId) {
 						replay.post.likeCount += 1
 						replay.post.isLikedBySignInUser = true
 					}
 					return replay
 				})
-				setReplies(copyReplays)
+				setReplies(copyReplys)
 			}
 		},
 		onError: (e) => {
@@ -149,14 +149,14 @@ const ReplayPost: NextPage<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
 			if (replies) {
-				const copyReplays = replies.map((replay) => {
+				const copyReplys = replies.map((replay) => {
 					if (replay.post.id === postId) {
 						replay.post.likeCount -= 1
 						replay.post.isLikedBySignInUser = false
 					}
 					return replay
 				})
-				setReplies(copyReplays)
+				setReplies(copyReplys)
 			}
 		},
 		onError: (e) => {
@@ -171,14 +171,14 @@ const ReplayPost: NextPage<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Forwarded!")
 			if (replies) {
-				const copyReplays = replies.map((replay) => {
+				const copyReplys = replies.map((replay) => {
 					if (replay.post.id === postId) {
 						replay.post.forwardsCount += 1
 						replay.post.isForwardedPostBySignInUser = true
 					}
 					return replay
 				})
-				setReplies(copyReplays)
+				setReplies(copyReplys)
 			}
 		},
 		onError: (e) => {
@@ -193,14 +193,14 @@ const ReplayPost: NextPage<{
 		onSuccess: (_, postId) => {
 			toast.success("Delete Post Forward!")
 			if (replies) {
-				const copyReplays = replies.map((replay) => {
+				const copyReplys = replies.map((replay) => {
 					if (replay.post.id === postId) {
 						replay.post.forwardsCount -= 1
 						replay.post.isForwardedPostBySignInUser = false
 					}
 					return replay
 				})
-				setReplies(copyReplays)
+				setReplies(copyReplys)
 			}
 		},
 		onError: (e) => {
@@ -337,7 +337,10 @@ const ReplayPost: NextPage<{
 							/>
 						</div>
 					) : (
-						<PostContent postCreateDate={post.createdAt} message={post.content} />
+						<div>
+							<span>{post.content}</span>
+							<PostSummary postCreateDate={post.createdAt} />
+						</div>
 					)}
 				</div>
 				<hr className="my-2" />
@@ -359,7 +362,7 @@ const ReplayPost: NextPage<{
 							onCreatePost={(respondMessage) =>
 								mutate({ content: respondMessage, replayPostId: post.id })
 							}
-							placeholderMessage="Replay & Hit Enter!"
+							placeholderMessage="Reply & Hit Enter!"
 							profileImageUrl={author.profileImageUrl}
 						/>
 						<hr className="my-2" />
@@ -400,4 +403,4 @@ const ReplayPost: NextPage<{
 	)
 }
 
-export default ReplayPost
+export default PostReplies

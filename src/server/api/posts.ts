@@ -11,7 +11,7 @@ export const getPostById = async (postId: string) => {
 	})
 
 	const getLikeCount = getPostLikeCount(postId)
-	const getReplayCount = getPostReplayCount(postId)
+	const getReplyCount = getPostReplyCount(postId)
 	const getForwardsCount = getPostForwatdCount(postId)
 	const getQuotedPost = getPostQuoteById(postId)
 	const getQuotedCount = getPostQuotedCount(postId)
@@ -20,7 +20,7 @@ export const getPostById = async (postId: string) => {
 		await Promise.all([
 			getPost,
 			getLikeCount,
-			getReplayCount,
+			getReplyCount,
 			getForwardsCount,
 			getQuotedPost,
 			getQuotedCount,
@@ -159,7 +159,7 @@ export const getPostLikedByUser = async (postId: string, signInUserId: string) =
 	return false
 }
 
-export const getPostReplayCount = async (postId: string) => {
+export const getPostReplyCount = async (postId: string) => {
 	return await prisma.post.count({
 		where: {
 			replayId: postId,

@@ -18,7 +18,7 @@ model Post {
     authorId    String   @db.VarChar(64)
     imageUrl    String?  @db.VarChar(200)
     mediaUrl    String?  @db.VarChar(200)
-    replayId    String?  @db.VarChar(32)
+    replyId     String?  @db.VarChar(32)
     quotedId    String?  @db.VarChar(32)
 
     @@index([authorId])
