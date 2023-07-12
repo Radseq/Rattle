@@ -75,13 +75,13 @@ const PostReplies: NextPage<{
 
 	useEffect(() => {
 		if (postReplies.data) {
-			const replays = postReplies.data.map((post) => {
-				post.post.isForwardedPostBySignInUser = postIdsForwardedByUser.some(
-					(postId) => postId === post.post.id
+			const replies = postReplies.data.map((postWithAuthor) => {
+				postWithAuthor.post.isForwardedPostBySignInUser = postIdsForwardedByUser.some(
+					(postId) => postId === postWithAuthor.post.id
 				)
-				return post
+				return postWithAuthor
 			})
-			setReplies(replays)
+			setReplies(replies)
 		}
 	}, [postReplies.data, postIdsForwardedByUser])
 
@@ -127,14 +127,14 @@ const PostReplies: NextPage<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Liked!")
 			if (replies) {
-				const copyReplys = replies.map((replay) => {
-					if (replay.post.id === postId) {
-						replay.post.likeCount += 1
-						replay.post.isLikedBySignInUser = true
+				const copyReplies = replies.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId) {
+						postWithAuthor.post.likeCount += 1
+						postWithAuthor.post.isLikedBySignInUser = true
 					}
-					return replay
+					return postWithAuthor
 				})
-				setReplies(copyReplys)
+				setReplies(copyReplies)
 			}
 		},
 		onError: (e) => {
@@ -149,14 +149,14 @@ const PostReplies: NextPage<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
 			if (replies) {
-				const copyReplys = replies.map((replay) => {
-					if (replay.post.id === postId) {
-						replay.post.likeCount -= 1
-						replay.post.isLikedBySignInUser = false
+				const copyReplies = replies.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId) {
+						postWithAuthor.post.likeCount -= 1
+						postWithAuthor.post.isLikedBySignInUser = false
 					}
-					return replay
+					return postWithAuthor
 				})
-				setReplies(copyReplys)
+				setReplies(copyReplies)
 			}
 		},
 		onError: (e) => {
@@ -171,14 +171,14 @@ const PostReplies: NextPage<{
 		onSuccess: (_, postId) => {
 			toast.success("Post Forwarded!")
 			if (replies) {
-				const copyReplys = replies.map((replay) => {
-					if (replay.post.id === postId) {
-						replay.post.forwardsCount += 1
-						replay.post.isForwardedPostBySignInUser = true
+				const copyReplies = replies.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId) {
+						postWithAuthor.post.forwardsCount += 1
+						postWithAuthor.post.isForwardedPostBySignInUser = true
 					}
-					return replay
+					return postWithAuthor
 				})
-				setReplies(copyReplys)
+				setReplies(copyReplies)
 			}
 		},
 		onError: (e) => {
@@ -193,14 +193,14 @@ const PostReplies: NextPage<{
 		onSuccess: (_, postId) => {
 			toast.success("Delete Post Forward!")
 			if (replies) {
-				const copyReplys = replies.map((replay) => {
-					if (replay.post.id === postId) {
-						replay.post.forwardsCount -= 1
-						replay.post.isForwardedPostBySignInUser = false
+				const copyReplies = replies.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === postId) {
+						postWithAuthor.post.forwardsCount -= 1
+						postWithAuthor.post.isForwardedPostBySignInUser = false
 					}
-					return replay
+					return postWithAuthor
 				})
-				setReplies(copyReplys)
+				setReplies(copyReplies)
 			}
 		},
 		onError: (e) => {
