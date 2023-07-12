@@ -35,7 +35,7 @@ export const getFullName = (frstName: string | null, lastName: string | null) =>
 	return fullName
 }
 
-export const filterClarkClientToUser = (user: User) => {
+export const filterClarkClientToAuthor = (user: User) => {
 	return {
 		id: user.id,
 		username: user.username ?? "",

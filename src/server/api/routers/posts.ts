@@ -4,11 +4,7 @@ import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import {
-	addTimeToDate,
-	filterClarkClientToUser as filterClarkClientToAuthor,
-	type TimeAddToDate,
-} from "~/utils/helpers"
+import { addTimeToDate, filterClarkClientToAuthor, type TimeAddToDate } from "~/utils/helpers"
 import { getPostById, isPostExists, isUserForwardedPost } from "../posts"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
@@ -163,6 +159,8 @@ export const postsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
+			let result: Post | false = false
+
 			if (input.poll) {
 				await ctx.prisma.$transaction(async (tx) => {
 					// input.poll give us belowe error even if code is in quard if (input.poll)
@@ -196,7 +194,7 @@ export const postsRouter = createTRPCRouter({
 					})
 
 					if (createPost && createPoll) {
-						return true
+						result = createPost as Post
 					}
 				})
 			} else {
@@ -207,11 +205,21 @@ export const postsRouter = createTRPCRouter({
 					},
 				})
 				if (createPost) {
-					return true
+					result = createPost as Post
 				}
 			}
 
-			return false
+			if (!result) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Can't create post",
+				})
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: result.id, type: "post" }
+			void setCacheData(postCacheKey, result, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+
+			return result
 		}),
 	createQuotedPost: privateProcedure
 		.input(
@@ -280,6 +288,7 @@ export const postsRouter = createTRPCRouter({
 	deletePost: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
+			// todo delete data from all related tables
 			return await ctx.prisma.post.deleteMany({
 				where: {
 					id: input,
