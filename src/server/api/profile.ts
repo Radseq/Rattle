@@ -2,7 +2,7 @@ import clerkClient from "@clerk/clerk-sdk-node"
 import type { PostAuthor, Profile, ProfileExtend } from "~/components/profilePage/types"
 import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
-import { CacheSpecialKey, getCacheData, setCacheData } from "../cache"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 
 const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
