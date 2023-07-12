@@ -4,7 +4,7 @@ import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
-import type { PollVote, Post, PostWithAuthor } from "~/components/postsPage/types"
+import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
@@ -15,7 +15,7 @@ import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { LoadingPage } from "~/components/LoadingPage"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
@@ -62,28 +62,14 @@ const PostReplies: NextPage<{
 	author: Profile
 	user: User | undefined
 	isUserFollowProfile: boolean | null
-	postIdsForwardedByUser: string[]
-}> = ({ post, author, user, isUserFollowProfile, postIdsForwardedByUser }) => {
+}> = ({ post, author, user, isUserFollowProfile }) => {
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, user, author.id)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
-	const [replies, setReplies] = useState<PostWithAuthor[]>()
 
 	const postReplies = api.posts.getPostReplies.useQuery(post.id)
-
-	useEffect(() => {
-		if (postReplies.data) {
-			const replies = postReplies.data.map((postWithAuthor) => {
-				postWithAuthor.post.isForwardedPostBySignInUser = postIdsForwardedByUser.some(
-					(postId) => postId === postWithAuthor.post.id
-				)
-				return postWithAuthor
-			})
-			setReplies(replies)
-		}
-	}, [postReplies.data, postIdsForwardedByUser])
 
 	const { mutate, isLoading: isPosting } = api.posts.createReplyPost.useMutation({
 		onSuccess: async () => {
@@ -124,18 +110,9 @@ const PostReplies: NextPage<{
 	})
 
 	const likePost = api.profile.setPostLiked.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Post Liked!")
-			if (replies) {
-				const copyReplies = replies.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === postId) {
-						postWithAuthor.post.likeCount += 1
-						postWithAuthor.post.isLikedBySignInUser = true
-					}
-					return postWithAuthor
-				})
-				setReplies(copyReplies)
-			}
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -146,18 +123,9 @@ const PostReplies: NextPage<{
 	})
 
 	const unlikePost = api.profile.setPostUnliked.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Post Unliked!")
-			if (replies) {
-				const copyReplies = replies.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === postId) {
-						postWithAuthor.post.likeCount -= 1
-						postWithAuthor.post.isLikedBySignInUser = false
-					}
-					return postWithAuthor
-				})
-				setReplies(copyReplies)
-			}
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -168,8 +136,9 @@ const PostReplies: NextPage<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: () => {
+		onSuccess: async () => {
 			toast.success("Post Forwarded!")
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -180,70 +149,22 @@ const PostReplies: NextPage<{
 	})
 
 	const removePostForward = api.posts.removePostForward.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Delete Post Forward!")
-			if (replies) {
-				const copyReplies = replies.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === postId) {
-						postWithAuthor.post.forwardsCount -= 1
-						postWithAuthor.post.isForwardedPostBySignInUser = false
-					}
-					return postWithAuthor
-				})
-				setReplies(copyReplies)
-			}
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
-				ParseZodErrorToString(e.data?.zodError) ?? "Failed to vote! Please try again later"
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to remove forwarded post! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
 
 	const pollVote = api.profile.votePostPoll.useMutation({
-		onSuccess: (result: PollVote, { postId }) => {
+		onSuccess: async () => {
 			toast.success("Voted!")
-			if (!replies) {
-				return
-			}
-			const copyPost = replies.map((postWithAuthor) => {
-				if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
-					const poll = {
-						...postWithAuthor.post.poll,
-					}
-
-					if (result.newChoiceId && !result.oldChoiceId) {
-						poll.choiceVotedBySignInUser = result.newChoiceId
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.newChoiceId) {
-								userVote.voteCount += 1
-							}
-							return userVote
-						})
-					} else if (result.newChoiceId && result.oldChoiceId) {
-						poll.choiceVotedBySignInUser = result.newChoiceId
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.newChoiceId) {
-								userVote.voteCount += 1
-							} else if (userVote.id === result.oldChoiceId) {
-								userVote.voteCount -= 1
-							}
-							return userVote
-						})
-					} else {
-						poll.choiceVotedBySignInUser = undefined
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.oldChoiceId) {
-								userVote.voteCount -= 1
-							}
-							return userVote
-						})
-					}
-					postWithAuthor.post.poll = poll
-				}
-				return postWithAuthor
-			})
-			setReplies(copyPost)
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -358,9 +279,9 @@ const PostReplies: NextPage<{
 						<hr className="my-2" />
 					</div>
 				)}
-				{replies && replies.length > 0 && (
+				{postReplies.data && postReplies.data.length > 0 && (
 					<ul className="">
-						{replies.map((reply) => (
+						{postReplies.data.map((reply) => (
 							<PostItem
 								key={reply.post.id}
 								postWithUser={reply}

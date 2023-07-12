@@ -431,6 +431,16 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 
-			return input
+			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
+			let post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				post.forwardsCount -= 1
+				post.isForwardedPostBySignInUser = false
+			} else {
+				post = await getPostById(input)
+			}
+			void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+
+			return post
 		}),
 })
