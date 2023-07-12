@@ -168,18 +168,8 @@ const PostReplies: NextPage<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: () => {
 			toast.success("Post Forwarded!")
-			if (replies) {
-				const copyReplies = replies.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === postId) {
-						postWithAuthor.post.forwardsCount += 1
-						postWithAuthor.post.isForwardedPostBySignInUser = true
-					}
-					return postWithAuthor
-				})
-				setReplies(copyReplies)
-			}
 		},
 		onError: (e) => {
 			const error =

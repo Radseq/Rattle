@@ -1,9 +1,18 @@
 import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
-import type { Post } from "~/components/postsPage/types"
+import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import { getPostAuthor } from "./profile"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
+
+const MAX_CHACHE_LIFETIME_IN_SECONDS = 60
 
 export const getPostById = async (postId: string) => {
+	const cacheKey: CacheSpecialKey = { id: postId, type: "post" }
+	const postToReturn = await getCacheData<Post>(cacheKey)
+	if (postToReturn) {
+		return postToReturn
+	}
+
 	const getPost = prisma.post.findUnique({
 		where: {
 			id: postId,
@@ -35,7 +44,7 @@ export const getPostById = async (postId: string) => {
 
 	const createdAt = post.createdAt.toString()
 
-	return {
+	const returnPost = {
 		id: post.id,
 		createdAt,
 		content: post.content,
@@ -50,6 +59,10 @@ export const getPostById = async (postId: string) => {
 		quotedCount: quotedCount,
 		poll: postPoll,
 	} as Post
+
+	void setCacheData(cacheKey, returnPost, MAX_CHACHE_LIFETIME_IN_SECONDS)
+
+	return returnPost
 }
 
 export const getPostPollById = async (postId: string) => {
@@ -199,4 +212,20 @@ export const isPostExists = async (postId: string): Promise<boolean> => {
 		return true
 	}
 	return false
+}
+
+export const replacementPostInArray = (
+	replacement: PostWithAuthor,
+	array: PostWithAuthor[] | undefined
+) => {
+	if (array) {
+		const result = array.map((postWithAuthor) => {
+			if (postWithAuthor.post.id === replacement.post.id) {
+				return replacement
+			}
+			return postWithAuthor
+		})
+		return result
+	}
+	return undefined
 }

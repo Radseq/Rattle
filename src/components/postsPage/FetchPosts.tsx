@@ -113,17 +113,18 @@ export const FetchPosts: FC<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: (resPostWithAuthor) => {
 			toast.success("Post Forwarded!")
 			if (posts) {
-				const copyPosts = posts.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === postId) {
-						postWithAuthor.post.forwardsCount += 1
-						postWithAuthor.post.isForwardedPostBySignInUser = true
+				const modifiedPost = posts.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === resPostWithAuthor.post.id) {
+						return resPostWithAuthor
 					}
 					return postWithAuthor
 				})
-				setPosts(copyPosts)
+				modifiedPost.push(resPostWithAuthor)
+
+				setPosts(modifiedPost)
 			}
 		},
 		onError: (e) => {

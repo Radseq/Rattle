@@ -4,16 +4,25 @@ import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import { addTimeToDate, filterClarkClientToUser, type TimeAddToDate } from "~/utils/helpers"
+import {
+	addTimeToDate,
+	filterClarkClientToUser as filterClarkClientToAuthor,
+	type TimeAddToDate,
+} from "~/utils/helpers"
 import { getPostById, isPostExists, isUserForwardedPost } from "../posts"
-import { type PostWithAuthor } from "~/components/postsPage/types"
+import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
 	getUserVotedAnyPostsPoll,
 } from "../profile"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
+import { type PostAuthor } from "~/components/profilePage/types"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
+
+const MAX_CHACHE_POST_LIFETIME_IN_SECONDS = 60
+const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -56,9 +65,12 @@ export const postsRouter = createTRPCRouter({
 			postsPollVotedByUser = getPostsPollVotedByUser
 		}
 
-		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
-
-		const author = await clerkClient.users.getUser(input)
+		const authorCacheKey: CacheSpecialKey = { id: input, type: "author" }
+		let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
+		if (!author) {
+			author = filterClarkClientToAuthor(await clerkClient.users.getUser(input))
+			void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+		}
 
 		if (!author || !author.username) {
 			throw new TRPCError({
@@ -66,6 +78,8 @@ export const postsRouter = createTRPCRouter({
 				message: "Author for posts not found!",
 			})
 		}
+
+		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
 
 		const sortedPosts = posts.sort(
 			(postA, postB) =>
@@ -81,7 +95,7 @@ export const postsRouter = createTRPCRouter({
 						(postId) => postId === sortedPost.id
 					),
 				},
-				author: filterClarkClientToUser(author),
+				author,
 			} as PostWithAuthor
 			if (postWithAuthor.post.poll) {
 				postWithAuthor.post.poll.choiceVotedBySignInUser = postsPollVotedByUser.find(
@@ -101,7 +115,7 @@ export const postsRouter = createTRPCRouter({
 				userId: posts.map((post) => post.authorId),
 				limit: 10, // todo remove magic number
 			})
-		).map((user) => filterClarkClientToUser(user))
+		).map((user) => filterClarkClientToAuthor(user))
 
 		return posts.map((post) => {
 			const postAuthor = users.find((user) => user.id === post.authorId)
@@ -328,7 +342,7 @@ export const postsRouter = createTRPCRouter({
 							(postId) => postId === postReply.id
 						),
 					},
-					author: filterClarkClientToUser(postAuthor),
+					author: filterClarkClientToAuthor(postAuthor),
 				} as PostWithAuthor
 			})
 		}),
@@ -352,6 +366,39 @@ export const postsRouter = createTRPCRouter({
 					message: "Post not exists!",
 				})
 			}
+
+			const createForward = await ctx.prisma.userPostForward.create({
+				data: {
+					userId: ctx.authUserId,
+					postId: input,
+				},
+			})
+
+			if (!createForward) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Unable to forward post!",
+				})
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
+			let post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				post.forwardsCount += 1
+				post.isForwardedPostBySignInUser = true
+			} else {
+				post = await getPostById(input)
+			}
+			void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+
+			const authorCacheKey: CacheSpecialKey = { id: post.authorId, type: "author" }
+			let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
+			if (!author) {
+				author = filterClarkClientToAuthor(await clerkClient.users.getUser(post.authorId))
+
+				void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
+
 			// todo uncomment after testing
 			// if (getPostToForward.authorId === ctx.authUserId) {
 			// 	throw new TRPCError({
@@ -360,13 +407,10 @@ export const postsRouter = createTRPCRouter({
 			// 	})
 			// }
 
-			const result = await ctx.prisma.userPostForward.create({
-				data: {
-					userId: ctx.authUserId,
-					postId: input,
-				},
-			})
-			return result.postId
+			return {
+				post,
+				author,
+			} as PostWithAuthor
 		}),
 	removePostForward: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
