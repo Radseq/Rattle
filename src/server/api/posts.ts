@@ -16,7 +16,7 @@ export const getPostById = async (postId: string) => {
 	const getQuotedPost = getPostQuoteById(postId)
 	const getQuotedCount = getPostQuotedCount(postId)
 	const getPostPoll = getPostPollById(postId)
-	const [post, likeCount, replaysCount, forwardsCount, quotedPost, quotedCount, postPoll] =
+	const [post, likeCount, replyCount, forwardsCount, quotedPost, quotedCount, postPoll] =
 		await Promise.all([
 			getPost,
 			getLikeCount,
@@ -44,7 +44,7 @@ export const getPostById = async (postId: string) => {
 		mediaUrl: post.mediaUrl,
 		replayId: post.replayId,
 		likeCount,
-		replaysCount,
+		replyCount: replyCount,
 		forwardsCount,
 		quotedPost: quotedPost,
 		quotedCount: quotedCount,
@@ -122,7 +122,7 @@ export const getPostQuoteById = async (postId: string) => {
 			mediaUrl: getPost.mediaUrl,
 			replayId: getPost.replayId,
 			likeCount: 0,
-			replaysCount: 0,
+			replyCount: 0,
 			forwardsCount: 0,
 		} as Post,
 		author: await getPostAuthor(getPost.authorId),

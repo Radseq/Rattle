@@ -273,23 +273,23 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
-	getPostReplays: publicProcedure
+	getPostReplies: publicProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.query(async ({ input, ctx }) => {
-			const getPostReplays = await ctx.prisma.post.findMany({
+			const getPostReplies = await ctx.prisma.post.findMany({
 				where: {
 					replayId: input,
 				},
 				orderBy: { createdAt: "desc" },
-				take: CONFIG.MAX_POST_REPLAYS,
+				take: CONFIG.MAX_POST_REPLIES,
 				select: {
 					id: true,
 					authorId: true,
 				},
 			})
 
-			const postReplays = await Promise.all(
-				getPostReplays.map((post) => getPostById(post.id))
+			const postReplies = await Promise.all(
+				getPostReplies.map((post) => getPostById(post.id))
 			)
 
 			let postsLikedBySignInUser: string[] = []
@@ -297,23 +297,23 @@ export const postsRouter = createTRPCRouter({
 			if (ctx.authUserId) {
 				postsLikedBySignInUser = await getPostsLikedByUser(
 					ctx.authUserId,
-					postReplays.map((post) => post.id)
+					postReplies.map((post) => post.id)
 				)
 			}
 
-			const replaysAuthors = await clerkClient.users.getUserList({
-				userId: getPostReplays.map((post) => post.authorId),
+			const repliesAuthors = await clerkClient.users.getUserList({
+				userId: getPostReplies.map((post) => post.authorId),
 			})
 
-			if (!replaysAuthors) {
+			if (!repliesAuthors) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
 					message: "Author of posts not found",
 				})
 			}
 
-			return postReplays.map((postReplay) => {
-				const postAuthor = replaysAuthors.find((user) => user.id === postReplay.authorId)
+			return postReplies.map((postReplay) => {
+				const postAuthor = repliesAuthors.find((user) => user.id === postReplay.authorId)
 				if (!postAuthor || !postAuthor.username) {
 					throw new TRPCError({
 						code: "INTERNAL_SERVER_ERROR",

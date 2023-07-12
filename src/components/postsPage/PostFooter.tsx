@@ -29,7 +29,7 @@ export const PostFooter: FC<{
 					<Icon iconKind="chat" />
 				</div>
 				<span className={"self-center pl-1 text-xl group-hover:text-blue-400"}>
-					{post.replaysCount}
+					{post.replyCount}
 				</span>
 			</Link>
 			<div className="group relative mr-4 flex">

@@ -69,25 +69,25 @@ const ReplayPost: NextPage<{
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
-	const [replays, setReplays] = useState<PostWithAuthor[]>()
+	const [replies, setReplies] = useState<PostWithAuthor[]>()
 
-	const postReplays = api.posts.getPostReplays.useQuery(post.id)
+	const postReplies = api.posts.getPostReplies.useQuery(post.id)
 
 	useEffect(() => {
-		if (postReplays.data) {
-			const replays = postReplays.data.map((post) => {
+		if (postReplies.data) {
+			const replays = postReplies.data.map((post) => {
 				post.post.isForwardedPostBySignInUser = postIdsForwardedByUser.some(
 					(postId) => postId === post.post.id
 				)
 				return post
 			})
-			setReplays(replays)
+			setReplies(replays)
 		}
-	}, [postReplays.data, postIdsForwardedByUser])
+	}, [postReplies.data, postIdsForwardedByUser])
 
 	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
 		onSuccess: async () => {
-			await postReplays.refetch()
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -100,7 +100,7 @@ const ReplayPost: NextPage<{
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: async () => {
 			setQuotePopUp(null)
-			await postReplays.refetch()
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -113,7 +113,7 @@ const ReplayPost: NextPage<{
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			await postReplays.refetch()
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -126,15 +126,15 @@ const ReplayPost: NextPage<{
 	const likePost = api.profile.setPostLiked.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Liked!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
+			if (replies) {
+				const copyReplays = replies.map((replay) => {
 					if (replay.post.id === postId) {
 						replay.post.likeCount += 1
 						replay.post.isLikedBySignInUser = true
 					}
 					return replay
 				})
-				setReplays(copyReplays)
+				setReplies(copyReplays)
 			}
 		},
 		onError: (e) => {
@@ -148,15 +148,15 @@ const ReplayPost: NextPage<{
 	const unlikePost = api.profile.setPostUnliked.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Unliked!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
+			if (replies) {
+				const copyReplays = replies.map((replay) => {
 					if (replay.post.id === postId) {
 						replay.post.likeCount -= 1
 						replay.post.isLikedBySignInUser = false
 					}
 					return replay
 				})
-				setReplays(copyReplays)
+				setReplies(copyReplays)
 			}
 		},
 		onError: (e) => {
@@ -170,15 +170,15 @@ const ReplayPost: NextPage<{
 	const forwardPost = api.posts.forwardPost.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Post Forwarded!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
+			if (replies) {
+				const copyReplays = replies.map((replay) => {
 					if (replay.post.id === postId) {
 						replay.post.forwardsCount += 1
 						replay.post.isForwardedPostBySignInUser = true
 					}
 					return replay
 				})
-				setReplays(copyReplays)
+				setReplies(copyReplays)
 			}
 		},
 		onError: (e) => {
@@ -192,15 +192,15 @@ const ReplayPost: NextPage<{
 	const removePostForward = api.posts.removePostForward.useMutation({
 		onSuccess: (_, postId) => {
 			toast.success("Delete Post Forward!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
+			if (replies) {
+				const copyReplays = replies.map((replay) => {
 					if (replay.post.id === postId) {
 						replay.post.forwardsCount -= 1
 						replay.post.isForwardedPostBySignInUser = false
 					}
 					return replay
 				})
-				setReplays(copyReplays)
+				setReplies(copyReplays)
 			}
 		},
 		onError: (e) => {
@@ -213,10 +213,10 @@ const ReplayPost: NextPage<{
 	const pollVote = api.profile.votePostPoll.useMutation({
 		onSuccess: (result: PollVote, { postId }) => {
 			toast.success("Voted!")
-			if (!replays) {
+			if (!replies) {
 				return
 			}
-			const copyPost = replays.map((postWithAuthor) => {
+			const copyPost = replies.map((postWithAuthor) => {
 				if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
 					const poll = {
 						...postWithAuthor.post.poll,
@@ -253,7 +253,7 @@ const ReplayPost: NextPage<{
 				}
 				return postWithAuthor
 			})
-			setReplays(copyPost)
+			setReplies(copyPost)
 		},
 		onError: (e) => {
 			const error =
@@ -264,7 +264,7 @@ const ReplayPost: NextPage<{
 
 	const useTime = useTimeLeft(post.createdAt, post.poll?.endDate)
 
-	if (postReplays.isLoading) {
+	if (postReplies.isLoading) {
 		return (
 			<div className="relative">
 				<LoadingPage />
@@ -342,9 +342,9 @@ const ReplayPost: NextPage<{
 				</div>
 				<hr className="my-2" />
 				<footer className="ml-2">
-					<span className="pr-1 font-bold">{post.replaysCount}</span>
+					<span className="pr-1 font-bold">{post.replyCount}</span>
 					<span className="text-gray-500">
-						{`Response${post.replaysCount > 1 ? "s" : ""}`}
+						{`Response${post.replyCount > 1 ? "s" : ""}`}
 					</span>
 					<span className="p-2 font-bold">{post.quotedCount}</span>
 					<span className="text-gray-500">
@@ -365,9 +365,9 @@ const ReplayPost: NextPage<{
 						<hr className="my-2" />
 					</div>
 				)}
-				{replays && replays.length > 0 && (
+				{replies && replies.length > 0 && (
 					<ul className="">
-						{replays.map((replay) => (
+						{replies.map((replay) => (
 							<PostItem
 								key={replay.post.id}
 								postWithUser={replay}
