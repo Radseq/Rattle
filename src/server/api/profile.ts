@@ -3,10 +3,17 @@ import type { PostAuthor, Profile, ProfileExtend } from "~/components/profilePag
 import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
+import { User } from "@clerk/nextjs/dist/api"
 
 const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const getProfileByUserName = async (userName: string) => {
+	const userCacheKey: CacheSpecialKey = { id: userName, type: "profileUserName" }
+	let profile = await getCacheData<Profile>(userCacheKey)
+	if (profile) {
+		return profile
+	}
+
 	const authors = await clerkClient.users.getUserList({
 		username: [userName],
 	})
@@ -25,7 +32,7 @@ export const getProfileByUserName = async (userName: string) => {
 		return null
 	}
 
-	return {
+	const result = {
 		id: author.id,
 		username: author.username ?? "",
 		profileImageUrl: author.profileImageUrl,
@@ -33,6 +40,8 @@ export const getProfileByUserName = async (userName: string) => {
 		createdAt: author.createdAt,
 		extended,
 	} as Profile
+
+	void setCacheData(userCacheKey, result, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
 }
 
 export const getPostAuthor = async (authorId: string) => {

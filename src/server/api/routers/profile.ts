@@ -11,8 +11,11 @@ import {
 
 import type { ProfileExtend } from "~/components/profilePage/types"
 import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
-
+import { CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
+import { Post } from "~/components/postsPage/types"
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
+
+const MAX_CHACHE_POST_LIFETIME_IN_SECONDS = 60
 
 export const profileRouter = createTRPCRouter({
 	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ input }) => {
@@ -174,6 +177,21 @@ export const profileRouter = createTRPCRouter({
 					userId: ctx.authUserId,
 				},
 			})
+
+			if (!result) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Can't set post liked",
+				})
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
+			let post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				post.isLikedBySignInUser = true
+				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+			}
+
 			return result.postId
 		}),
 	setPostUnliked: privateProcedure
@@ -188,12 +206,26 @@ export const profileRouter = createTRPCRouter({
 				})
 			}
 
-			await ctx.prisma.userLikePost.deleteMany({
+			const deleted = await ctx.prisma.userLikePost.deleteMany({
 				where: {
 					postId: input,
 					userId: ctx.authUserId,
 				},
 			})
+
+			if (!deleted.count) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Can't set post unliked",
+				})
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
+			let post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				post.isLikedBySignInUser = false
+				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+			}
 
 			return input
 		}),
