@@ -16,6 +16,7 @@ import { type Post } from "~/components/postsPage/types"
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 const MAX_CHACHE_POST_LIFETIME_IN_SECONDS = 60
+const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const profileRouter = createTRPCRouter({
 	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ input }) => {
@@ -192,6 +193,13 @@ export const profileRouter = createTRPCRouter({
 				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
 			}
 
+			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
+			const chacheIds = await getCacheData<string[]>(userCacheKey)
+			if (chacheIds) {
+				chacheIds.push(result.postId)
+				void setCacheData(userCacheKey, chacheIds, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
+
 			return result.postId
 		}),
 	setPostUnliked: privateProcedure
@@ -225,6 +233,13 @@ export const profileRouter = createTRPCRouter({
 			if (post) {
 				post.isLikedBySignInUser = false
 				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+			}
+
+			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
+			const chacheIds = await getCacheData<string[]>(userCacheKey)
+			if (chacheIds) {
+				const res = chacheIds.filter((postId) => postId != input)
+				void setCacheData(userCacheKey, res, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			return input

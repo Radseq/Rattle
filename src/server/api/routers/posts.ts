@@ -403,6 +403,13 @@ export const postsRouter = createTRPCRouter({
 				void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
+			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
+			const chacheIds = await getCacheData<string[]>(userCacheKey)
+			if (chacheIds) {
+				chacheIds.push(input)
+				void setCacheData(userCacheKey, chacheIds, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
+
 			// todo uncomment after testing
 			// if (getPostToForward.authorId === ctx.authUserId) {
 			// 	throw new TRPCError({
@@ -444,6 +451,13 @@ export const postsRouter = createTRPCRouter({
 				post = await getPostById(input)
 			}
 			void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+
+			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
+			const chacheIds = await getCacheData<string[]>(userCacheKey)
+			if (chacheIds) {
+				const removed = chacheIds.filter((postId) => postId !== input)
+				void setCacheData(userCacheKey, removed, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
 
 			return post
 		}),
