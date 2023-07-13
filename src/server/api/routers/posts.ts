@@ -5,13 +5,14 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { addTimeToDate, filterClarkClientToAuthor, type TimeAddToDate } from "~/utils/helpers"
-import { getPostById, isPostExists, isUserForwardedPost } from "../posts"
+import { getPostById, isPostExists } from "../posts"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
 	getPostAuthor,
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
 	getUserVotedAnyPostsPoll,
+	isUserForwardedPost,
 } from "../profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type PostAuthor } from "~/components/profilePage/types"

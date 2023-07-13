@@ -144,3 +144,22 @@ export const getPostIdsForwardedByUser = async (userId: string) => {
 
 	return ids
 }
+
+export const isUserForwardedPost = async (userId: string, postId: string): Promise<boolean> => {
+	const userCacheKey: CacheSpecialKey = { id: userId, type: "postsForwarded" }
+	const chacheIds = await getCacheData<string[]>(userCacheKey)
+	if (chacheIds) {
+		return chacheIds.some((val) => val === postId)
+	}
+
+	const forwardedPost = await prisma.userPostForward.findFirst({
+		where: {
+			userId,
+			postId,
+		},
+	})
+	if (forwardedPost) {
+		return true
+	}
+	return false
+}
