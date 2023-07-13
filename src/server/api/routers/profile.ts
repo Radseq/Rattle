@@ -11,8 +11,8 @@ import {
 
 import type { ProfileExtend } from "~/components/profilePage/types"
 import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
-import { CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
-import { Post } from "~/components/postsPage/types"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
+import { type Post } from "~/components/postsPage/types"
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 const MAX_CHACHE_POST_LIFETIME_IN_SECONDS = 60
@@ -186,7 +186,7 @@ export const profileRouter = createTRPCRouter({
 			}
 
 			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
-			let post = await getCacheData<Post>(postCacheKey)
+			const post = await getCacheData<Post>(postCacheKey)
 			if (post) {
 				post.isLikedBySignInUser = true
 				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
@@ -221,7 +221,7 @@ export const profileRouter = createTRPCRouter({
 			}
 
 			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
-			let post = await getCacheData<Post>(postCacheKey)
+			const post = await getCacheData<Post>(postCacheKey)
 			if (post) {
 				post.isLikedBySignInUser = false
 				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)

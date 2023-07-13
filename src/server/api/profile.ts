@@ -3,13 +3,12 @@ import type { PostAuthor, Profile, ProfileExtend } from "~/components/profilePag
 import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
-import { User } from "@clerk/nextjs/dist/api"
 
 const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const getProfileByUserName = async (userName: string) => {
 	const userCacheKey: CacheSpecialKey = { id: userName, type: "profileUserName" }
-	let profile = await getCacheData<Profile>(userCacheKey)
+	const profile = await getCacheData<Profile>(userCacheKey)
 	if (profile) {
 		return profile
 	}
