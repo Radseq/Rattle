@@ -188,19 +188,6 @@ export const getPostForwatdCount = async (postId: string) => {
 	})
 }
 
-export const isUserForwardedPost = async (userId: string, postId: string): Promise<boolean> => {
-	const forwardedPost = await prisma.userPostForward.findFirst({
-		where: {
-			userId,
-			postId,
-		},
-	})
-	if (forwardedPost) {
-		return true
-	}
-	return false
-}
-
 export const isPostExists = async (postId: string): Promise<boolean> => {
 	const post = await prisma.post.count({
 		where: {
