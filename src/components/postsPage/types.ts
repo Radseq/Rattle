@@ -7,9 +7,9 @@ export type PostWithAuthor = {
 	post: Post
 }
 
-export type PostReplays = {
+export type PostReplies = {
 	postWithUser: PostWithAuthor
-	replaysWithAuthor: PostWithAuthor[]
+	repliesWithAuthor: PostWithAuthor[]
 }
 
 export type PostMenuItemsType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
@@ -29,7 +29,7 @@ export type Poll = {
 export type Post = PrismaPost & {
 	createdAt: string
 	likeCount: number
-	replaysCount: number
+	replyCount: number
 	forwardsCount: number
 	isLikedBySignInUser: boolean
 	isForwardedPostBySignInUser: boolean

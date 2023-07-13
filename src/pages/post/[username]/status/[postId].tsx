@@ -2,11 +2,9 @@ import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
-import { PostContent } from "~/components/postReplayPage/PostContent"
-import { ProfileSimple } from "~/components/postReplayPage/ProfileSimple"
 import { CreatePost } from "~/components/postsPage/CreatePost"
 import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
-import type { PollVote, Post, PostWithAuthor } from "~/components/postsPage/types"
+import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile } from "~/components/profilePage/types"
 import { isFolloweed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
@@ -17,11 +15,13 @@ import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { LoadingPage } from "~/components/LoadingPage"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { PostPoll } from "~/components/postsPage/PostPoll"
+import { PostSummary } from "~/components/postRepliesPage/PostSummary"
+import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -57,42 +57,28 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 }
 
 // todo signInUser, isUserFollowProfile, postsLikedByUser as one object?
-const ReplayPost: NextPage<{
+const PostReplies: NextPage<{
 	post: Post
 	author: Profile
 	user: User | undefined
 	isUserFollowProfile: boolean | null
-	postIdsForwardedByUser: string[]
-}> = ({ post, author, user, isUserFollowProfile, postIdsForwardedByUser }) => {
+}> = ({ post, author, user, isUserFollowProfile }) => {
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, user, author.id)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
-	const [replays, setReplays] = useState<PostWithAuthor[]>()
 
-	const postReplays = api.posts.getPostReplays.useQuery(post.id)
+	const postReplies = api.posts.getPostReplies.useQuery(post.id)
 
-	useEffect(() => {
-		if (postReplays.data) {
-			const replays = postReplays.data.map((post) => {
-				post.post.isForwardedPostBySignInUser = postIdsForwardedByUser.some(
-					(postId) => postId === post.post.id
-				)
-				return post
-			})
-			setReplays(replays)
-		}
-	}, [postReplays.data, postIdsForwardedByUser])
-
-	const { mutate, isLoading: isPosting } = api.posts.createReplayPost.useMutation({
+	const { mutate, isLoading: isPosting } = api.posts.createReplyPost.useMutation({
 		onSuccess: async () => {
-			await postReplays.refetch()
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create replay! Please try again later"
+				"Failed to create reply! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -100,12 +86,12 @@ const ReplayPost: NextPage<{
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: async () => {
 			setQuotePopUp(null)
-			await postReplays.refetch()
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create replay! Please try again later"
+				"Failed to create reply! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -113,7 +99,7 @@ const ReplayPost: NextPage<{
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			await postReplays.refetch()
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -124,18 +110,9 @@ const ReplayPost: NextPage<{
 	})
 
 	const likePost = api.profile.setPostLiked.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Post Liked!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === postId) {
-						replay.post.likeCount += 1
-						replay.post.isLikedBySignInUser = true
-					}
-					return replay
-				})
-				setReplays(copyReplays)
-			}
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -146,18 +123,9 @@ const ReplayPost: NextPage<{
 	})
 
 	const unlikePost = api.profile.setPostUnliked.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Post Unliked!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === postId) {
-						replay.post.likeCount -= 1
-						replay.post.isLikedBySignInUser = false
-					}
-					return replay
-				})
-				setReplays(copyReplays)
-			}
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -168,18 +136,9 @@ const ReplayPost: NextPage<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Post Forwarded!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === postId) {
-						replay.post.forwardsCount += 1
-						replay.post.isForwardedPostBySignInUser = true
-					}
-					return replay
-				})
-				setReplays(copyReplays)
-			}
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -190,70 +149,22 @@ const ReplayPost: NextPage<{
 	})
 
 	const removePostForward = api.posts.removePostForward.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Delete Post Forward!")
-			if (replays) {
-				const copyReplays = replays.map((replay) => {
-					if (replay.post.id === postId) {
-						replay.post.forwardsCount -= 1
-						replay.post.isForwardedPostBySignInUser = false
-					}
-					return replay
-				})
-				setReplays(copyReplays)
-			}
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
-				ParseZodErrorToString(e.data?.zodError) ?? "Failed to vote! Please try again later"
+				ParseZodErrorToString(e.data?.zodError) ??
+				"Failed to remove forwarded post! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
 
 	const pollVote = api.profile.votePostPoll.useMutation({
-		onSuccess: (result: PollVote, { postId }) => {
+		onSuccess: async () => {
 			toast.success("Voted!")
-			if (!replays) {
-				return
-			}
-			const copyPost = replays.map((postWithAuthor) => {
-				if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
-					const poll = {
-						...postWithAuthor.post.poll,
-					}
-
-					if (result.newChoiceId && !result.oldChoiceId) {
-						poll.choiceVotedBySignInUser = result.newChoiceId
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.newChoiceId) {
-								userVote.voteCount += 1
-							}
-							return userVote
-						})
-					} else if (result.newChoiceId && result.oldChoiceId) {
-						poll.choiceVotedBySignInUser = result.newChoiceId
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.newChoiceId) {
-								userVote.voteCount += 1
-							} else if (userVote.id === result.oldChoiceId) {
-								userVote.voteCount -= 1
-							}
-							return userVote
-						})
-					} else {
-						poll.choiceVotedBySignInUser = undefined
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.oldChoiceId) {
-								userVote.voteCount -= 1
-							}
-							return userVote
-						})
-					}
-					postWithAuthor.post.poll = poll
-				}
-				return postWithAuthor
-			})
-			setReplays(copyPost)
+			await postReplies.refetch()
 		},
 		onError: (e) => {
 			const error =
@@ -264,7 +175,7 @@ const ReplayPost: NextPage<{
 
 	const useTime = useTimeLeft(post.createdAt, post.poll?.endDate)
 
-	if (postReplays.isLoading) {
+	if (postReplies.isLoading) {
 		return (
 			<div className="relative">
 				<LoadingPage />
@@ -337,14 +248,17 @@ const ReplayPost: NextPage<{
 							/>
 						</div>
 					) : (
-						<PostContent postCreateDate={post.createdAt} message={post.content} />
+						<div>
+							<span>{post.content}</span>
+							<PostSummary postCreateDate={post.createdAt} />
+						</div>
 					)}
 				</div>
 				<hr className="my-2" />
 				<footer className="ml-2">
-					<span className="pr-1 font-bold">{post.replaysCount}</span>
+					<span className="pr-1 font-bold">{post.replyCount}</span>
 					<span className="text-gray-500">
-						{`Response${post.replaysCount > 1 ? "s" : ""}`}
+						{`Response${post.replyCount > 1 ? "s" : ""}`}
 					</span>
 					<span className="p-2 font-bold">{post.quotedCount}</span>
 					<span className="text-gray-500">
@@ -357,23 +271,23 @@ const ReplayPost: NextPage<{
 						<CreatePost
 							isCreating={isPosting}
 							onCreatePost={(respondMessage) =>
-								mutate({ content: respondMessage, replayPostId: post.id })
+								mutate({ content: respondMessage, replyPostId: post.id })
 							}
-							placeholderMessage="Replay & Hit Enter!"
+							placeholderMessage="Reply & Hit Enter!"
 							profileImageUrl={author.profileImageUrl}
 						/>
 						<hr className="my-2" />
 					</div>
 				)}
-				{replays && replays.length > 0 && (
+				{postReplies.data && postReplies.data.length > 0 && (
 					<ul className="">
-						{replays.map((replay) => (
+						{postReplies.data.map((reply) => (
 							<PostItem
-								key={replay.post.id}
-								postWithUser={replay}
+								key={reply.post.id}
+								postWithUser={reply}
 								menuItemsType={type}
 								onClickCapture={(clickCapture) => {
-									handlePostClick(clickCapture, replay)
+									handlePostClick(clickCapture, reply)
 								}}
 							/>
 						))}
@@ -400,4 +314,4 @@ const ReplayPost: NextPage<{
 	)
 }
 
-export default ReplayPost
+export default PostReplies

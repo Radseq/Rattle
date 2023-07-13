@@ -63,7 +63,7 @@ export const FetchPosts: FC<{
 		onError: (e) => {
 			const error =
 				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create replay! Please try again later"
+				"Failed to create reply! Please try again later"
 			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
 		},
 	})
@@ -113,17 +113,18 @@ export const FetchPosts: FC<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: (resPostWithAuthor) => {
 			toast.success("Post Forwarded!")
 			if (posts) {
-				const copyPosts = posts.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === postId) {
-						postWithAuthor.post.forwardsCount += 1
-						postWithAuthor.post.isForwardedPostBySignInUser = true
+				const modifiedPost = posts.map((postWithAuthor) => {
+					if (postWithAuthor.post.id === resPostWithAuthor.post.id) {
+						return resPostWithAuthor
 					}
 					return postWithAuthor
 				})
-				setPosts(copyPosts)
+				modifiedPost.push(resPostWithAuthor)
+
+				setPosts(modifiedPost)
 			}
 		},
 		onError: (e) => {

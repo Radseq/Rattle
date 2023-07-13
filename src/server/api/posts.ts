@@ -1,9 +1,18 @@
 import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
-import type { Post } from "~/components/postsPage/types"
+import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import { getPostAuthor } from "./profile"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
+
+const MAX_CHACHE_LIFETIME_IN_SECONDS = 60
 
 export const getPostById = async (postId: string) => {
+	const cacheKey: CacheSpecialKey = { id: postId, type: "post" }
+	const postToReturn = await getCacheData<Post>(cacheKey)
+	if (postToReturn) {
+		return postToReturn
+	}
+
 	const getPost = prisma.post.findUnique({
 		where: {
 			id: postId,
@@ -11,16 +20,16 @@ export const getPostById = async (postId: string) => {
 	})
 
 	const getLikeCount = getPostLikeCount(postId)
-	const getReplayCount = getPostReplayCount(postId)
+	const getReplyCount = getPostReplyCount(postId)
 	const getForwardsCount = getPostForwatdCount(postId)
 	const getQuotedPost = getPostQuoteById(postId)
 	const getQuotedCount = getPostQuotedCount(postId)
 	const getPostPoll = getPostPollById(postId)
-	const [post, likeCount, replaysCount, forwardsCount, quotedPost, quotedCount, postPoll] =
+	const [post, likeCount, replyCount, forwardsCount, quotedPost, quotedCount, postPoll] =
 		await Promise.all([
 			getPost,
 			getLikeCount,
-			getReplayCount,
+			getReplyCount,
 			getForwardsCount,
 			getQuotedPost,
 			getQuotedCount,
@@ -35,21 +44,25 @@ export const getPostById = async (postId: string) => {
 
 	const createdAt = post.createdAt.toString()
 
-	return {
+	const returnPost = {
 		id: post.id,
 		createdAt,
 		content: post.content,
 		authorId: post.authorId,
 		imageUrl: post.imageUrl,
 		mediaUrl: post.mediaUrl,
-		replayId: post.replayId,
+		replyId: post.replyId,
 		likeCount,
-		replaysCount,
+		replyCount: replyCount,
 		forwardsCount,
 		quotedPost: quotedPost,
 		quotedCount: quotedCount,
 		poll: postPoll,
 	} as Post
+
+	void setCacheData(cacheKey, returnPost, MAX_CHACHE_LIFETIME_IN_SECONDS)
+
+	return returnPost
 }
 
 export const getPostPollById = async (postId: string) => {
@@ -120,9 +133,9 @@ export const getPostQuoteById = async (postId: string) => {
 			authorId: getPost.authorId,
 			imageUrl: getPost.imageUrl,
 			mediaUrl: getPost.mediaUrl,
-			replayId: getPost.replayId,
+			replyId: getPost.replyId,
 			likeCount: 0,
-			replaysCount: 0,
+			replyCount: 0,
 			forwardsCount: 0,
 		} as Post,
 		author: await getPostAuthor(getPost.authorId),
@@ -159,10 +172,10 @@ export const getPostLikedByUser = async (postId: string, signInUserId: string) =
 	return false
 }
 
-export const getPostReplayCount = async (postId: string) => {
+export const getPostReplyCount = async (postId: string) => {
 	return await prisma.post.count({
 		where: {
-			replayId: postId,
+			replyId: postId,
 		},
 	})
 }
@@ -199,4 +212,20 @@ export const isPostExists = async (postId: string): Promise<boolean> => {
 		return true
 	}
 	return false
+}
+
+export const replacementPostInArray = (
+	replacement: PostWithAuthor,
+	array: PostWithAuthor[] | undefined
+) => {
+	if (array) {
+		const result = array.map((postWithAuthor) => {
+			if (postWithAuthor.post.id === replacement.post.id) {
+				return replacement
+			}
+			return postWithAuthor
+		})
+		return result
+	}
+	return undefined
 }
