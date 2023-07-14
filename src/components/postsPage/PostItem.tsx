@@ -1,6 +1,5 @@
 import { type FC } from "react"
 import type { PostMenuItemsType, PostWithAuthor } from "./types"
-import Image from "next/image"
 import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -11,6 +10,7 @@ import { PostQuoteItem } from "./PostQuoteItem"
 import { PostPoll } from "./PostPoll"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { PostTitle } from "./PostTitle"
+import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
 
 dayjs.extend(relativeTime)
 
@@ -44,13 +44,7 @@ export const PostItem: FC<{
 			}}
 		>
 			<main className="flex">
-				<Image
-					className="h-16 w-16 rounded-full"
-					src={author.profileImageUrl}
-					alt={"avatar"}
-					width={128}
-					height={128}
-				></Image>
+				<ProfileAvatarImageUrl url={author.profileImageUrl} />
 				<div className="w-full pl-2">
 					<PostTitle author={author} createdAt={post.createdAt} />
 					<span>{post.content}</span>

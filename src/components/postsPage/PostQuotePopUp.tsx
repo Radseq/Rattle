@@ -1,8 +1,8 @@
 import { type FC } from "react"
 import { Icon } from "../Icon"
-import Image from "next/image"
 import { type PostWithAuthor } from "./types"
 import { PostQuoteItem } from "./PostQuoteItem"
+import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
 
 export const PostQuotePopUp: FC<{
 	post: PostWithAuthor
@@ -32,13 +32,7 @@ export const PostQuotePopUp: FC<{
 						</header>
 						<main className="px-4">
 							<div className="flex">
-								<Image
-									className="h-16 w-16 rounded-full"
-									src={profileImageUrl}
-									alt={"avatar"}
-									width={128}
-									height={128}
-								></Image>
+								<ProfileAvatarImageUrl url={profileImageUrl} />
 								<textarea
 									className="border-none pl-1 text-xl
 									outline-none focus:border-none active:border-none"
