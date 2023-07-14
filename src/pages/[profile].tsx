@@ -2,7 +2,6 @@ import type { GetServerSideProps, NextPage } from "next"
 import Head from "next/head"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
-import Image from "next/image"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
@@ -20,6 +19,7 @@ import { isFolloweed } from "~/server/api/follow"
 import { CONFIG } from "~/config"
 import { Icon } from "~/components/Icon"
 import { clerkClient, type User } from "@clerk/nextjs/dist/api"
+import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 
 dayjs.extend(relativeTime)
 
@@ -103,13 +103,10 @@ const Profile: NextPage<{
 						)}
 						<div className="flex justify-between">
 							<div className="relative w-full">
-								<Image
-									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white "
+								<ProfileAvatarImageUrl
 									src={profile.profileImageUrl}
-									alt={"avatar"}
-									width={128}
-									height={128}
-								></Image>
+									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white"
+								/>
 								<span
 									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"

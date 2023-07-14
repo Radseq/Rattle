@@ -32,7 +32,7 @@ export const PostQuotePopUp: FC<{
 						</header>
 						<main className="px-4">
 							<div className="flex">
-								<ProfileAvatarImageUrl url={profileImageUrl} />
+								<ProfileAvatarImageUrl src={profileImageUrl} />
 								<textarea
 									className="border-none pl-1 text-xl
 									outline-none focus:border-none active:border-none"

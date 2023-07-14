@@ -120,7 +120,7 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 		<Layout>
 			<div className="pt-2">
 				<div className="flex">
-					<ProfileAvatarImageUrl url={user.profileImageUrl} />
+					<ProfileAvatarImageUrl src={user.profileImageUrl} />
 					<div className="w-full pl-1">
 						<input
 							className="w-full rounded-xl border-2 border-solid p-1 text-lg outline-none"
