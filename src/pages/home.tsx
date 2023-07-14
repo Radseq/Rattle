@@ -101,30 +101,20 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 		})
 	}
 
-	/*
-	PS jeszcze chcę od linii 132 do linii 186 zrobić dodatkowy komponent, 
-	i teraz cała logika CreatePoll + logika z linii 166 - 178
-	zwrócić jako props
-
-	więc chcąc trzymać logikę tylko na "stronie głównej" musze zwracać 
-	propsami wszystko aż do głownej strony
-	koronny przykład jak hujowo jest to zrobione to komponent Post Item
-	chociaż tu mogę zrobić kompozycję
-	oraz komponent FetchPosts
-
-	CreatePoll składa się z:
-		PollChoices składa się z:
-			PollInput
-			DangerButton
-			PrimalyOutlineButton
-		PollTimeLength
-		DangerOutlineButton
-	
-	a CreatePoll chcę jeszcze opakować w 
-	kompoent w stylu CreatePost
-	pamiętając że CreatePost będzie miało w sobie logikę
-	że post może mieć message + poll | message | message + image id | message + viedeo id
-	*/
+	const handlePollIconClick = () => {
+		if (postContent.poll) {
+			handleRemovePoll()
+		} else {
+			setPostContent({
+				...postContent,
+				message: postContent.message ?? "",
+				poll: {
+					choices: INIT_POLL_CHOICES,
+					length: pollLengthState,
+				},
+			})
+		}
+	}
 
 	return (
 		<Layout>
@@ -160,28 +150,12 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 					</div>
 				</div>
 				<footer className="ml-16 flex">
-					<div
-						className="flex p-2"
-						onClick={() => {
-							if (postContent.poll) {
-								handleRemovePoll()
-							} else {
-								setPostContent({
-									...postContent,
-									message: postContent.message ?? "",
-									poll: {
-										choices: INIT_POLL_CHOICES,
-										length: pollLengthState,
-									},
-								})
-							}
-						}}
-					>
+					<div className="flex p-2" onClick={handlePollIconClick}>
 						<Icon iconKind="poll" />
 					</div>
 					<div className="w-full"></div>
 					<div className="mr-2">
-						<PrimalyButton onClick={() => handleCreatePost()}>Post</PrimalyButton>
+						<PrimalyButton onClick={handleCreatePost}>Post</PrimalyButton>
 					</div>
 				</footer>
 
