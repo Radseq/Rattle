@@ -3,9 +3,9 @@ import { type PollLength } from "~/components/homePage/types"
 const POLL_MIN_HOURS = 1
 const POLL_MIN_MINUTES = 1
 
-type Action = { type: "days" | "hours" | "minutes"; value: number }
+export type PollLengthAction = { type: "days" | "hours" | "minutes"; value: number }
 
-export const pollLengthReducer = (state: PollLength, action: Action): PollLength => {
+export const pollLengthReducer = (state: PollLength, action: PollLengthAction): PollLength => {
 	switch (action.type) {
 		case "days": {
 			const days = action.value

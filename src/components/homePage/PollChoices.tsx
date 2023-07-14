@@ -1,16 +1,15 @@
-import { type FC } from "react"
+import type { Dispatch, FC } from "react"
 import { PollInput } from "./PollInput"
 import { DangerButton, PrimalyOutlineButton } from "../styledHTMLElements/StyledButtons"
+import { type PollChoicesAction } from "~/reducers/pollChoicesReducer"
 
 // todo add to env instead hard coded
 const MAX_POLL_CHOICES = 6
 
 export const PollChoices: FC<{
 	choices: string[]
-	pollInputChange: (newValue: string, index: number) => void
-	removeInput: (index: number) => void
-	addChooise: () => void
-}> = ({ choices, pollInputChange, removeInput, addChooise }) => {
+	dispatch: Dispatch<PollChoicesAction>
+}> = ({ choices, dispatch }) => {
 	return (
 		<div className="">
 			{choices.map((inputValue, index) => {
@@ -19,7 +18,7 @@ export const PollChoices: FC<{
 						<div className="w-full">
 							<PollInput
 								onUpdateInput={(newValue: string) =>
-									pollInputChange(newValue, index)
+									dispatch({ type: "change", index, value: newValue })
 								}
 								initValue={inputValue}
 								index={index + 1}
@@ -28,7 +27,7 @@ export const PollChoices: FC<{
 						{index > 1 && (
 							<DangerButton
 								onClick={() => {
-									removeInput(index)
+									dispatch({ type: "remove", index, value: "" })
 								}}
 								className="my-auto ml-2 h-10 w-10"
 							>
@@ -39,7 +38,11 @@ export const PollChoices: FC<{
 				)
 			})}
 			{choices.length < MAX_POLL_CHOICES && (
-				<PrimalyOutlineButton onClick={() => addChooise()}>Add choise</PrimalyOutlineButton>
+				<PrimalyOutlineButton
+					onClick={() => dispatch({ type: "add", index: 0, value: "" })}
+				>
+					Add choise
+				</PrimalyOutlineButton>
 			)}
 		</div>
 	)
