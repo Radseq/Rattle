@@ -1,9 +1,18 @@
 import clerkClient from "@clerk/clerk-sdk-node"
-import type { Profile, ProfileExtend } from "~/components/profilePage/types"
-import { filterClarkClientToUser, getFullName } from "~/utils/helpers"
+import type { PostAuthor, Profile, ProfileExtend } from "~/components/profilePage/types"
+import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
+
+const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const getProfileByUserName = async (userName: string) => {
+	const userCacheKey: CacheSpecialKey = { id: userName, type: "profileUserName" }
+	const profile = await getCacheData<Profile>(userCacheKey)
+	if (profile) {
+		return profile
+	}
+
 	const authors = await clerkClient.users.getUserList({
 		username: [userName],
 	})
@@ -22,7 +31,7 @@ export const getProfileByUserName = async (userName: string) => {
 		return null
 	}
 
-	return {
+	const result = {
 		id: author.id,
 		username: author.username ?? "",
 		profileImageUrl: author.profileImageUrl,
@@ -30,15 +39,19 @@ export const getProfileByUserName = async (userName: string) => {
 		createdAt: author.createdAt,
 		extended,
 	} as Profile
+
+	void setCacheData(userCacheKey, result, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
 }
 
 export const getPostAuthor = async (authorId: string) => {
-	const author = await clerkClient.users.getUser(authorId)
+	const authorCacheKey: CacheSpecialKey = { id: authorId, type: "author" }
+	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 	if (!author) {
-		return null
+		author = filterClarkClientToAuthor(await clerkClient.users.getUser(authorId))
+		void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
 	}
 
-	return filterClarkClientToUser(author)
+	return author
 }
 
 export const getUserVotedAnyPostsPoll = async (
@@ -67,6 +80,12 @@ export const getUserVotedAnyPostsPoll = async (
 }
 
 export const getPostsLikedByUser = async (userId: string, postIds: string[]) => {
+	const userCacheKey: CacheSpecialKey = { id: userId, type: "postsLiked" }
+	const chacheIds = await getCacheData<string[]>(userCacheKey)
+	if (chacheIds) {
+		return chacheIds
+	}
+
 	const posts = await prisma.userLikePost.findMany({
 		where: {
 			userId,
@@ -79,10 +98,18 @@ export const getPostsLikedByUser = async (userId: string, postIds: string[]) => 
 		},
 	})
 
-	return posts.map((post) => post.postId)
+	const ids = posts.map((post) => post.postId)
+	void setCacheData(userCacheKey, ids, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+	return ids
 }
 
 export const isUserLikedPost = async (userId: string, postId: string): Promise<boolean> => {
+	const userCacheKey: CacheSpecialKey = { id: userId, type: "postsLiked" }
+	const chacheIds = await getCacheData<string[]>(userCacheKey)
+	if (chacheIds) {
+		return chacheIds.some((val) => val === postId)
+	}
+
 	const alreadyLikePost = await prisma.userLikePost.findFirst({
 		where: {
 			userId,
@@ -97,6 +124,12 @@ export const isUserLikedPost = async (userId: string, postId: string): Promise<b
 }
 
 export const getPostIdsForwardedByUser = async (userId: string) => {
+	const userCacheKey: CacheSpecialKey = { id: userId, type: "postsForwarded" }
+	const chacheIds = await getCacheData<string[]>(userCacheKey)
+	if (chacheIds) {
+		return chacheIds
+	}
+
 	const result = await prisma.userPostForward.findMany({
 		where: {
 			userId,
@@ -105,8 +138,28 @@ export const getPostIdsForwardedByUser = async (userId: string) => {
 			postId: true,
 		},
 	})
-	if (result) {
-		return result.map((post) => post.postId)
+
+	const ids = result.map((post) => post.postId)
+	void setCacheData(userCacheKey, ids, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+
+	return ids
+}
+
+export const isUserForwardedPost = async (userId: string, postId: string): Promise<boolean> => {
+	const userCacheKey: CacheSpecialKey = { id: userId, type: "postsForwarded" }
+	const chacheIds = await getCacheData<string[]>(userCacheKey)
+	if (chacheIds) {
+		return chacheIds.some((val) => val === postId)
 	}
-	return []
+
+	const forwardedPost = await prisma.userPostForward.findFirst({
+		where: {
+			userId,
+			postId,
+		},
+	})
+	if (forwardedPost) {
+		return true
+	}
+	return false
 }

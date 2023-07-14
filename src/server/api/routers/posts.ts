@@ -4,22 +4,29 @@ import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import { addTimeToDate, filterClarkClientToUser, type TimeAddToDate } from "~/utils/helpers"
-import { getPostById, isPostExists, isUserForwardedPost } from "../posts"
-import { type PostWithAuthor } from "~/components/postsPage/types"
+import { addTimeToDate, filterClarkClientToAuthor, type TimeAddToDate } from "~/utils/helpers"
+import { getPostById, isPostExists } from "../posts"
+import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
+	getPostAuthor,
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
 	getUserVotedAnyPostsPoll,
+	isUserForwardedPost,
 } from "../profile"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
+import { type PostAuthor } from "~/components/profilePage/types"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
+
+const MAX_CHACHE_POST_LIFETIME_IN_SECONDS = 60
+const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
 		const postIds: string[] = []
 		const postsByAuthorIds = ctx.prisma.post.findMany({
-			where: { authorId: input, replayId: null },
+			where: { authorId: input, replyId: null },
 			orderBy: { createdAt: "desc" },
 			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
 			select: {
@@ -56,9 +63,12 @@ export const postsRouter = createTRPCRouter({
 			postsPollVotedByUser = getPostsPollVotedByUser
 		}
 
-		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
-
-		const author = await clerkClient.users.getUser(input)
+		const authorCacheKey: CacheSpecialKey = { id: input, type: "author" }
+		let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
+		if (!author) {
+			author = await getPostAuthor(input)
+			void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+		}
 
 		if (!author || !author.username) {
 			throw new TRPCError({
@@ -66,6 +76,8 @@ export const postsRouter = createTRPCRouter({
 				message: "Author for posts not found!",
 			})
 		}
+
+		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
 
 		const sortedPosts = posts.sort(
 			(postA, postB) =>
@@ -81,7 +93,7 @@ export const postsRouter = createTRPCRouter({
 						(postId) => postId === sortedPost.id
 					),
 				},
-				author: filterClarkClientToUser(author),
+				author,
 			} as PostWithAuthor
 			if (postWithAuthor.post.poll) {
 				postWithAuthor.post.poll.choiceVotedBySignInUser = postsPollVotedByUser.find(
@@ -94,6 +106,7 @@ export const postsRouter = createTRPCRouter({
 		return result
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
+		// todo delete
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
 
 		const users = (
@@ -101,7 +114,7 @@ export const postsRouter = createTRPCRouter({
 				userId: posts.map((post) => post.authorId),
 				limit: 10, // todo remove magic number
 			})
-		).map((user) => filterClarkClientToUser(user))
+		).map((user) => filterClarkClientToAuthor(user))
 
 		return posts.map((post) => {
 			const postAuthor = users.find((user) => user.id === post.authorId)
@@ -149,6 +162,8 @@ export const postsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
+			let result: Post | false = false
+
 			if (input.poll) {
 				await ctx.prisma.$transaction(async (tx) => {
 					// input.poll give us belowe error even if code is in quard if (input.poll)
@@ -182,7 +197,7 @@ export const postsRouter = createTRPCRouter({
 					})
 
 					if (createPost && createPoll) {
-						return true
+						result = createPost as Post
 					}
 				})
 			} else {
@@ -193,11 +208,21 @@ export const postsRouter = createTRPCRouter({
 					},
 				})
 				if (createPost) {
-					return true
+					result = createPost as Post
 				}
 			}
 
-			return false
+			if (!result) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Can't create post",
+				})
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: result.id, type: "post" }
+			void setCacheData(postCacheKey, result, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+
+			return result
 		}),
 	createQuotedPost: privateProcedure
 		.input(
@@ -235,16 +260,16 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
-	createReplayPost: privateProcedure
+	createReplyPost: privateProcedure
 		.input(
 			z.object({
 				content: z
 					.string()
-					.min(1, { message: "Replay is too small" })
+					.min(1, { message: "Reply is too small" })
 					.max(CONFIG.MAX_POST_MESSAGE_LENGTH, {
-						message: `Replay is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
+						message: `Reply is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
 					}),
-				replayPostId: z.string().cuid(),
+				replyPostId: z.string().cuid(),
 			})
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -259,13 +284,14 @@ export const postsRouter = createTRPCRouter({
 				data: {
 					authorId,
 					content: input.content,
-					replayId: input.replayPostId,
+					replyId: input.replyPostId,
 				},
 			})
 		}),
 	deletePost: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
+			// todo delete data from all related tables
 			return await ctx.prisma.post.deleteMany({
 				where: {
 					id: input,
@@ -273,23 +299,23 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 		}),
-	getPostReplays: publicProcedure
+	getPostReplies: publicProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.query(async ({ input, ctx }) => {
-			const getPostReplays = await ctx.prisma.post.findMany({
+			const getPostReplies = await ctx.prisma.post.findMany({
 				where: {
-					replayId: input,
+					replyId: input,
 				},
 				orderBy: { createdAt: "desc" },
-				take: CONFIG.MAX_POST_REPLAYS,
+				take: CONFIG.MAX_POST_REPLIES,
 				select: {
 					id: true,
 					authorId: true,
 				},
 			})
 
-			const postReplays = await Promise.all(
-				getPostReplays.map((post) => getPostById(post.id))
+			const postReplies = await Promise.all(
+				getPostReplies.map((post) => getPostById(post.id))
 			)
 
 			let postsLikedBySignInUser: string[] = []
@@ -297,23 +323,16 @@ export const postsRouter = createTRPCRouter({
 			if (ctx.authUserId) {
 				postsLikedBySignInUser = await getPostsLikedByUser(
 					ctx.authUserId,
-					postReplays.map((post) => post.id)
+					postReplies.map((post) => post.id)
 				)
 			}
 
-			const replaysAuthors = await clerkClient.users.getUserList({
-				userId: getPostReplays.map((post) => post.authorId),
-			})
+			const postAuthors = await Promise.all(
+				getPostReplies.map((post) => getPostAuthor(post.authorId))
+			)
 
-			if (!replaysAuthors) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Author of posts not found",
-				})
-			}
-
-			return postReplays.map((postReplay) => {
-				const postAuthor = replaysAuthors.find((user) => user.id === postReplay.authorId)
+			return postReplies.map((postReply) => {
+				const postAuthor = postAuthors.find((user) => user.id === postReply.authorId)
 				if (!postAuthor || !postAuthor.username) {
 					throw new TRPCError({
 						code: "INTERNAL_SERVER_ERROR",
@@ -322,13 +341,13 @@ export const postsRouter = createTRPCRouter({
 				}
 				return {
 					post: {
-						...postReplay,
-						createdAt: postReplay.createdAt.toString(),
+						...postReply,
+						createdAt: postReply.createdAt.toString(),
 						isLikedBySignInUser: postsLikedBySignInUser.some(
-							(postId) => postId === postReplay.id
+							(postId) => postId === postReply.id
 						),
 					},
-					author: filterClarkClientToUser(postAuthor),
+					author: postAuthor,
 				} as PostWithAuthor
 			})
 		}),
@@ -352,6 +371,46 @@ export const postsRouter = createTRPCRouter({
 					message: "Post not exists!",
 				})
 			}
+
+			const createForward = await ctx.prisma.userPostForward.create({
+				data: {
+					userId: ctx.authUserId,
+					postId: input,
+				},
+			})
+
+			if (!createForward) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Unable to forward post!",
+				})
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
+			let post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				post.forwardsCount += 1
+				post.isForwardedPostBySignInUser = true
+			} else {
+				post = await getPostById(input)
+			}
+			void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+
+			const authorCacheKey: CacheSpecialKey = { id: post.authorId, type: "author" }
+			let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
+			if (!author) {
+				author = await getPostAuthor(post.authorId)
+
+				void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
+
+			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
+			const chacheIds = await getCacheData<string[]>(userCacheKey)
+			if (chacheIds) {
+				chacheIds.push(input)
+				void setCacheData(userCacheKey, chacheIds, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
+
 			// todo uncomment after testing
 			// if (getPostToForward.authorId === ctx.authUserId) {
 			// 	throw new TRPCError({
@@ -360,13 +419,10 @@ export const postsRouter = createTRPCRouter({
 			// 	})
 			// }
 
-			const result = await ctx.prisma.userPostForward.create({
-				data: {
-					userId: ctx.authUserId,
-					postId: input,
-				},
-			})
-			return result.postId
+			return {
+				post,
+				author,
+			} as PostWithAuthor
 		}),
 	removePostForward: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
@@ -387,6 +443,23 @@ export const postsRouter = createTRPCRouter({
 				},
 			})
 
-			return input
+			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
+			let post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				post.forwardsCount -= 1
+				post.isForwardedPostBySignInUser = false
+			} else {
+				post = await getPostById(input)
+			}
+			void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+
+			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
+			const chacheIds = await getCacheData<string[]>(userCacheKey)
+			if (chacheIds) {
+				const removed = chacheIds.filter((postId) => postId !== input)
+				void setCacheData(userCacheKey, removed, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
+
+			return post
 		}),
 })
