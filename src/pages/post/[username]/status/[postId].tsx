@@ -10,7 +10,7 @@ import { isFolloweed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
 import { getPostIdsForwardedByUser, getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
-import { canOpenPostQuoteDialog, ParseZodErrorToString } from "~/utils/helpers"
+import { canOpenPostQuoteDialog } from "~/utils/helpers"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
@@ -76,11 +76,10 @@ const PostReplies: NextPage<{
 		onSuccess: async () => {
 			await postReplies.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create reply! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to create reply! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -89,11 +88,10 @@ const PostReplies: NextPage<{
 			setQuotePopUp(null)
 			await postReplies.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create reply! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to quote post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -102,11 +100,10 @@ const PostReplies: NextPage<{
 			toast.success("Post Deleted!")
 			await postReplies.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to delete post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to delete post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -115,11 +112,10 @@ const PostReplies: NextPage<{
 			toast.success("Post Liked!")
 			await postReplies.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to like post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to like post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -128,11 +124,10 @@ const PostReplies: NextPage<{
 			toast.success("Post Unliked!")
 			await postReplies.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to unlike post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to unlike post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -141,11 +136,10 @@ const PostReplies: NextPage<{
 			toast.success("Post Forwarded!")
 			await postReplies.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to forward post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to forward post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -154,11 +148,10 @@ const PostReplies: NextPage<{
 			toast.success("Delete Post Forward!")
 			await postReplies.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to remove forwarded post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to remove forwarded post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -167,10 +160,10 @@ const PostReplies: NextPage<{
 			toast.success("Voted!")
 			await postReplies.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ?? "Failed to vote! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to vote! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
