@@ -1,6 +1,6 @@
 import type { FC } from "react"
-import Image from "next/image"
 import { Icon } from "../Icon"
+import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
 
 export const ProfileSimple: FC<{ profileImageUrl: string; fullName: string; username: string }> = ({
 	profileImageUrl,
@@ -9,13 +9,7 @@ export const ProfileSimple: FC<{ profileImageUrl: string; fullName: string; user
 }) => {
 	return (
 		<div className="flex h-16">
-			<Image
-				className="h-16 w-16 rounded-full"
-				src={profileImageUrl}
-				alt={"avatar"}
-				width={128}
-				height={128}
-			></Image>
+			<ProfileAvatarImageUrl src={profileImageUrl} />
 			<div className="ml-2 mt-1 flex w-10/12 flex-col">
 				<div className="h-5 font-bold">{fullName}</div>
 				<div className="">{`@${username}`}</div>

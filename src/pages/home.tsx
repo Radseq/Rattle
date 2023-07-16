@@ -8,7 +8,6 @@ import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
 import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import { type User } from "@clerk/nextjs/dist/api"
-import Image from "next/image"
 import { Icon } from "~/components/Icon"
 import { PrimalyButton } from "~/components/styledHTMLElements/StyledButtons"
 import { type PostContent } from "~/components/homePage/types"
@@ -16,6 +15,7 @@ import { useReducer, useState } from "react"
 import { CreatePoll } from "~/components/homePage/CreatePoll"
 import { pollLengthReducer } from "~/reducers/pollLengthReducer"
 import { pollChoicesReducer } from "~/reducers/pollChoicesReducer"
+import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 
 const INIT_POLL_LENGTH = {
 	days: 1,
@@ -120,13 +120,7 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 		<Layout>
 			<div className="pt-2">
 				<div className="flex">
-					<Image
-						className="h-16 w-16 rounded-full"
-						src={user.profileImageUrl}
-						alt={"avatar"}
-						width={128}
-						height={128}
-					></Image>
+					<ProfileAvatarImageUrl src={user.profileImageUrl} />
 					<div className="w-full pl-1">
 						<input
 							className="w-full rounded-xl border-2 border-solid p-1 text-lg outline-none"

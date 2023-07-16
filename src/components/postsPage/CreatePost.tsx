@@ -1,6 +1,6 @@
-import Image from "next/image"
 import { LoadingSpinner } from "../LoadingPage"
 import { type FC, useState } from "react"
+import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
 
 export const CreatePost: FC<{
 	onCreatePost: (message: string) => void
@@ -12,14 +12,7 @@ export const CreatePost: FC<{
 
 	return (
 		<div className="flex rounded-lg p-2 hover:bg-gray-100 ">
-			<Image
-				className="w-1/12 rounded-full pr-2"
-				src={profileImageUrl}
-				alt={"avatar"}
-				width={128}
-				height={128}
-			></Image>
-
+			<ProfileAvatarImageUrl src={profileImageUrl} className="w-1/12 rounded-full pr-2" />
 			<input
 				className="w-full rounded-xl border-2 border-solid text-lg outline-none"
 				placeholder={placeholderMessage}
