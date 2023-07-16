@@ -3,7 +3,6 @@ import { Layout } from "~/components/Layout"
 
 import { api } from "~/utils/api"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
-import { ParseZodErrorToString } from "~/utils/helpers"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
 import { clerkClient, getAuth } from "@clerk/nextjs/server"
@@ -63,11 +62,10 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 		onSuccess: async () => {
 			await posts.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to update settings! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to create post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
