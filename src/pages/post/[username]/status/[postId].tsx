@@ -22,6 +22,7 @@ import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { PostPoll } from "~/components/postsPage/PostPoll"
 import { PostSummary } from "~/components/postRepliesPage/PostSummary"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
+import { PostFooter } from "~/components/postsPage/PostFooter"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -194,21 +195,6 @@ const PostReplies: NextPage<{
 			case "deletePost":
 				deletePost.mutate(post.id)
 				break
-			case "forward":
-				forwardPost.mutate(post.id)
-				break
-			case "deleteForward":
-				removePostForward.mutate(post.id)
-				break
-			case "like":
-				likePost.mutate(post.id)
-				break
-			case "unlike":
-				unlikePost.mutate(post.id)
-				break
-			case "quote":
-				setQuotePopUp(postsWithUser)
-				break
 			case "vote":
 				if (clickCapture.choiceId) {
 					pollVote.mutate({ postId: post.id, choiceId: clickCapture?.choiceId })
@@ -282,6 +268,29 @@ const PostReplies: NextPage<{
 								onClickCapture={(clickCapture) => {
 									handlePostClick(clickCapture, reply)
 								}}
+								footer={
+									<PostFooter
+										isForwardedByUser={reply.post.isForwardedPostBySignInUser}
+										postWithUser={reply}
+										onForwardClick={() => {
+											if (reply.post.isForwardedPostBySignInUser) {
+												removePostForward.mutate(reply.post.id)
+											} else {
+												forwardPost.mutate(reply.post.id)
+											}
+										}}
+										onLikeClick={() => {
+											if (reply.post.isLikedBySignInUser) {
+												unlikePost.mutate(reply.post.id)
+											} else {
+												likePost.mutate(reply.post.id)
+											}
+										}}
+										onQuoteClick={() => {
+											setQuotePopUp(reply)
+										}}
+									/>
+								}
 							/>
 						))}
 					</ul>
