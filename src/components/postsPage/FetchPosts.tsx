@@ -4,7 +4,7 @@ import { LoadingPage } from "../LoadingPage"
 import { type ClickCapture, PostItem } from "./PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { canOpenPostQuoteDialog, ParseZodErrorToString } from "~/utils/helpers"
+import { canOpenPostQuoteDialog } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
 import { type PollVote, type PostWithAuthor } from "./types"
@@ -48,11 +48,10 @@ export const FetchPosts: FC<{
 			toast.success("Post Deleted!")
 			await getPosts.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to delete post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to delete post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -61,11 +60,10 @@ export const FetchPosts: FC<{
 			setQuotePopUp(null)
 			await getPosts.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to create reply! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to quote post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -83,11 +81,10 @@ export const FetchPosts: FC<{
 				setPosts(copyPosts)
 			}
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to like post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to like post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -105,11 +102,10 @@ export const FetchPosts: FC<{
 				setPosts(copyPosts)
 			}
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to unlike post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to unlike post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -128,11 +124,10 @@ export const FetchPosts: FC<{
 				setPosts(modifiedPost)
 			}
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to forward post! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to forward post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -141,11 +136,10 @@ export const FetchPosts: FC<{
 			toast.success("Delete Post Forward!")
 			await getPosts.refetch()
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to delete forward! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to delete forward! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
@@ -192,10 +186,10 @@ export const FetchPosts: FC<{
 			})
 			setPosts(copyPost)
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ?? "Failed to vote! Please try again later"
-			toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+		onError: () => {
+			toast.error("Failed to vote! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
 		},
 	})
 
