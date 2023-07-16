@@ -7,7 +7,6 @@ import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { LoadingSpinner } from "~/components/LoadingPage"
 import toast from "react-hot-toast"
-import { ParseZodErrorToString } from "~/utils/helpers"
 import { getAuth } from "@clerk/nextjs/server"
 import { type Profile } from "src/components/profilePage/types"
 import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelector"
@@ -66,11 +65,10 @@ const Profile: NextPage<{
 				toast.success(`${profile.username} is now followeed`)
 				window.location.reload()
 			},
-			onError: (e) => {
-				const error =
-					ParseZodErrorToString(e.data?.zodError) ??
-					"Failed to update settings! Please try again later"
-				toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+			onError: () => {
+				toast.error("Failed to follow! Please try again later", {
+					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
 			},
 		})
 
@@ -80,11 +78,10 @@ const Profile: NextPage<{
 				toast.success(`${profile.username} is now Unfolloweed`)
 				window.location.reload()
 			},
-			onError: (e) => {
-				const error =
-					ParseZodErrorToString(e.data?.zodError) ??
-					"Failed to update settings! Please try again later"
-				toast.error(error, { duration: CONFIG.TOAST_ERROR_DURATION_MS })
+			onError: () => {
+				toast.error("Failed to stop follow! Please try again later", {
+					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
 			},
 		})
 
