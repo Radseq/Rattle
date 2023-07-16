@@ -2,7 +2,6 @@ import { type FC } from "react"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
-import { ParseZodErrorToString } from "~/utils/helpers"
 import { StyledInput, StyledLabel, StyledTextArea } from "../styledHTMLElements/FloatingStyles"
 import { useRestrictedInput, useRestrictedTextArea } from "~/hooks/useRestrictedInput"
 import { PrimalyButton } from "../styledHTMLElements/StyledButtons"
@@ -23,11 +22,8 @@ export const SetUpProfileModal: FC<{
 		onSuccess: () => {
 			toast.success("Successfully updated!")
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to update settings! Please try again later"
-			toast.error(error, { duration: 10000 })
+		onError: () => {
+			toast.error("Failed to update settings! Please try again later", { duration: 10000 })
 		},
 	})
 
