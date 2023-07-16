@@ -10,6 +10,7 @@ import { CONFIG } from "~/config"
 import { type PollVote, type PostWithAuthor } from "./types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
+import { PostFooter } from "./PostFooter"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -225,21 +226,6 @@ export const FetchPosts: FC<{
 			case "deletePost":
 				deletePost.mutate(post.id)
 				break
-			case "forward":
-				forwardPost.mutate(post.id)
-				break
-			case "deleteForward":
-				removePostForward.mutate(post.id)
-				break
-			case "like":
-				likePost.mutate(post.id)
-				break
-			case "unlike":
-				unlikePost.mutate(post.id)
-				break
-			case "quote":
-				setQuotePopUp(postsWithUser)
-				break
 			case "vote":
 				if (clickCapture.choiceId) {
 					pollVote.mutate({ postId: post.id, choiceId: clickCapture.choiceId })
@@ -264,6 +250,29 @@ export const FetchPosts: FC<{
 							handlePostClick(clickCapture, postsWithUser)
 						}}
 						menuItemsType={type}
+						footer={
+							<PostFooter
+								isForwardedByUser={postsWithUser.post.isForwardedPostBySignInUser}
+								postWithUser={postsWithUser}
+								onForwardClick={() => {
+									if (postsWithUser.post.isForwardedPostBySignInUser) {
+										removePostForward.mutate(postsWithUser.post.id)
+									} else {
+										forwardPost.mutate(postsWithUser.post.id)
+									}
+								}}
+								onLikeClick={() => {
+									if (postsWithUser.post.isLikedBySignInUser) {
+										unlikePost.mutate(postsWithUser.post.id)
+									} else {
+										likePost.mutate(postsWithUser.post.id)
+									}
+								}}
+								onQuoteClick={() => {
+									setQuotePopUp(postsWithUser)
+								}}
+							/>
+						}
 					/>
 				))}
 			</ul>
