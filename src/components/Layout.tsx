@@ -23,7 +23,7 @@ export const Layout = (props: LayoutProps) => {
 			</main>
 			<aside className="hidden grow-0 sm:w-full md:block md:w-1/3">
 				<Panel>
-					<div className="sticky top-0 w-full">
+					<div className="sticky top-0 w-full p-4">
 						{!isSignedIn && (
 							<SignUp
 								appearance={{
