@@ -3,17 +3,11 @@ import type { PropsWithChildren, FC } from "react"
 import { Panel } from "~/components/Panel"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 import { PrimalyButton } from "~/components/styledHTMLElements/StyledButtons"
-
-type User = {
-	id: string
-	username: string
-	fullName: string
-	profileImageUrl: string
-}
+import { UserToFollow } from "../types"
 
 type WhoToFollow = PropsWithChildren & {
 	onFollowClick: (id: string) => void
-	users: User[]
+	users: UserToFollow[]
 }
 
 export const WhoToFollow: FC<WhoToFollow> = (props) => {
@@ -26,7 +20,7 @@ export const WhoToFollow: FC<WhoToFollow> = (props) => {
 						<li className="p-4">
 							<Link href={`/${user.username}`}>
 								<ProfileSimple
-									profileImageUrl={""}
+									profileImageUrl={user.profileImageUrl}
 									fullName={user.fullName}
 									username={user.username}
 								>

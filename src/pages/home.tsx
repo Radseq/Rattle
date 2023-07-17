@@ -15,6 +15,8 @@ import { CreatePoll } from "~/components/homePage/CreatePoll"
 import { pollLengthReducer } from "~/reducers/pollLengthReducer"
 import { pollChoicesReducer } from "~/reducers/pollChoicesReducer"
 import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
+import { UserToFollow, WhoToFollow } from "~/features/whoToFollow"
+import { whoToFollow } from "~/server/api/main"
 
 const INIT_POLL_LENGTH = {
 	days: 1,
@@ -38,14 +40,17 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	const user = await clerkClient.users.getUser(userId)
 
+	const usersToFollow = (await whoToFollow(userId)) as UserToFollow[]
+
 	return {
 		props: {
 			user: JSON.parse(JSON.stringify(user)) as User,
+			usersToFollow,
 		},
 	}
 }
 
-const Home: NextPage<{ user: User }> = ({ user }) => {
+const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, usersToFollow }) => {
 	//fetch asap
 	const posts = api.posts.getAllByAuthorId.useQuery(user.id)
 	const [postContent, setPostContent] = useState<PostContent>({
@@ -115,7 +120,13 @@ const Home: NextPage<{ user: User }> = ({ user }) => {
 	}
 
 	return (
-		<Layout>
+		<Layout
+			rightPanel={
+				<WhoToFollow users={usersToFollow} onFollowClick={() => {}}>
+					<h1 className="p-2 text-2xl font-semibold">Who to follow</h1>
+				</WhoToFollow>
+			}
+		>
 			<div className="pt-2">
 				<div className="flex">
 					<ProfileAvatarImageUrl src={user.profileImageUrl} />
