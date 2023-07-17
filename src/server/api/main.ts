@@ -1,6 +1,6 @@
 import { clerkClient } from "@clerk/nextjs/server"
 import { getUserFollowList } from "./follow"
-import { ProfileExtend } from "~/components/profilePage/types"
+import { type ProfileExtend } from "~/components/profilePage/types"
 import { getFullName } from "~/utils/helpers"
 
 const MAS_USERS_TO_FOLLOW = 10

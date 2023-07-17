@@ -15,7 +15,7 @@ import { CreatePoll } from "~/components/homePage/CreatePoll"
 import { pollLengthReducer } from "~/reducers/pollLengthReducer"
 import { pollChoicesReducer } from "~/reducers/pollChoicesReducer"
 import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
-import { UserToFollow, WhoToFollow } from "~/features/whoToFollow"
+import { type UserToFollow, WhoToFollow } from "~/features/whoToFollow"
 import { whoToFollow } from "~/server/api/main"
 
 const INIT_POLL_LENGTH = {

@@ -1,9 +1,9 @@
 import Link from "next/link"
-import type { PropsWithChildren, FC } from "react"
+import type { FC, PropsWithChildren } from "react"
 import { Panel } from "~/components/Panel"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 import { PrimalyButton } from "~/components/styledHTMLElements/StyledButtons"
-import { UserToFollow } from "../types"
+import { type UserToFollow } from "../types"
 
 type WhoToFollow = PropsWithChildren & {
 	onFollowClick: (id: string) => void
@@ -17,7 +17,7 @@ export const WhoToFollow: FC<WhoToFollow> = (props) => {
 			<ul className="hover:bg-gray-300">
 				{props.users &&
 					props.users.map((user) => (
-						<li className="p-4">
+						<li key={user.id} className="p-4">
 							<Link href={`/${user.username}`}>
 								<ProfileSimple
 									profileImageUrl={user.profileImageUrl}
@@ -36,7 +36,7 @@ export const WhoToFollow: FC<WhoToFollow> = (props) => {
 			</ul>
 			<Link
 				className="flex w-full rounded-xl p-4 font-bold text-blue-500 hover:bg-gray-300"
-				href={`/trends`}
+				href={"/trends"}
 			>
 				Show more
 			</Link>
