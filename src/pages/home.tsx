@@ -119,10 +119,24 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 		}
 	}
 
+	const addUserToFollow = api.follow.addUserToFollow.useMutation({
+		onSuccess: (result) => {
+			toast.success(`${result.addedUserName} is now followeed`)
+		},
+		onError: () => {
+			toast.error("Failed to follow! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
+		},
+	})
+
 	return (
 		<Layout
 			rightPanel={
-				<WhoToFollow users={usersToFollow} onFollowClick={() => {}}>
+				<WhoToFollow
+					users={usersToFollow}
+					onFollowClick={(id) => addUserToFollow.mutate(id)}
+				>
 					<h1 className="p-2 text-2xl font-semibold">Who to follow</h1>
 				</WhoToFollow>
 			}

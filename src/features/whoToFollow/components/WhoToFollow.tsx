@@ -17,20 +17,24 @@ export const WhoToFollow: FC<WhoToFollow> = (props) => {
 			<ul className="hover:bg-gray-300">
 				{props.users &&
 					props.users.map((user) => (
-						<li key={user.id} className="p-4">
-							<Link href={`/${user.username}`}>
+						<li key={user.id} className="flex p-4">
+							<Link className="w-full" href={`/${user.username}`}>
 								<ProfileSimple
 									profileImageUrl={user.profileImageUrl}
 									fullName={user.fullName}
 									username={user.username}
-								>
-									<div className="m-auto">
-										<PrimalyButton onClick={() => props.onFollowClick(user.id)}>
-											Follow
-										</PrimalyButton>
-									</div>
-								</ProfileSimple>
+								></ProfileSimple>
 							</Link>
+							<div className="m-auto">
+								<PrimalyButton
+									onClick={(e) => {
+										e.stopPropagation()
+										props.onFollowClick(user.id)
+									}}
+								>
+									Follow
+								</PrimalyButton>
+							</div>
 						</li>
 					))}
 			</ul>
