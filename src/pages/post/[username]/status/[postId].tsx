@@ -23,6 +23,7 @@ import { PostPoll } from "~/components/postsPage/PostPoll"
 import { PostSummary } from "~/components/postRepliesPage/PostSummary"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 import { PostFooter } from "~/components/postsPage/PostFooter"
+import { Icon } from "~/components/Icon"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -212,7 +213,11 @@ const PostReplies: NextPage<{
 					fullName={author.fullName}
 					profileImageUrl={author.profileImageUrl}
 					username={author.username}
-				/>
+				>
+					<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
+						<Icon iconKind="optionDots" />
+					</div>
+				</ProfileSimple>
 				<div className="mt-2 ml-2">
 					{post.poll ? (
 						<div>
