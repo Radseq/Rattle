@@ -27,18 +27,28 @@ export const followRouter = createTRPCRouter({
 			}
 
 			const following = await clerkClient.users.getUser(input)
-			if (!following) {
+			if (!following || !following.username) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
 					message: "User to following not found!",
 				})
 			}
 
-			return await prisma.followeed.create({
+			const create = await prisma.followeed.create({
 				data: {
 					watched: followed,
 					watching: following.id,
 				},
+			})
+			if (create) {
+				return {
+					addedUserName: following.username,
+					idAdded: create.watching,
+					userId: create.watched,
+				}
+			}
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
 			})
 		}),
 	stopFollowing: privateProcedure

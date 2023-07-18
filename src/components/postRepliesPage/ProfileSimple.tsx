@@ -1,11 +1,17 @@
-import type { FC } from "react"
-import { Icon } from "../Icon"
+import type { FC, PropsWithChildren } from "react"
 import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
 
-export const ProfileSimple: FC<{ profileImageUrl: string; fullName: string; username: string }> = ({
+type ProfileSimple = PropsWithChildren & {
+	profileImageUrl: string
+	fullName: string
+	username: string
+}
+
+export const ProfileSimple: FC<ProfileSimple> = ({
 	profileImageUrl,
 	fullName,
 	username,
+	children,
 }) => {
 	return (
 		<div className="flex h-16">
@@ -14,9 +20,7 @@ export const ProfileSimple: FC<{ profileImageUrl: string; fullName: string; user
 				<div className="h-5 font-bold">{fullName}</div>
 				<div className="">{`@${username}`}</div>
 			</div>
-			<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
-				<Icon iconKind="optionDots" />
-			</div>
+			{children}
 		</div>
 	)
 }
