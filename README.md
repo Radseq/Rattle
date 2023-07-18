@@ -1,5 +1,6 @@
 # Rattle
 A Twitter like application!
+![rattleimage](https://github.com/Radseq/Rattle/assets/3647994/6df49747-b5e8-4e77-9301-2f3023fe9d3b)
 
 ## Whats working:
 - Follow/Unfollow profile
@@ -20,3 +21,4 @@ A Twitter like application!
 - [tRPC](https://trpc.io)
 
 App created using [T3 Stack](https://create.t3.gg/)
+
