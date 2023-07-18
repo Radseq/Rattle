@@ -16,7 +16,7 @@ import { pollLengthReducer } from "~/reducers/pollLengthReducer"
 import { pollChoicesReducer } from "~/reducers/pollChoicesReducer"
 import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 import { type UserToFollow, WhoToFollow } from "~/features/whoToFollow"
-import { whoToFollow } from "~/server/api/main"
+import { whoToFollow } from "~/server/features/whoToFollow"
 
 const INIT_POLL_LENGTH = {
 	days: 1,
