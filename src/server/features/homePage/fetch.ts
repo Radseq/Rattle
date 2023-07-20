@@ -16,7 +16,7 @@ import { prisma } from "~/server/db"
 // todo get from config file
 const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
-export const FetchPosts = async (signInUserId: string) => {
+export const fetchHomePosts = async (signInUserId: string) => {
 	const followedAuthorsByUser = await getUserFollowList(signInUserId)
 
 	const postIds: string[] = []

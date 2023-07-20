@@ -15,5 +15,5 @@ export type SignInUser = {
 export type HomePost = {
 	author: PostAuthor
 	post: Post
-	signInUser: SignInUser | undefined
+	signInUser: SignInUser
 }

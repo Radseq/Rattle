@@ -1,16 +1,17 @@
 import { type FC } from "react"
 import { Icon } from "../Icon"
-import { type PostWithAuthor } from "./types"
 import { PostQuoteItem } from "./PostQuoteItem"
 import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
+import { type PostAuthor } from "../profilePage/types"
 
 export const PostQuotePopUp: FC<{
-	post: PostWithAuthor
-	profileImageUrl: string
+	author: PostAuthor
+	createdAt: string
+	message: string
 	onCloseModal: () => void
 	onPostQuote: () => void
 	onMessageChange: (content: string) => void
-}> = ({ post, profileImageUrl, onCloseModal, onPostQuote, onMessageChange }) => {
+}> = ({ author, createdAt, message, onCloseModal, onPostQuote, onMessageChange }) => {
 	return (
 		<div>
 			<div
@@ -32,7 +33,7 @@ export const PostQuotePopUp: FC<{
 						</header>
 						<main className="px-4">
 							<div className="flex">
-								<ProfileAvatarImageUrl src={profileImageUrl} />
+								<ProfileAvatarImageUrl src={author.profileImageUrl} />
 								<textarea
 									className="border-none pl-1 text-xl
 									outline-none focus:border-none active:border-none"
@@ -40,7 +41,11 @@ export const PostQuotePopUp: FC<{
 									onChange={(e) => onMessageChange(e.target.value)}
 								/>
 							</div>
-							<PostQuoteItem postWithAuthor={post} />
+							<PostQuoteItem
+								author={author}
+								createdAt={createdAt}
+								message={message}
+							/>
 						</main>
 						<footer className="m-2 flex items-center justify-end rounded-b">
 							<button

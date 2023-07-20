@@ -16,6 +16,7 @@ import {
 } from "../profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type PostAuthor } from "~/components/profilePage/types"
+import { fetchHomePosts } from "~/server/features/homePage"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -104,6 +105,9 @@ export const postsRouter = createTRPCRouter({
 		}
 
 		return result
+	}),
+	getHomePosts: privateProcedure.query(async ({ ctx }) => {
+		return fetchHomePosts(ctx.authUserId)
 	}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		// todo delete
