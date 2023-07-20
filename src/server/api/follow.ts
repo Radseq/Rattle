@@ -29,5 +29,5 @@ export const getUserFollowList = async (userId: string) => {
 		return follow.map((userId) => userId.watching)
 	}
 
-	return false
+	return []
 }
