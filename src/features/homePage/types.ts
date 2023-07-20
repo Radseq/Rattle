@@ -1,22 +1,15 @@
-import { Poll, PostWithAuthor } from "~/components/postsPage/types"
 import type { Post as PrismaPost } from "@prisma/client"
-import { PostAuthor } from "~/components/profilePage/types"
+import { type PostAuthor } from "~/components/profilePage/types"
+import { type Post as OtherPost } from "~/components/postsPage/types"
 
-export type Post = PrismaPost & {
-	createdAt: string
-	likeCount: number
-	replyCount: number
-	forwardsCount: number
-	quotedPost: PostWithAuthor | null
-	quotedCount: number
-	poll: Poll | null
-}
+export type Post = Omit<OtherPost, "isLikedBySignInUser" | "isForwardedPostBySignInUser"> &
+	PrismaPost
 
 export type SignInUser = {
-	postId: string
 	isLiked: boolean
 	isForwarded: boolean
 	isQuoted: boolean
+	isVotedChoiceId: number | undefined
 }
 
 export type HomePost = {
