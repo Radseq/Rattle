@@ -10,7 +10,6 @@ import { isFolloweed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
 import { getPostIdsForwardedByUser, getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
-import { canOpenPostQuoteDialog } from "~/utils/helpers"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
@@ -206,6 +205,8 @@ const PostReplies: NextPage<{
 		}
 	}
 
+	const openDialog = quotePopUp != null && user != null
+
 	return (
 		<Layout>
 			<div className="h-48 flex-col pt-2">
@@ -275,8 +276,6 @@ const PostReplies: NextPage<{
 								}}
 								footer={
 									<PostFooter
-										isForwardedByUser={reply.post.isForwardedPostBySignInUser}
-										postWithUser={reply}
 										onForwardClick={() => {
 											if (reply.post.isForwardedPostBySignInUser) {
 												removePostForward.mutate(reply.post.id)
@@ -294,6 +293,15 @@ const PostReplies: NextPage<{
 										onQuoteClick={() => {
 											setQuotePopUp(reply)
 										}}
+										isForwarded={reply.post.isForwardedPostBySignInUser}
+										sharedCount={
+											reply.post.quotedCount + reply.post.forwardsCount
+										}
+										isLiked={reply.post.isLikedBySignInUser}
+										likeCount={reply.post.likeCount}
+										username={reply.author.username}
+										replyCount={0}
+										postId={reply.post.id}
 									/>
 								}
 							/>
@@ -301,12 +309,10 @@ const PostReplies: NextPage<{
 					</ul>
 				)}
 			</div>
-			<dialog open={canOpenPostQuoteDialog(quotePopUp, user)}>
+			<dialog open={openDialog}>
 				{quotePopUp && user && (
 					<PostQuotePopUp
-						profileImageUrl={user.profileImageUrl}
 						onCloseModal={() => setQuotePopUp(null)}
-						post={quotePopUp}
 						onPostQuote={() => {
 							quotePost.mutate({
 								content: quoteMessage ?? "",
@@ -314,6 +320,9 @@ const PostReplies: NextPage<{
 							})
 						}}
 						onMessageChange={(message) => setQuoteMessage(message)}
+						author={quotePopUp.author}
+						createdAt={quotePopUp.post.createdAt}
+						message={quotePopUp.post.content}
 					/>
 				)}
 			</dialog>
