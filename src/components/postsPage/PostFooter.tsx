@@ -1,27 +1,37 @@
 import { type FC } from "react"
 import { Icon } from "../Icon"
-import { type PostWithAuthor } from "./types"
 import { ListItem } from "../styledHTMLElements/StyledListItem"
 import { HeartIcon } from "../post/HeartIcon"
 import { ReplyCountIcon } from "../post/ReplyCountIcon"
 import { SharedIcon } from "../post/SharedIcon"
 
 export const PostFooter: FC<{
-	isForwardedByUser: boolean
-	postWithUser: PostWithAuthor
+	isForwarded: boolean
+	sharedCount: number
+	isLiked: boolean
+	likeCount: number
+	username: string
+	replyCount: number
+	postId: string
 	onForwardClick: () => void
 	onLikeClick: () => void
 	onQuoteClick: () => void
-}> = ({ isForwardedByUser, postWithUser, onForwardClick, onLikeClick, onQuoteClick }) => {
-	const { post, author } = postWithUser
-
+}> = ({
+	isForwarded,
+	sharedCount,
+	isLiked,
+	likeCount,
+	username,
+	replyCount,
+	postId,
+	onForwardClick,
+	onLikeClick,
+	onQuoteClick,
+}) => {
 	return (
 		<footer className="mt-3 flex text-gray-500">
-			<ReplyCountIcon
-				count={post.replyCount}
-				url={`/post/${author.username}/status/${post.id}`}
-			/>
-			<SharedIcon sharedCount={post.forwardsCount + post.quotedCount}>
+			<ReplyCountIcon count={replyCount} url={`/post/${username}/status/${postId}`} />
+			<SharedIcon sharedCount={sharedCount}>
 				<ul
 					className="absolute top-8 left-0 z-10 w-44 flex-col rounded-lg 
 								bg-white shadow-[0px_0px_3px_1px_#00000024] group-hover:flex"
@@ -34,7 +44,7 @@ export const PostFooter: FC<{
 					>
 						<Icon iconKind="postForward" />
 						<span className="pl-1 font-bold text-black">
-							{isForwardedByUser ? "Delete Forward" : "Forward"}
+							{isForwarded ? "Delete Forward" : "Forward"}
 						</span>
 					</ListItem>
 					<ListItem
@@ -49,8 +59,8 @@ export const PostFooter: FC<{
 				</ul>
 			</SharedIcon>
 			<HeartIcon
-				filledRed={post.isLikedBySignInUser}
-				likeCount={post.likeCount}
+				filledRed={isLiked}
+				likeCount={likeCount}
 				onClick={(e) => {
 					e.stopPropagation()
 					onLikeClick()

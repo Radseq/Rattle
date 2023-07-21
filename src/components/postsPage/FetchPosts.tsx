@@ -4,7 +4,6 @@ import { LoadingPage } from "../LoadingPage"
 import { type ClickCapture, PostItem } from "./PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { canOpenPostQuoteDialog } from "~/utils/helpers"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
 import { type PollVote, type PostWithAuthor } from "./types"
@@ -233,6 +232,8 @@ export const FetchPosts: FC<{
 		}
 	}
 
+	const openDialog = quotePopUp ? true : false && user ? true : false
+
 	return (
 		<div>
 			<ul>
@@ -246,8 +247,7 @@ export const FetchPosts: FC<{
 						menuItemsType={type}
 						footer={
 							<PostFooter
-								isForwardedByUser={postsWithUser.post.isForwardedPostBySignInUser}
-								postWithUser={postsWithUser}
+								isForwarded={postsWithUser.post.isForwardedPostBySignInUser}
 								onForwardClick={() => {
 									if (postsWithUser.post.isForwardedPostBySignInUser) {
 										removePostForward.mutate(postsWithUser.post.id)
@@ -265,17 +265,27 @@ export const FetchPosts: FC<{
 								onQuoteClick={() => {
 									setQuotePopUp(postsWithUser)
 								}}
+								sharedCount={
+									postsWithUser.post.quotedCount +
+									postsWithUser.post.forwardsCount
+								}
+								isLiked={postsWithUser.post.isLikedBySignInUser}
+								likeCount={postsWithUser.post.likeCount}
+								username={postsWithUser.author.username}
+								replyCount={postsWithUser.post.replyCount}
+								postId={postsWithUser.post.id}
 							/>
 						}
 					/>
 				))}
 			</ul>
-			<dialog open={canOpenPostQuoteDialog(quotePopUp, user)}>
+			<dialog open={openDialog}>
 				{quotePopUp && user && (
 					<PostQuotePopUp
-						profileImageUrl={user.profileImageUrl}
+						author={quotePopUp.author}
+						createdAt={quotePopUp.post.createdAt}
+						message={quotePopUp.post.content}
 						onCloseModal={() => setQuotePopUp(null)}
-						post={quotePopUp}
 						onPostQuote={() => {
 							quotePost.mutate({
 								content: quoteMessage ?? "",

@@ -22,13 +22,6 @@ export const filterClarkClientToAuthor = (user: User) => {
 	} as PostAuthor
 }
 
-export const canOpenPostQuoteDialog = (post: PostWithAuthor | null, user: User | undefined) => {
-	if (post && user) {
-		return true
-	}
-	return false
-}
-
 export const createAndIncrementFill = (arrayLength: number, minValue = 0) => {
 	const result: number[] = []
 	for (let index = minValue; index < arrayLength; index++) {
