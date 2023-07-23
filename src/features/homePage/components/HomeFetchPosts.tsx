@@ -12,6 +12,7 @@ import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { type HomePost } from "../types"
 import { type ClickCapture, PostItem } from "./PostItem"
 import { PostFooter } from "~/components/postsPage/PostFooter"
+import { PostContentSelector } from "./PostContentSelector"
 
 export const HomeFetchPosts: FC<{
 	userId: string
@@ -198,11 +199,6 @@ export const HomeFetchPosts: FC<{
 			case "deletePost":
 				deletePost.mutate(post.id)
 				break
-			case "vote":
-				if (clickCapture.choiceId) {
-					pollVote.mutate({ postId: post.id, choiceId: clickCapture.choiceId })
-				}
-				break
 			default:
 				toast.error("Error while post click", {
 					duration: CONFIG.TOAST_ERROR_DURATION_MS,
@@ -255,7 +251,17 @@ export const HomeFetchPosts: FC<{
 								postId={postsWithUser.post.id}
 							/>
 						}
-					/>
+					>
+						<PostContentSelector
+							homePost={postsWithUser}
+							pollVote={(choiceId) =>
+								pollVote.mutate({
+									postId: postsWithUser.post.id,
+									choiceId,
+								})
+							}
+						/>
+					</PostItem>
 				))}
 			</ul>
 			<dialog open={openDialog}>

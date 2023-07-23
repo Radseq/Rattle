@@ -1,32 +1,28 @@
-import type { FC, ReactNode } from "react"
+import type { FC, PropsWithChildren, ReactNode } from "react"
 
-import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { type HomePost } from "../types"
 import { type PostMenuItemsType } from "~/components/postsPage/types"
-import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 import { PostTitle } from "~/components/postsPage/PostTitle"
-import { PostPoll } from "~/components/postsPage/PostPoll"
-import { PostQuoteItem } from "~/components/postsPage/PostQuoteItem"
 import { PostOptionMenu } from "~/components/postsPage/PostOptionMenu"
 import { Icon } from "~/components/Icon"
 
 dayjs.extend(relativeTime)
 
 export type ClickCapture = {
-	action: "deletePost" | "navigation" | "vote"
-	choiceId?: number
+	action: "deletePost" | "navigation"
 }
 
-export const PostItem: FC<{
-	postWithUser: HomePost
-	menuItemsType: PostMenuItemsType
-	onClickCapture: (clickCapture: ClickCapture) => void
-	footer?: ReactNode
-}> = ({ postWithUser, menuItemsType, onClickCapture, footer }) => {
-	const useTime = useTimeLeft(postWithUser.post.createdAt, postWithUser.post.poll?.endDate)
+export const PostItem: FC<
+	{
+		postWithUser: HomePost
+		menuItemsType: PostMenuItemsType
+		onClickCapture: (clickCapture: ClickCapture) => void
+		footer?: ReactNode
+	} & PropsWithChildren
+> = ({ postWithUser, menuItemsType, onClickCapture, footer, children }) => {
 	const { post, author } = postWithUser
 	return (
 		<li
@@ -41,32 +37,7 @@ export const PostItem: FC<{
 				<ProfileAvatarImageUrl src={author.profileImageUrl} />
 				<div className="w-full pl-2">
 					<PostTitle author={author} createdAt={post.createdAt} />
-					<span>{post.content}</span>
-					{post.poll && (
-						<PostPoll
-							pollTimeLeft={useTime}
-							poll={post.poll}
-							pollEndTime={post.poll.endDate}
-							onClickVote={(id) =>
-								onClickCapture({
-									action: "vote",
-									choiceId: id,
-								})
-							}
-						/>
-					)}
-					{post.quotedPost && (
-						<Link
-							onClick={(e) => e.stopPropagation()}
-							href={`/post/${post.quotedPost.author.username}/status/${post.quotedPost.post.id}`}
-						>
-							<PostQuoteItem
-								author={author}
-								createdAt={post.createdAt}
-								message={post.content}
-							/>
-						</Link>
-					)}
+					{children}
 					{footer}
 				</div>
 				{menuItemsType !== "view" && (
