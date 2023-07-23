@@ -1,17 +1,19 @@
-import { type FC, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
+import { type FC } from "react"
 import { api } from "~/utils/api"
-import { LoadingPage } from "../LoadingPage"
-import { type ClickCapture, PostItem } from "./PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PollVote, type PostWithAuthor } from "./types"
-import { PostQuotePopUp } from "./PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
-import { PostFooter } from "./PostFooter"
+import type { PollVote } from "~/components/postsPage/types"
+import { LoadingPage } from "~/components/LoadingPage"
+import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
+import { type HomePost } from "../types"
+import { type ClickCapture, PostItem } from "./PostItem"
+import { PostFooter } from "~/components/postsPage/PostFooter"
 
-export const FetchPosts: FC<{
+export const HomeFetchPosts: FC<{
 	userId: string
 	user: User | undefined
 	isUserFollowProfile: boolean | null
@@ -19,28 +21,15 @@ export const FetchPosts: FC<{
 	const router = useRouter()
 	const type = usePostMenuItemsType(isUserFollowProfile, user, userId)
 
-	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
+	const [quotePopUp, setQuotePopUp] = useState<HomePost | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
-	const [posts, setPosts] = useState<PostWithAuthor[]>()
+	const [posts, setPosts] = useState<HomePost[]>()
 
-	const forwardedPostIdsByUser = api.profile.getPostIdsForwardedByUser.useQuery()
-	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
+	const getPosts = api.posts.getHomePosts.useQuery()
 
 	useEffect(() => {
-		if (getPosts.data) {
-			if (forwardedPostIdsByUser.data) {
-				const posts = getPosts.data.map((post) => {
-					post.post.isForwardedPostBySignInUser = forwardedPostIdsByUser.data.some(
-						(postId) => postId === post.post.id
-					)
-					return post
-				})
-				setPosts(posts)
-			} else {
-				setPosts(getPosts.data)
-			}
-		}
-	}, [getPosts.data, forwardedPostIdsByUser.data])
+		setPosts(getPosts.data)
+	}, [getPosts.data])
 
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
@@ -73,7 +62,7 @@ export const FetchPosts: FC<{
 				const copyPosts = posts.map((post) => {
 					if (post.post.id === postId) {
 						post.post.likeCount += 1
-						post.post.isLikedBySignInUser = true
+						post.signInUser.isLiked = true
 					}
 					return post
 				})
@@ -94,7 +83,7 @@ export const FetchPosts: FC<{
 				const copyPosts = posts.map((postWithAuthor) => {
 					if (postWithAuthor.post.id === postId) {
 						postWithAuthor.post.likeCount -= 1
-						postWithAuthor.post.isLikedBySignInUser = false
+						postWithAuthor.signInUser.isLiked = false
 					}
 					return postWithAuthor
 				})
@@ -109,19 +98,9 @@ export const FetchPosts: FC<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: (resPostWithAuthor) => {
+		onSuccess: async () => {
 			toast.success("Post Forwarded!")
-			if (posts) {
-				const modifiedPost = posts.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === resPostWithAuthor.post.id) {
-						return resPostWithAuthor
-					}
-					return postWithAuthor
-				})
-				modifiedPost.push(resPostWithAuthor)
-
-				setPosts(modifiedPost)
-			}
+			await getPosts.refetch()
 		},
 		onError: () => {
 			toast.error("Failed to forward post! Please try again later", {
@@ -209,7 +188,7 @@ export const FetchPosts: FC<{
 		}
 	}
 
-	const handlePostClick = (clickCapture: ClickCapture, postsWithUser: PostWithAuthor) => {
+	const handlePostClick = (clickCapture: ClickCapture, postsWithUser: HomePost) => {
 		const { post } = postsWithUser
 
 		switch (clickCapture.action) {
@@ -247,16 +226,16 @@ export const FetchPosts: FC<{
 						menuItemsType={type}
 						footer={
 							<PostFooter
-								isForwarded={postsWithUser.post.isForwardedPostBySignInUser}
+								isForwarded={postsWithUser.signInUser?.isForwarded}
 								onForwardClick={() => {
-									if (postsWithUser.post.isForwardedPostBySignInUser) {
+									if (postsWithUser.signInUser.isForwarded) {
 										removePostForward.mutate(postsWithUser.post.id)
 									} else {
 										forwardPost.mutate(postsWithUser.post.id)
 									}
 								}}
 								onLikeClick={() => {
-									if (postsWithUser.post.isLikedBySignInUser) {
+									if (postsWithUser.signInUser.isLiked) {
 										unlikePost.mutate(postsWithUser.post.id)
 									} else {
 										likePost.mutate(postsWithUser.post.id)
@@ -269,7 +248,7 @@ export const FetchPosts: FC<{
 									postsWithUser.post.quotedCount +
 									postsWithUser.post.forwardsCount
 								}
-								isLiked={postsWithUser.post.isLikedBySignInUser}
+								isLiked={postsWithUser.signInUser.isLiked}
 								likeCount={postsWithUser.post.likeCount}
 								username={postsWithUser.author.username}
 								replyCount={postsWithUser.post.replyCount}
