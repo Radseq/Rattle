@@ -2,7 +2,7 @@
 A Twitter like application!
 ![rattleimage](https://github.com/Radseq/Rattle/assets/3647994/6df49747-b5e8-4e77-9301-2f3023fe9d3b)
 
-## Whats working:
+## What's working:
 - Follow/Unfollow profile
 - SetUp profile (avatar,bio,webpage,banner image)
 - Create Post
@@ -14,6 +14,9 @@ A Twitter like application!
 - Add replay post
 
 ## Technologies using in this project:
+- Cache [Redis](https://upstash.com/)
+- Authorization [Clerk](https://clerk.com/)
+- Database at [PlanetScale](https://planetscale.com/)
 - [Next.js](https://nextjs.org)
 - [NextAuth.js](https://next-auth.js.org)
 - [Prisma](https://prisma.io)
