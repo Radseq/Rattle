@@ -16,14 +16,25 @@ import { prisma } from "~/server/db"
 // todo get from config file
 const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
-export const fetchHomePosts = async (signInUserId: string) => {
+export const fetchHomePosts = async (
+	signInUserId: string,
+	limit: number,
+	cursor: string | null | undefined,
+	skip: number | undefined
+) => {
 	const followedAuthorsByUser = await getUserFollowList(signInUserId)
 
+	const take = limit ?? CONFIG.MAX_POSTS_BY_AUTHOR_ID
 	const postIds: string[] = []
+
 	const postsByAuthorIds = prisma.post.findMany({
 		where: { authorId: { in: [signInUserId, ...followedAuthorsByUser] }, replyId: null },
-		orderBy: { createdAt: "desc" },
-		take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
+		skip: skip,
+		take: take + 1,
+		cursor: cursor ? { id: cursor } : undefined,
+		orderBy: {
+			id: "desc",
+		},
 		select: {
 			id: true,
 		},
@@ -38,6 +49,12 @@ export const fetchHomePosts = async (signInUserId: string) => {
 
 	for (const post of getPostsByAuthorIds) {
 		postIds.push(post.id)
+	}
+
+	let nextCursor: typeof cursor | undefined = undefined
+	if (getPostsByAuthorIds.length > limit) {
+		const nextItem = getPostsByAuthorIds.pop() // return the last item from the array
+		nextCursor = nextItem?.id
 	}
 
 	for (const id of getPostForwardedIds) {
@@ -106,7 +123,10 @@ export const fetchHomePosts = async (signInUserId: string) => {
 		result.push(homePost)
 	}
 
-	return result
+	return {
+		result,
+		nextCursor,
+	}
 }
 
 const isPostsAreQuoted = async (userId: string, postsId: string[]) => {

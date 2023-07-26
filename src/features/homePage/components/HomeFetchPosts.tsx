@@ -26,11 +26,18 @@ export const HomeFetchPosts: FC<{
 	const [quoteMessage, setQuoteMessage] = useState<string>()
 	const [posts, setPosts] = useState<HomePost[]>()
 
-	const getPosts = api.posts.getHomePosts.useQuery()
+	const getPosts = api.posts.getHomePosts.useInfiniteQuery(
+		{
+			limit: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
+		},
+		{
+			getNextPageParam: (lastPage) => lastPage.nextCursor,
+		}
+	)
 
 	useEffect(() => {
-		setPosts(getPosts.data)
-	}, [getPosts.data])
+		setPosts(getPosts.data?.pages[0]?.result)
+	}, [getPosts.data?.pages])
 
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {

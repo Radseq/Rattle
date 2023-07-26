@@ -106,9 +106,17 @@ export const postsRouter = createTRPCRouter({
 
 		return result
 	}),
-	getHomePosts: privateProcedure.query(async ({ ctx }) => {
-		return fetchHomePosts(ctx.authUserId)
-	}),
+	getHomePosts: privateProcedure
+		.input(
+			z.object({
+				limit: z.number(),
+				cursor: z.string().nullish(),
+				skip: z.number().optional(),
+			})
+		)
+		.query(async ({ ctx, input }) => {
+			return fetchHomePosts(ctx.authUserId, input.limit, input.cursor, input.skip)
+		}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		// todo delete
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
