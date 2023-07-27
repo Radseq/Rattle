@@ -24,7 +24,7 @@ const config = {
 		ecmaVersion: 2022,
 		sourceType: 'module',
   },
-  plugins: ["@typescript-eslint", "react", "tailwindcss"],
+  plugins: ["@typescript-eslint", "react", "tailwindcss", "react-hooks"],
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
@@ -101,8 +101,8 @@ const config = {
 				"noSortAlphabetically": true
 			}
 		],
-		'react-hooks/rules-of-hooks': 'error',
-		'react-hooks/exhaustive-deps': 0,
+		"react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
+		"react-hooks/exhaustive-deps": "warn", // Checks effect dependencies
 		// Prettier
 		// eslint looks for the prettier config at the top level of the package/app
 		// but the config lives in the `config/` directory. Passing the config here

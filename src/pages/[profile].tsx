@@ -2,23 +2,23 @@ import type { GetServerSideProps, NextPage } from "next"
 import Head from "next/head"
 import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
-
-import Image from "next/image"
-
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import { LoadingSpinner } from "~/components/LoadingPage"
 import toast from "react-hot-toast"
-import { ParseZodErrorToString } from "~/utils/helpers"
 import { getAuth } from "@clerk/nextjs/server"
-import type { Profile, SignInUser } from "src/components/profilePage/types"
+import { type Profile } from "src/components/profilePage/types"
 import { ActionButtonSelector } from "~/components/profilePage/ActionButtonSelector"
 import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 import { useState } from "react"
 import { useProfileType } from "~/hooks/useProfileType"
 import { getProfileByUserName } from "~/server/api/profile"
 import { isFolloweed } from "~/server/api/follow"
+import { CONFIG } from "~/config"
+import { Icon } from "~/components/Icon"
+import { clerkClient, type User } from "@clerk/nextjs/dist/api"
+import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 
 dayjs.extend(relativeTime)
 
@@ -35,34 +35,29 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		}
 	}
 
-	const { user, userId } = getAuth(props.req)
+	const { userId } = getAuth(props.req)
 
-	const isUserFollowProfile = user ? await isFolloweed(user.id, profile.id) : false
+	const isUserFollowProfile = userId ? await isFolloweed(userId, profile.id) : false
 
-	const signInUser: SignInUser = {
-		userId: userId ? userId : null,
-		isSignedIn: !!userId,
-	}
+	const user = userId ? await clerkClient.users.getUser(userId) : undefined
 
 	return {
 		props: {
 			profile,
-			signInUser,
-			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
+			user: JSON.parse(JSON.stringify(user)) as User,
+			isUserFollowProfile,
 		},
 	}
 }
 
-const ZOD_ERROR_DURATION_MS = 10000
-
 const Profile: NextPage<{
 	profile: Profile
-	signInUser: SignInUser
-	isUserFollowProfile: boolean | null
-}> = ({ profile, signInUser, isUserFollowProfile }) => {
+	user: User | undefined
+	isUserFollowProfile: boolean
+}> = ({ profile, user, isUserFollowProfile }) => {
 	const [showModal, setShowModal] = useState<boolean>()
 
-	const profileType = useProfileType(profile.id, signInUser, isUserFollowProfile)
+	const profileType = useProfileType(profile.id, user, isUserFollowProfile)
 
 	const { mutate: addUserToFollow, isLoading: isFolloweed } =
 		api.follow.addUserToFollow.useMutation({
@@ -70,11 +65,10 @@ const Profile: NextPage<{
 				toast.success(`${profile.username} is now followeed`)
 				window.location.reload()
 			},
-			onError: (e) => {
-				const error =
-					ParseZodErrorToString(e.data?.zodError) ??
-					"Failed to update settings! Please try again later"
-				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
+			onError: () => {
+				toast.error("Failed to follow! Please try again later", {
+					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
 			},
 		})
 
@@ -84,11 +78,10 @@ const Profile: NextPage<{
 				toast.success(`${profile.username} is now Unfolloweed`)
 				window.location.reload()
 			},
-			onError: (e) => {
-				const error =
-					ParseZodErrorToString(e.data?.zodError) ??
-					"Failed to update settings! Please try again later"
-				toast.error(error, { duration: ZOD_ERROR_DURATION_MS })
+			onError: () => {
+				toast.error("Failed to stop follow! Please try again later", {
+					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
 			},
 		})
 
@@ -100,19 +93,17 @@ const Profile: NextPage<{
 			<Layout>
 				<div>
 					<div className="flex flex-col">
-						{profile.bannerImgUrl ? (
-							<img src={profile.bannerImgUrl} alt={"banner"}></img>
+						{profile.extended?.bannerImgUrl ? (
+							<img src={profile.extended?.bannerImgUrl} alt={"banner"}></img>
 						) : (
 							<div className="h-52 w-full bg-black"></div>
 						)}
 						<div className="flex justify-between">
 							<div className="relative w-full">
-								<img
-									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white "
+								<ProfileAvatarImageUrl
 									src={profile.profileImageUrl}
-									alt={"avatar"}
-								></img>
-								{/* fix me: to add shadow to icon when mouse hover */}
+									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white"
+								/>
 								<span
 									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
@@ -137,9 +128,9 @@ const Profile: NextPage<{
 								{showModal ? (
 									<div>
 										<SetUpProfileModal
-											bannerImageUrl={profile.bannerImgUrl ?? ""}
-											bio={profile.bio ?? ""}
-											webPage={profile.webPage ?? ""}
+											bannerImageUrl={profile.extended?.bannerImgUrl ?? ""}
+											bio={profile.extended?.bio ?? ""}
+											webPage={profile.extended?.webPage ?? ""}
 											profileImageUrl={profile.profileImageUrl}
 											showModal={(e: boolean) => setShowModal(e)}
 										/>
@@ -150,28 +141,21 @@ const Profile: NextPage<{
 						</div>
 						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profile.fullName}</h1>
 						<span className="pl-2 font-normal text-slate-400">@{profile.username}</span>
-						<p className="ml-2 mt-2">{profile.bio}</p>
+						<p className="ml-2 mt-2">{profile.extended?.bio}</p>
 						<div className="flex gap-3 pt-2">
-							{profile.webPage && (
+							{profile.extended?.webPage && (
 								<span className="flex pl-2">
-									<Image
-										width={18}
-										height={18}
-										src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/external-link.svg"
-										alt={"icon"}
-									></Image>
-									<a href={profile.webPage} className="pl-1 text-blue-500">
-										{profile.webPage}
+									<Icon iconKind="externalLink" />
+									<a
+										href={profile.extended?.webPage}
+										className="pl-1 text-blue-500"
+									>
+										{profile.extended?.webPage}
 									</a>
 								</span>
 							)}
 							<span className="ml-2 flex">
-								<Image
-									width={18}
-									height={18}
-									src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/calendar.svg"
-									alt={"icon"}
-								></Image>
+								<Icon iconKind="calendar" />
 								<span className="ml-1 text-slate-500">
 									since {dayjs(profile.createdAt).fromNow()}
 								</span>
@@ -189,7 +173,11 @@ const Profile: NextPage<{
 						</div>
 					</div>
 					<div className="pt-4">
-						<FetchPosts userId={profile.id} />
+						<FetchPosts
+							userId={profile.id}
+							user={user}
+							isUserFollowProfile={isUserFollowProfile}
+						/>
 					</div>
 				</div>
 			</Layout>

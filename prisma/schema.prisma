@@ -18,16 +18,31 @@ model Post {
     authorId    String   @db.VarChar(64)
     imageUrl    String?  @db.VarChar(200)
     mediaUrl    String?  @db.VarChar(200)
+    replyId     String?  @db.VarChar(32)
+    quotedId    String?  @db.VarChar(32)
+
     @@index([authorId])
 }
 
-model User {
-    id              String   @id @default(cuid())
-    webPage         String?  @db.VarChar(50)
-    bio             String?  @db.VarChar(500)
-    bannerImageUrl  String?  @db.VarChar(100)
-    profileImageUrl String?  @db.VarChar(100)
-    country         String?  @db.VarChar(100)
+model PostPoll {
+    id          Int     @id @default(autoincrement())
+    postId      String  @db.VarChar(32) @unique
+    endDate     DateTime @default(now())
+    choices     PostPollChoices[]
+}
+
+model PostPollChoices{
+    id          Int         @id @default(autoincrement())
+    poll        PostPoll    @relation(fields: [pollId], references: [id])
+    pollId      Int
+    choice      String      @db.VarChar(25)
+}
+
+model UserPollVote{
+    id          Int     @id @default(autoincrement())
+    userId      String  @db.VarChar(32)
+    choiceId    Int
+    postId      String  @db.VarChar(32)
 }
 
 model Followeed {
@@ -36,4 +51,18 @@ model Followeed {
     watched     String  @db.VarChar(64)
     
     @@index([watching,watched])
+}
+
+model UserLikePost {
+    id          Int     @id @default(autoincrement())
+    userId      String  @db.VarChar(32)
+    postId      String  @db.VarChar(32)
+    
+    @@index([userId,postId])
+}
+
+model UserPostForward {
+    id          Int     @id @default(autoincrement())
+    userId      String  @db.VarChar(32)
+    postId      String  @db.VarChar(32)
 }

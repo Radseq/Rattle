@@ -2,9 +2,9 @@ import { type FC } from "react"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
-import { ParseZodErrorToString } from "~/utils/helpers"
-import { StyledInput, StyledLabel, StyledTextArea } from "../FloatingStyles"
+import { StyledInput, StyledLabel, StyledTextArea } from "../styledHTMLElements/FloatingStyles"
 import { useRestrictedInput, useRestrictedTextArea } from "~/hooks/useRestrictedInput"
+import { PrimalyButton } from "../styledHTMLElements/StyledButtons"
 
 const BANNER_MAX_LETTERS = 100
 const PROFILE_MAX_LETTERS = 100
@@ -22,11 +22,8 @@ export const SetUpProfileModal: FC<{
 		onSuccess: () => {
 			toast.success("Successfully updated!")
 		},
-		onError: (e) => {
-			const error =
-				ParseZodErrorToString(e.data?.zodError) ??
-				"Failed to update settings! Please try again later"
-			toast.error(error, { duration: 10000 })
+		onError: () => {
+			toast.error("Failed to update settings! Please try again later", { duration: 10000 })
 		},
 	})
 
@@ -75,12 +72,10 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel htmlFor="bannerImageUrl" side="left">
 									Profile Image URL
 								</StyledLabel>
-								{bannerInput.charsLeft && (
-									<StyledLabel
-										side="right"
-										htmlFor="bannerImageUrl"
-									>{`${BANNER_MAX_LETTERS}/${bannerInput.charsLeft}`}</StyledLabel>
-								)}
+								<StyledLabel
+									side="right"
+									htmlFor="bannerImageUrl"
+								>{`${BANNER_MAX_LETTERS}/${bannerInput.charsleft}`}</StyledLabel>
 							</div>
 						</div>
 
@@ -94,12 +89,10 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel htmlFor="profileImageUrl" side="left">
 									Profile Image URL
 								</StyledLabel>
-								{profileInput.charsLeft && (
-									<StyledLabel
-										side="right"
-										htmlFor="profileImageUrl"
-									>{`${PROFILE_MAX_LETTERS}/${profileInput.charsLeft}`}</StyledLabel>
-								)}
+								<StyledLabel
+									side="right"
+									htmlFor="profileImageUrl"
+								>{`${PROFILE_MAX_LETTERS}/${profileInput.charsleft}`}</StyledLabel>
 							</div>
 						</div>
 						<div className="mt-2">
@@ -108,12 +101,10 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel htmlFor="webpageUrl" side="left">
 									Webpage URL
 								</StyledLabel>
-								{webPageInput.charsLeft && (
-									<StyledLabel
-										side="right"
-										htmlFor="webpageUrl"
-									>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsLeft}`}</StyledLabel>
-								)}
+								<StyledLabel
+									side="right"
+									htmlFor="webpageUrl"
+								>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsleft}`}</StyledLabel>
 							</div>
 						</div>
 
@@ -123,12 +114,10 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel htmlFor="bio" side="left">
 									Bio
 								</StyledLabel>
-								{bioTextArea.charsLeft && (
-									<StyledLabel
-										side="right"
-										htmlFor="bio"
-									>{`${BIO_MAX_LETTERS}/${bioTextArea.charsLeft}`}</StyledLabel>
-								)}
+								<StyledLabel
+									side="right"
+									htmlFor="bio"
+								>{`${BIO_MAX_LETTERS}/${bioTextArea.charsleft}`}</StyledLabel>
 							</div>
 						</div>
 					</div>
@@ -144,11 +133,7 @@ export const SetUpProfileModal: FC<{
 							{isUpdating ? (
 								<LoadingSpinner />
 							) : (
-								<button
-									className="mr-1 mb-1 rounded bg-emerald-500 px-6 py-3 outline-none 
-									transition-all duration-150 ease-linear hover:shadow-lg 
-									focus:outline-none active:bg-emerald-600"
-									type="button"
+								<PrimalyButton
 									onClick={(e) => {
 										e.preventDefault()
 										mutate({
@@ -160,7 +145,7 @@ export const SetUpProfileModal: FC<{
 									}}
 								>
 									Save Changes
-								</button>
+								</PrimalyButton>
 							)}
 						</div>
 					)}

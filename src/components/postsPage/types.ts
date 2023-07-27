@@ -1,3 +1,41 @@
-import type { RouterOutputs } from "~/utils/api"
+import type { Post as PrismaPost } from "@prisma/client"
+import { type PostAuthor } from "../profilePage/types"
+import { type RouterOutputs } from "~/utils/api"
 
-export type PostWithUser = RouterOutputs["posts"]["getAllByAuthorId"][number]
+export type PostWithAuthor = {
+	author: PostAuthor
+	post: Post
+}
+
+export type PostReplies = {
+	postWithUser: PostWithAuthor
+	repliesWithAuthor: PostWithAuthor[]
+}
+
+export type PostMenuItemsType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
+
+type UserPollVotes = {
+	id: number
+	choice: string
+	voteCount: number
+}
+
+export type Poll = {
+	endDate: string
+	userVotes: UserPollVotes[]
+	choiceVotedBySignInUser: number | undefined
+}
+
+export type Post = PrismaPost & {
+	createdAt: string
+	likeCount: number
+	replyCount: number
+	forwardsCount: number
+	isLikedBySignInUser: boolean
+	isForwardedPostBySignInUser: boolean
+	quotedPost: PostWithAuthor | null
+	quotedCount: number
+	poll: Poll | null
+}
+
+export type PollVote = RouterOutputs["profile"]["votePostPoll"]

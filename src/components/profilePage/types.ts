@@ -2,18 +2,25 @@ export type Profile = {
 	id: string
 	username: string
 	profileImageUrl: string
-	fullName: string | null
+	fullName: string
 	createdAt: number
+	watchedCount: number | null
+	watchingCount: number | null
+	extended: ProfileExtend | null
+}
+
+export type ProfileExtend = {
 	bannerImgUrl: string | null
 	bio: string | null
 	webPage: string | null
-	watchedCount: number | null
-	watchingCount: number | null
-}
-
-export type SignInUser = {
-	userId: string | null
-	isSignedIn: boolean
+	country: string | null
 }
 
 export type ProfilePageType = "view" | "own" | "follow" | "unfollow"
+
+export type PostAuthor = {
+	id: string
+	username: string
+	profileImageUrl: string
+	fullName: string
+}

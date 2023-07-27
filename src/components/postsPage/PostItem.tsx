@@ -1,42 +1,88 @@
-import type { FC } from "react"
-import type { PostWithUser } from "./types"
-import Image from "next/image"
+import type { FC, ReactNode } from "react"
+import type { PostMenuItemsType, PostWithAuthor } from "./types"
 import Link from "next/link"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
+import { PostOptionMenu } from "./PostOptionMenu"
+import { Icon } from "../Icon"
+import { PostQuoteItem } from "./PostQuoteItem"
+import { PostPoll } from "./PostPoll"
+import { useTimeLeft } from "~/hooks/useTimeLeft"
+import { PostTitle } from "./PostTitle"
+import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
 
 dayjs.extend(relativeTime)
 
-export const PostItem: FC<{ postWithUser: PostWithUser }> = ({ postWithUser }) => {
+export type ClickCapture = {
+	action: "deletePost" | "navigation" | "vote"
+	choiceId?: number
+}
+
+export const PostItem: FC<{
+	postWithUser: PostWithAuthor
+	menuItemsType: PostMenuItemsType
+	onClickCapture: (clickCapture: ClickCapture) => void
+	footer?: ReactNode
+}> = ({ postWithUser, menuItemsType, onClickCapture, footer }) => {
+	const useTime = useTimeLeft(postWithUser.post.createdAt, postWithUser.post.poll?.endDate)
+	const { post, author } = postWithUser
 	return (
-		<li className="flex rounded-lg py-2 hover:bg-gray-100 ">
-			<Image
-				className="w-1/12 rounded-full"
-				src={postWithUser.author.profileImageUrl}
-				alt={"avatar"}
-				width={128}
-				height={128}
-			></Image>
-			<div className="w-10/12 pl-2">
-				<div className="font-semibold">
-					<Link
-						href={`/${postWithUser.author.username}`}
-					>{`@${postWithUser.author.username}`}</Link>
-					<span className="p-1 text-slate-400">·</span>
-					<span className="font-normal text-slate-400">
-						{dayjs(postWithUser.post.createdAt).fromNow()}
-					</span>
+		<li
+			className="cursor-pointer rounded-lg py-2 hover:bg-gray-100"
+			onClick={() => {
+				onClickCapture({
+					action: "navigation",
+				})
+			}}
+		>
+			<main className="flex">
+				<ProfileAvatarImageUrl src={author.profileImageUrl} />
+				<div className="w-full pl-2">
+					<PostTitle author={author} createdAt={post.createdAt} />
+					<span>{post.content}</span>
+					{post.poll && (
+						<PostPoll
+							pollTimeLeft={useTime}
+							poll={post.poll}
+							pollEndTime={post.poll.endDate}
+							onClickVote={(id) =>
+								onClickCapture({
+									action: "vote",
+									choiceId: id,
+								})
+							}
+						/>
+					)}
+					{post.quotedPost && (
+						<Link
+							onClick={(e) => e.stopPropagation()}
+							href={`/post/${post.quotedPost.author.username}/status/${post.quotedPost.post.id}`}
+						>
+							<PostQuoteItem
+								author={author}
+								createdAt={post.createdAt}
+								message={post.content}
+							/>
+						</Link>
+					)}
+					{footer}
 				</div>
-				<span>{postWithUser.post.content}</span>
-			</div>
-			<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
-				<Image
-					width={15}
-					height={15}
-					src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/dots-horizontal.svg"
-					alt={"icon"}
-				></Image>
-			</div>
+				{menuItemsType !== "view" && (
+					<div className="group relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
+						<Icon iconKind="optionDots" />
+						<div className="hidden group-hover:block">
+							<PostOptionMenu
+								menuItemsType={menuItemsType}
+								onMenuItemClick={(_) =>
+									onClickCapture({
+										action: "deletePost",
+									})
+								}
+							/>
+						</div>
+					</div>
+				)}
+			</main>
 		</li>
 	)
 }

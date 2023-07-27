@@ -2,9 +2,21 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import { getProfileByUserName } from "../profile"
+import {
+	getPostIdsForwardedByUser,
+	getPostsLikedByUser,
+	getProfileByUserName,
+	isUserLikedPost,
+} from "../profile"
 
+import type { ProfileExtend } from "~/components/profilePage/types"
+import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
+import { type Post } from "~/components/postsPage/types"
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
+
+const MAX_CHACHE_POST_LIFETIME_IN_SECONDS = 60
+const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const profileRouter = createTRPCRouter({
 	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ input }) => {
@@ -49,35 +61,198 @@ export const profileRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
-			const user = await ctx.prisma.user.findFirst({
-				where: {
-					id: authorId,
+			const authors = await clerkClient.users.getUserList({
+				userId: [authorId],
+			})
+
+			if (authors.length > 1 || !authors[0]) {
+				throw new TRPCError({ code: "NOT_FOUND" })
+			}
+
+			const extended: ProfileExtend = {
+				bannerImgUrl: input.bannerImageUrl,
+				bio: input.bio,
+				country: ctx.opts?.req.query.country as string | null,
+				webPage: input.webPage,
+			}
+
+			await clerkClient.users.updateUserMetadata(authorId, {
+				publicMetadata: {
+					extended: extended,
 				},
 			})
 
-			if (!user) {
-				return await ctx.prisma.user.create({
-					data: {
-						id: authorId,
-						bannerImageUrl: input.bannerImageUrl,
-						bio: input.bio,
-						profileImageUrl: input.profileImageUrl,
-						webPage: input.webPage,
-						country: ctx.opts?.req.query.country as string | undefined,
-					},
-				})
-			}
-			return await ctx.prisma.user.update({
+			return extended
+		}),
+	votePostPoll: privateProcedure
+		.input(
+			z.object({
+				postId: z.string().min(25, { message: "wrong postId" }),
+				choiceId: z.number(),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const getPostAlreadyVoted = ctx.prisma.userPollVote.findFirst({
 				where: {
-					id: authorId,
-				},
-				data: {
-					bannerImageUrl: input.bannerImageUrl,
-					bio: input.bio,
-					profileImageUrl: input.profileImageUrl,
-					webPage: input.webPage,
-					country: ctx.opts?.req.query.country as string | undefined,
+					postId: input.postId,
+					userId: ctx.authUserId,
 				},
 			})
+
+			const getPostPoll = ctx.prisma.postPoll.findFirst({
+				where: {
+					postId: input.postId,
+				},
+			})
+
+			const [alreadyVoted, postPoll] = await Promise.all([getPostAlreadyVoted, getPostPoll])
+
+			if (postPoll && new Date(postPoll.endDate) < new Date()) {
+				throw new TRPCError({
+					code: "CONFLICT",
+					message: "Can't vote ended poll",
+				})
+			}
+
+			const result: { oldChoiceId: number | null; newChoiceId: number | null } = {
+				newChoiceId: null,
+				oldChoiceId: null,
+			}
+
+			if (alreadyVoted && alreadyVoted.choiceId === input.choiceId) {
+				const deletedVote = await ctx.prisma.userPollVote.delete({
+					where: {
+						id: alreadyVoted.id,
+					},
+				})
+				if (!deletedVote) {
+					throw new TRPCError({
+						code: "INTERNAL_SERVER_ERROR",
+						message: "Can't delete vote",
+					})
+				}
+
+				result.newChoiceId = null
+				result.oldChoiceId = alreadyVoted.choiceId
+				return result
+			} else if (alreadyVoted) {
+				const updateVote = await ctx.prisma.userPollVote.update({
+					where: {
+						id: alreadyVoted.id,
+					},
+					data: {
+						choiceId: input.choiceId,
+					},
+				})
+				result.newChoiceId = updateVote.choiceId
+				result.oldChoiceId = alreadyVoted.choiceId
+				return result
+			}
+			const addVote = await ctx.prisma.userPollVote.create({
+				data: {
+					userId: ctx.authUserId,
+					choiceId: input.choiceId,
+					postId: input.postId,
+				},
+			})
+
+			result.newChoiceId = addVote.choiceId
+			result.oldChoiceId = null
+			return result
 		}),
+	setPostLiked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
+
+			if (alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post already liked!",
+				})
+			}
+
+			const result = await ctx.prisma.userLikePost.create({
+				data: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+
+			if (!result) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Can't set post liked",
+				})
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
+			const post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				post.isLikedBySignInUser = true
+				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+			}
+
+			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
+			const chacheIds = await getCacheData<string[]>(userCacheKey)
+			if (chacheIds) {
+				chacheIds.push(result.postId)
+				void setCacheData(userCacheKey, chacheIds, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
+
+			return result.postId
+		}),
+	setPostUnliked: privateProcedure
+		.input(z.string().min(25, { message: "wrong postId" }))
+		.mutation(async ({ ctx, input }) => {
+			const alreadyLikePost = await isUserLikedPost(ctx.authUserId, input)
+
+			if (!alreadyLikePost) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Post is not liked!",
+				})
+			}
+
+			const deleted = await ctx.prisma.userLikePost.deleteMany({
+				where: {
+					postId: input,
+					userId: ctx.authUserId,
+				},
+			})
+
+			if (!deleted.count) {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "Can't set post unliked",
+				})
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
+			const post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				post.isLikedBySignInUser = false
+				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+			}
+
+			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
+			const chacheIds = await getCacheData<string[]>(userCacheKey)
+			if (chacheIds) {
+				const res = chacheIds.filter((postId) => postId != input)
+				void setCacheData(userCacheKey, res, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			}
+
+			return input
+		}),
+	getPostsLikedByUser: privateProcedure
+		.input(z.string().array().optional())
+		.query(async ({ input, ctx }) => {
+			if (!input) {
+				return []
+			}
+			return await getPostsLikedByUser(ctx.authUserId, input)
+		}),
+	getPostIdsForwardedByUser: privateProcedure.query(async ({ ctx }) => {
+		return getPostIdsForwardedByUser(ctx.authUserId)
+	}),
 })
