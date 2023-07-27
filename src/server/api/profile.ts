@@ -3,6 +3,7 @@ import type { PostAuthor, Profile, ProfileExtend } from "~/components/profilePag
 import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
+import { userFollowFolloweedCount } from "./follow"
 
 const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
@@ -31,7 +32,7 @@ export const getProfileByUserName = async (userName: string) => {
 		return null
 	}
 
-	const { watchedCount, watchingCount } = await userFollowCount(author.id)
+	const { watchedCount, watchingCount } = await userFollowFolloweedCount(author.id)
 
 	const result = {
 		id: author.id,
@@ -166,12 +167,4 @@ export const isUserForwardedPost = async (userId: string, postId: string): Promi
 		return true
 	}
 	return false
-}
-
-function userFollowCount(
-	id: string
-):
-	| { watchedCount: any; watchingCount: any }
-	| PromiseLike<{ watchedCount: any; watchingCount: any }> {
-	throw new Error("Function not implemented.")
 }
