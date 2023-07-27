@@ -59,8 +59,6 @@ export const HomeFetchPosts: FC<{
 		const incomePosts = data?.pages[page]?.result
 		if (incomePosts) {
 			setPage((prev) => prev + 1)
-		}
-		if (incomePosts) {
 			setPosts((posts) => {
 				if (posts) {
 					return [...posts.concat(incomePosts)]

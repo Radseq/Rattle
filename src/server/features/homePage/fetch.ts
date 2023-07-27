@@ -29,7 +29,7 @@ export const fetchHomePosts = async (
 
 	const postsByAuthorIds = prisma.post.findMany({
 		where: { authorId: { in: [signInUserId, ...followedAuthorsByUser] }, replyId: null },
-		skip: skip,
+		skip: calculateSkip(skip, cursor),
 		take: take + 1,
 		cursor: cursor ? { id: cursor } : undefined,
 		orderBy: {
@@ -150,4 +150,17 @@ const isPostsAreQuoted = async (userId: string, postsId: string[]) => {
 	})
 
 	return result
+}
+
+// with cursor, always skip first element
+const calculateSkip = (skip: number | undefined, cursor: string | null | undefined) => {
+	let calculatedSkip = 0
+
+	if (cursor && !skip) {
+		++calculatedSkip
+	}
+	if (cursor && skip) {
+		calculatedSkip = skip
+	}
+	return calculatedSkip
 }
