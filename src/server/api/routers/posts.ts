@@ -16,6 +16,7 @@ import {
 } from "../profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type PostAuthor } from "~/components/profilePage/types"
+import { fetchHomePosts } from "~/server/features/homePage"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -105,6 +106,17 @@ export const postsRouter = createTRPCRouter({
 
 		return result
 	}),
+	getHomePosts: privateProcedure
+		.input(
+			z.object({
+				limit: z.number(),
+				cursor: z.string().nullish(),
+				skip: z.number().optional(),
+			})
+		)
+		.query(async ({ ctx, input }) => {
+			return fetchHomePosts(ctx.authUserId, input.limit, input.cursor, input.skip)
+		}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		// todo delete
 		const posts = await ctx.prisma.post.findMany({ take: 10 })

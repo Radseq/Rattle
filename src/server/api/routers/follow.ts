@@ -4,6 +4,9 @@ import { clerkClient } from "@clerk/nextjs/server"
 import { TRPCError } from "@trpc/server"
 import { prisma } from "~/server/db"
 import { isFolloweed } from "../follow"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
+
+const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const followRouter = createTRPCRouter({
 	isFolloweed: publicProcedure
@@ -41,6 +44,16 @@ export const followRouter = createTRPCRouter({
 				},
 			})
 			if (create) {
+				const cacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "UserFollowList" }
+				const followingCache = await getCacheData<string[]>(cacheKey)
+				if (followingCache) {
+					void setCacheData(
+						cacheKey,
+						[followingCache, following.id],
+						MAX_CHACHE_USER_LIFETIME_IN_SECONDS
+					)
+				}
+
 				return {
 					addedUserName: following.username,
 					idAdded: create.watching,
@@ -70,11 +83,22 @@ export const followRouter = createTRPCRouter({
 				})
 			}
 
-			return await prisma.followeed.deleteMany({
+			const deleted = await prisma.followeed.deleteMany({
 				where: {
 					watched: followed,
 					watching: following.id,
 				},
 			})
+			if (deleted.count) {
+				const cacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "UserFollowList" }
+				const followingCache = await getCacheData<string[]>(cacheKey)
+				if (followingCache) {
+					void setCacheData(
+						cacheKey,
+						followingCache.filter((userId) => userId != followed),
+						MAX_CHACHE_USER_LIFETIME_IN_SECONDS
+					)
+				}
+			}
 		}),
 })

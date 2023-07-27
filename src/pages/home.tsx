@@ -1,8 +1,6 @@
 import { type GetServerSideProps, type NextPage } from "next"
 import { Layout } from "~/components/Layout"
-
 import { api } from "~/utils/api"
-import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
 import { clerkClient, getAuth } from "@clerk/nextjs/server"
@@ -17,6 +15,7 @@ import { pollChoicesReducer } from "~/reducers/pollChoicesReducer"
 import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 import { type UserToFollow, WhoToFollow } from "~/features/whoToFollow"
 import { whoToFollow } from "~/server/features/whoToFollow"
+import { HomeFetchPosts } from "~/features/homePage/components/HomeFetchPosts"
 
 const INIT_POLL_LENGTH = {
 	days: 1,
@@ -177,7 +176,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 				</footer>
 
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
-				<FetchPosts isUserFollowProfile={null} user={user} userId={user.id} />
+				<HomeFetchPosts isUserFollowProfile={null} user={user} userId={user.id} />
 			</div>
 		</Layout>
 	)
