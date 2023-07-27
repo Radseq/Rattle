@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { type FC } from "react"
 import { api } from "~/utils/api"
 import { useRouter } from "next/router"
@@ -13,6 +13,11 @@ import { type HomePost } from "../types"
 import { type ClickCapture, PostItem } from "./PostItem"
 import { PostFooter } from "~/components/postsPage/PostFooter"
 import { PostContentSelector } from "./PostContentSelector"
+import { useLoadNextPage } from "../hooks/useLoadNextPage"
+
+//todo move to config
+const POSTS_PER_PAGE = 10
+const SCROLL_THRESHOLD_IN_PX = 400
 
 export const HomeFetchPosts: FC<{
 	userId: string
@@ -26,23 +31,49 @@ export const HomeFetchPosts: FC<{
 	const [quoteMessage, setQuoteMessage] = useState<string>()
 	const [posts, setPosts] = useState<HomePost[]>()
 
-	const getPosts = api.posts.getHomePosts.useInfiniteQuery(
+	const [page, setPage] = useState(0)
+
+	const { data, fetchNextPage, refetch, isLoading } = api.posts.getHomePosts.useInfiniteQuery(
 		{
-			limit: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
+			limit: POSTS_PER_PAGE - 1,
 		},
 		{
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
 		}
 	)
 
+	const ulRef = useRef<HTMLUListElement>(null)
+
+	const loadNextPosts = useLoadNextPage(
+		SCROLL_THRESHOLD_IN_PX,
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+	)
+
 	useEffect(() => {
-		setPosts(getPosts.data?.pages[0]?.result)
-	}, [getPosts.data?.pages])
+		if (loadNextPosts) {
+			fetchNextPage().catch(() => console.error("Can't fetch more data!"))
+		}
+	}, [fetchNextPage, loadNextPosts])
+
+	useEffect(() => {
+		const incomePosts = data?.pages[page]?.result
+		if (incomePosts) {
+			setPage((prev) => prev + 1)
+		}
+		if (incomePosts) {
+			setPosts((posts) => {
+				if (posts) {
+					return [...posts.concat(incomePosts)]
+				}
+				return [...incomePosts]
+			})
+		}
+	}, [data?.pages, page])
 
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to delete post! Please try again later", {
@@ -54,7 +85,7 @@ export const HomeFetchPosts: FC<{
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: async () => {
 			setQuotePopUp(null)
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to quote post! Please try again later", {
@@ -108,7 +139,7 @@ export const HomeFetchPosts: FC<{
 	const forwardPost = api.posts.forwardPost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Forwarded!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to forward post! Please try again later", {
@@ -120,7 +151,7 @@ export const HomeFetchPosts: FC<{
 	const removePostForward = api.posts.removePostForward.useMutation({
 		onSuccess: async () => {
 			toast.success("Delete Post Forward!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to delete forward! Please try again later", {
@@ -179,7 +210,7 @@ export const HomeFetchPosts: FC<{
 		},
 	})
 
-	if (getPosts.isLoading) {
+	if (isLoading) {
 		return (
 			<div className="relative">
 				<LoadingPage />
@@ -218,7 +249,7 @@ export const HomeFetchPosts: FC<{
 
 	return (
 		<div>
-			<ul>
+			<ul ref={ulRef}>
 				{posts?.map((postsWithUser) => (
 					<PostItem
 						key={postsWithUser.post.id}
