@@ -1,9 +1,21 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useUser } from "@clerk/nextjs"
+import { useState } from "react"
+import { useDebounce } from "~/features/search"
+import { api } from "~/utils/api"
+
+const debounceTimeout = 200
 
 export const NavigationBar = () => {
 	const { isSignedIn } = useUser()
+
+	const [searchValue, setSearchValue] = useState("")
+
+	const debouncedValue = useDebounce(searchValue, debounceTimeout)
+
+	const searchedResult = api.search.getAllUsersAndTags.useQuery(debouncedValue)
+
 	return (
 		<ul className="flex content-center justify-between overflow-hidden">
 			<li className="rounded py-2 hover:bg-indigo-300">
@@ -26,7 +38,12 @@ export const NavigationBar = () => {
 					className="mx-4 inline w-7 sm:mx-2"
 					alt={"search icon"}
 				/>
-				<input placeholder="Search Post" type="text" className="mr-3 w-full" />
+				<input
+					placeholder="Search Post"
+					type="text"
+					className="mr-3 w-full"
+					onChange={(e) => setSearchValue(e.target.value)}
+				/>
 			</li>
 			<li className="rounded py-2 hover:bg-indigo-300">
 				<Link className="truncate" href="#">
