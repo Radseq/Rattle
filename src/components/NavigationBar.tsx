@@ -4,6 +4,7 @@ import { useUser } from "@clerk/nextjs"
 import { useState } from "react"
 import { useDebounce } from "~/features/search"
 import { api } from "~/utils/api"
+import { SearchMenu } from "~/features/search/components/SearchMenu"
 
 const debounceTimeout = 200
 
@@ -11,6 +12,7 @@ export const NavigationBar = () => {
 	const { isSignedIn } = useUser()
 
 	const [searchValue, setSearchValue] = useState("")
+	const [showSearchMenu, setShowSearchMenu] = useState(false)
 
 	const debouncedValue = useDebounce(searchValue, debounceTimeout)
 
@@ -42,8 +44,15 @@ export const NavigationBar = () => {
 					placeholder="Search Post"
 					type="text"
 					className="mr-3 w-full"
+					onMouseEnter={() => setShowSearchMenu(true)}
 					onChange={(e) => setSearchValue(e.target.value)}
 				/>
+				{showSearchMenu && searchedResult.data && (
+					<SearchMenu
+						searchResult={searchedResult.data}
+						onMouseLeave={() => setShowSearchMenu(false)}
+					/>
+				)}
 			</li>
 			<li className="rounded py-2 hover:bg-indigo-300">
 				<Link className="truncate" href="#">
