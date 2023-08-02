@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react"
 import type { Profile, SearchResult } from "../types"
 
+//todo add to config
+const LIMIT_TAG_ENTITIES = 7
+const LIMIT_PROFILE_ENTITIES = 8
+
 type Observer = (history: SearchResult) => void
 
 const empty: SearchResult = {
@@ -32,11 +36,16 @@ const observedHistory = (() => {
 		},
 		add: (history: string | Profile) => {
 			if (typeof history === "object") {
+				if (value.searchedProfiles.length === LIMIT_PROFILE_ENTITIES) {
+					return
+				}
 				if (!value.searchedProfiles.find((profile) => profile.id === history.id)) {
 					value.searchedProfiles = [...value.searchedProfiles, history]
 				}
-			} else if (!value.searchedTags.find((tag) => tag === history)) {
-				value.searchedTags = [...value.searchedTags, history]
+			} else if (value.searchedTags.length < LIMIT_TAG_ENTITIES) {
+				if (!value.searchedTags.find((tag) => tag === history)) {
+					value.searchedTags = [...value.searchedTags, history]
+				}
 			}
 			save(value)
 			observers.forEach((observer) => observer(value))
