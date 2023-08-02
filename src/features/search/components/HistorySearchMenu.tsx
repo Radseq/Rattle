@@ -1,9 +1,9 @@
 import { type FC } from "react"
 import { MenuProfileItem } from "./MenuProfileItem"
-import { useSearchHistory } from "../hooks/useSearchHistory"
 import { ListItem } from "~/components/styledHTMLElements/StyledListItem"
 import { Icon } from "~/components/Icon"
 import Link from "next/link"
+import type { Profile, SearchResult } from "../types"
 
 const Remove: FC<{ onClick: () => void }> = ({ onClick }) => {
 	return (
@@ -16,28 +16,29 @@ const Remove: FC<{ onClick: () => void }> = ({ onClick }) => {
 	)
 }
 
-export const HistorySearchMenu: FC = () => {
-	const searchHistory = useSearchHistory()
-
+export const HistorySearchMenu: FC<{
+	searchResult: SearchResult
+	onRemove: (toDelete: Profile | string) => void
+}> = ({ searchResult, onRemove }) => {
 	return (
 		<ul>
-			{searchHistory.history.searchedTags.map((tag) => (
+			{searchResult.searchedTags.map((tag) => (
 				<ListItem key={tag}>
 					<div className="flex w-64">
 						<Link href={`/tag/${tag}`}>
 							<span className="inline-block w-56 align-middle leading-10">{`#${tag}`}</span>
 						</Link>
-						<Remove onClick={() => searchHistory.remove(tag)} />
+						<Remove onClick={() => onRemove(tag)} />
 					</div>
 				</ListItem>
 			))}
-			{searchHistory.history.searchedProfiles.map((profile) => (
+			{searchResult.searchedProfiles.map((profile) => (
 				<ListItem key={profile.id}>
 					<div className="flex w-64">
 						<Link href={`/${profile.username}`}>
 							<MenuProfileItem key={profile.id} profile={profile} />
 						</Link>
-						<Remove onClick={() => searchHistory.remove(profile)} />
+						<Remove onClick={() => onRemove(profile)} />
 					</div>
 				</ListItem>
 			))}

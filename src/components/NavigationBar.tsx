@@ -5,6 +5,7 @@ import { useState } from "react"
 import { useDebounce } from "~/features/search"
 import { SearchMenu } from "~/features/search/components/SearchMenu"
 import { HistorySearchMenu } from "~/features/search/components/HistorySearchMenu"
+import { useSearchHistory } from "~/features/search/hooks/useSearchHistory"
 
 const debounceTimeout = 200
 
@@ -15,6 +16,8 @@ export const NavigationBar = () => {
 	const [showSearchMenu, setShowSearchMenu] = useState(false)
 
 	const debouncedValue = useDebounce(searchValue, debounceTimeout)
+
+	const searchHistory = useSearchHistory()
 
 	return (
 		<ul className="flex content-center justify-between overflow-hidden">
@@ -47,7 +50,12 @@ export const NavigationBar = () => {
 						onChange={(e) => setSearchValue(e.target.value)}
 					/>
 					<div className="absolute top-8 z-10  flex-col rounded-lg bg-white shadow-[0px_0px_3px_1px_#00000024]">
-						{showSearchMenu && !searchValue && <HistorySearchMenu />}
+						{showSearchMenu && !searchValue && (
+							<HistorySearchMenu
+								searchResult={searchHistory.history}
+								onRemove={(toDelete) => searchHistory.remove(toDelete)}
+							/>
+						)}
 						{showSearchMenu && searchValue && (
 							<SearchMenu searchValue={debouncedValue} />
 						)}
