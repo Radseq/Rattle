@@ -1,23 +1,46 @@
 import { type FC } from "react"
-import { MenuTagItem } from "./MenuTagItem"
 import { MenuProfileItem } from "./MenuProfileItem"
-import { type SearchResult } from "../types"
+import { api } from "~/utils/api"
+import { useSearchHistory } from "../hooks/useSearchHistory"
+import { LoadingSpinner } from "~/components/LoadingPage"
+import { ListItem } from "~/components/styledHTMLElements/StyledListItem"
+
+import Link from "next/link"
 
 export const SearchMenu: FC<{
-	searchResult: SearchResult | null | undefined
-	onMouseLeave: () => void
-}> = ({ searchResult, onMouseLeave }) => {
+	searchValue: string
+}> = ({ searchValue }) => {
+	const searchedResult = api.search.getAllUsersAndTags.useQuery(searchValue)
+
+	const searchHistory = useSearchHistory()
+
+	if (searchedResult.isLoading) {
+		return (
+			<div className="flex w-64 justify-center">
+				<LoadingSpinner />
+			</div>
+		)
+	}
+
+	if (!searchedResult.data) {
+		return <span>No searched result!</span>
+	}
+
 	return (
-		<ul
-			className="absolute top-8 z-10  flex-col 
-				rounded-lg bg-white shadow-[0px_0px_3px_1px_#00000024]"
-			onMouseLeave={onMouseLeave}
-		>
-			{searchResult?.searchedTags.map((tag) => (
-				<MenuTagItem key={tag} tag={tag} />
+		<ul>
+			{searchedResult.data.searchedTags.map((tag) => (
+				<ListItem className="w-64" key={tag}>
+					<Link href={`/tag/${tag}`} onClick={() => searchHistory.add(tag)}>
+						<span className="inline-block w-64 align-middle leading-10">{`#${tag}`}</span>
+					</Link>
+				</ListItem>
 			))}
-			{searchResult?.searchedProfiles.map((profile) => (
-				<MenuProfileItem key={profile.id} profile={profile} />
+			{searchedResult.data.searchedProfiles.map((profile) => (
+				<ListItem className="w-64" key={profile.id}>
+					<Link href={`/${profile.username}`} onClick={() => searchHistory.add(profile)}>
+						<MenuProfileItem key={profile.id} profile={profile} />
+					</Link>
+				</ListItem>
 			))}
 		</ul>
 	)
