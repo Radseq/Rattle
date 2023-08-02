@@ -3,8 +3,8 @@ import Image from "next/image"
 import { useUser } from "@clerk/nextjs"
 import { useState } from "react"
 import { useDebounce } from "~/features/search"
-import { api } from "~/utils/api"
 import { SearchMenu } from "~/features/search/components/SearchMenu"
+import { HistorySearchMenu } from "~/features/search/components/HistorySearchMenu"
 
 const debounceTimeout = 200
 
@@ -15,8 +15,6 @@ export const NavigationBar = () => {
 	const [showSearchMenu, setShowSearchMenu] = useState(false)
 
 	const debouncedValue = useDebounce(searchValue, debounceTimeout)
-
-	const searchedResult = api.search.getAllUsersAndTags.useQuery(debouncedValue)
 
 	return (
 		<ul className="flex content-center justify-between overflow-hidden">
@@ -40,19 +38,21 @@ export const NavigationBar = () => {
 					className="mx-4 inline w-7 sm:mx-2"
 					alt={"search icon"}
 				/>
-				<input
-					placeholder="Search Post"
-					type="text"
-					className="mr-3 w-full"
-					onMouseEnter={() => setShowSearchMenu(true)}
-					onChange={(e) => setSearchValue(e.target.value)}
-				/>
-				{showSearchMenu && searchedResult.data && (
-					<SearchMenu
-						searchResult={searchedResult.data}
-						onMouseLeave={() => setShowSearchMenu(false)}
+				<div onMouseLeave={() => setShowSearchMenu(false)}>
+					<input
+						placeholder="Search Post"
+						type="text"
+						className="mr-3 w-full"
+						onMouseEnter={() => setShowSearchMenu(true)}
+						onChange={(e) => setSearchValue(e.target.value)}
 					/>
-				)}
+					<div className="absolute top-8 z-10  flex-col rounded-lg bg-white shadow-[0px_0px_3px_1px_#00000024]">
+						{showSearchMenu && !searchValue && <HistorySearchMenu />}
+						{showSearchMenu && searchValue && (
+							<SearchMenu searchValue={debouncedValue} />
+						)}
+					</div>
+				</div>
 			</li>
 			<li className="rounded py-2 hover:bg-indigo-300">
 				<Link className="truncate" href="#">
