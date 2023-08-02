@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { SearchResult, Profile } from "../types"
+import type { Profile, SearchResult } from "../types"
 
 type Observer = (history: SearchResult) => void
 
@@ -35,10 +35,8 @@ const observedHistory = (() => {
 				if (!value.searchedProfiles.find((profile) => profile.id === history.id)) {
 					value.searchedProfiles = [...value.searchedProfiles, history]
 				}
-			} else {
-				if (!value.searchedTags.find((tag) => tag === history)) {
-					value.searchedTags = [...value.searchedTags, history]
-				}
+			} else if (!value.searchedTags.find((tag) => tag === history)) {
+				value.searchedTags = [...value.searchedTags, history]
 			}
 			save(value)
 			observers.forEach((observer) => observer(value))
