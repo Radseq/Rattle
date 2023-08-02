@@ -8,8 +8,13 @@ const MAX_USERS_COUNT = 20
 
 export const searchRouter = createTRPCRouter({
 	getAllUsersAndTags: publicProcedure.input(z.string()).query(async ({ input }) => {
-		if (!input) {
-			return null
+		const searchedProfiles: Profile[] = []
+
+		if (input.length < 3) {
+			return {
+				searchedProfiles,
+				searchedTags: [],
+			}
 		}
 
 		const usersMatching = await clerkClient.users.getUserList({
@@ -19,8 +24,6 @@ export const searchRouter = createTRPCRouter({
 
 		//todo future search tags?
 		const searchedTags = [input]
-
-		const searchedProfiles: Profile[] = []
 
 		usersMatching.forEach((user) => {
 			const fullName = getFullName(user.firstName, user.lastName)
