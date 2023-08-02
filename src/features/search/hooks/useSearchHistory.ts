@@ -12,6 +12,14 @@ const empty: SearchResult = {
 	searchedTags: [],
 }
 
+const copySearchResult = (value: SearchResult) => {
+	return {
+		...value,
+		searchedProfiles: [...value.searchedProfiles],
+		searchedTags: [...value.searchedTags],
+	}
+}
+
 const load = (): SearchResult => {
 	if (typeof window !== "undefined") {
 		const rawHistory = localStorage.getItem("search_history")
@@ -26,7 +34,7 @@ const save = (history: SearchResult) => {
 const observedHistory = (() => {
 	const observers = new Set<Observer>()
 
-	const value = load()
+	let value = load()
 	return {
 		subscribe: (observer: Observer) => {
 			observers.add(observer)
@@ -35,29 +43,35 @@ const observedHistory = (() => {
 			}
 		},
 		add: (history: string | Profile) => {
+			const copiedValue = copySearchResult(value)
 			if (typeof history === "object") {
 				if (value.searchedProfiles.length === LIMIT_PROFILE_ENTITIES) {
 					return
 				}
 				if (!value.searchedProfiles.find((profile) => profile.id === history.id)) {
-					value.searchedProfiles = [...value.searchedProfiles, history]
+					copiedValue.searchedProfiles.push(history)
 				}
 			} else if (value.searchedTags.length < LIMIT_TAG_ENTITIES) {
 				if (!value.searchedTags.find((tag) => tag === history)) {
-					value.searchedTags = [...value.searchedTags, history]
+					copiedValue.searchedTags.push(history)
 				}
 			}
-			save(value)
-			observers.forEach((observer) => observer(value))
+			value = copiedValue
+			save(copiedValue)
+			observers.forEach((observer) => observer(copiedValue))
 		},
 		remove: (entry: string | Profile) => {
+			const copiedValue = copySearchResult(value)
 			if (typeof entry === "object") {
-				value.searchedProfiles = value.searchedProfiles.filter((it) => it.id !== entry.id)
+				copiedValue.searchedProfiles = value.searchedProfiles.filter(
+					(it) => it.id !== entry.id
+				)
 			} else {
-				value.searchedTags = value.searchedTags.filter((it) => it !== entry)
+				copiedValue.searchedTags = value.searchedTags.filter((it) => it !== entry)
 			}
-			save(value)
-			observers.forEach((observer) => observer(value))
+			value = copiedValue
+			save(copiedValue)
+			observers.forEach((observer) => observer(copiedValue))
 		},
 		value,
 	} as const
