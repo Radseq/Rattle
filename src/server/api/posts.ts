@@ -3,6 +3,7 @@ import { prisma } from "../db"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import { getPostAuthor } from "./profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
+import { type Post as PrismaPost } from "@prisma/client"
 
 const MAX_CACHE_LIFETIME_IN_SECONDS = 60
 
@@ -21,7 +22,7 @@ export const getPostById = async (postId: string) => {
 
 	const getLikeCount = getPostLikeCount(postId)
 	const getReplyCount = getPostReplyCount(postId)
-	const getForwardsCount = getPostForwatdCount(postId)
+	const getForwardsCount = getPostForwardCount(postId)
 	const getQuotedPost = getPostQuoteById(postId)
 	const getQuotedCount = getPostQuotedCount(postId)
 	const getPostPoll = getPostPollById(postId)
@@ -45,15 +46,10 @@ export const getPostById = async (postId: string) => {
 	const createdAt = post.createdAt.toString()
 
 	const returnPost = {
-		id: post.id,
+		...post,
 		createdAt,
-		content: post.content,
-		authorId: post.authorId,
-		imageUrl: post.imageUrl,
-		mediaUrl: post.mediaUrl,
-		replyId: post.replyId,
 		likeCount,
-		replyCount: replyCount,
+		replyCount,
 		forwardsCount,
 		quotedPost: quotedPost,
 		quotedCount: quotedCount,
@@ -123,21 +119,8 @@ export const getPostQuoteById = async (postId: string) => {
 		return null
 	}
 
-	const createdAt = getPost.createdAt.toString()
-
 	return {
-		post: {
-			id: getPost.id,
-			createdAt,
-			content: getPost.content,
-			authorId: getPost.authorId,
-			imageUrl: getPost.imageUrl,
-			mediaUrl: getPost.mediaUrl,
-			replyId: getPost.replyId,
-			likeCount: 0,
-			replyCount: 0,
-			forwardsCount: 0,
-		} as Post,
+		post: createPostOfPrismaPost(getPost),
 		author: await getPostAuthor(getPost.authorId),
 	}
 }
@@ -180,7 +163,7 @@ export const getPostReplyCount = async (postId: string) => {
 	})
 }
 
-export const getPostForwatdCount = async (postId: string) => {
+export const getPostForwardCount = async (postId: string) => {
 	return await prisma.userPostForward.count({
 		where: {
 			postId,
@@ -215,4 +198,21 @@ export const replacementPostInArray = (
 		return result
 	}
 	return undefined
+}
+
+export const createPostOfPrismaPost = (prismaPost: PrismaPost) => {
+	return {
+		...prismaPost,
+		createdAt: prismaPost.createdAt.toString(),
+
+		likeCount: 0,
+		replyCount: 0,
+		forwardsCount: 0,
+		quotedPost: null,
+		quotedCount: 0,
+		poll: null,
+		isForwardedPostBySignInUser: false,
+		isLikedBySignInUser: false,
+		quotedId: null,
+	} as Post
 }

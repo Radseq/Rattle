@@ -5,7 +5,7 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { addTimeToDate, filterClarkClientToAuthor, type TimeAddToDate } from "~/utils/helpers"
-import { getPostById, isPostExists } from "../posts"
+import { createPostOfPrismaPost, getPostById, isPostExists } from "../posts"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
 	getPostAuthor,
@@ -17,6 +17,7 @@ import {
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type PostAuthor } from "~/components/profilePage/types"
 import { fetchHomePosts } from "~/server/features/homePage"
+import { type Post as PrismaPost } from "@prisma/client"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -174,7 +175,7 @@ export const postsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
-			let result: Post | false = false
+			let createdPost: PrismaPost | false = false
 
 			if (input.poll) {
 				await ctx.prisma.$transaction(async (tx) => {
@@ -183,7 +184,7 @@ export const postsRouter = createTRPCRouter({
 						throw new Error("Poll is not provided for post!")
 					}
 
-					const createPost = await tx.post.create({
+					createdPost = await tx.post.create({
 						data: {
 							authorId,
 							content: input.message,
@@ -203,38 +204,36 @@ export const postsRouter = createTRPCRouter({
 							choices: {
 								create: pollChoices,
 							},
-							postId: createPost.id,
+							postId: createdPost.id,
 							endDate,
 						},
 					})
-
-					if (createPost && createPoll) {
-						result = createPost as Post
+					if (!createPoll) {
+						throw new Error("Can't create poll for post!")
 					}
 				})
 			} else {
-				const createPost = await ctx.prisma.post.create({
+				createdPost = await ctx.prisma.post.create({
 					data: {
 						authorId,
 						content: input.message,
 					},
 				})
-				if (createPost) {
-					result = createPost as Post
-				}
 			}
 
-			if (!result) {
+			if (!createdPost) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
 					message: "Can't create post",
 				})
 			}
 
-			const postCacheKey: CacheSpecialKey = { id: result.id, type: "post" }
-			void setCacheData(postCacheKey, result, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+			const returnPost = createPostOfPrismaPost(createdPost)
 
-			return result
+			const postCacheKey: CacheSpecialKey = { id: returnPost.id, type: "post" }
+			void setCacheData(postCacheKey, returnPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+
+			return returnPost
 		}),
 	createQuotedPost: privateProcedure
 		.input(
@@ -292,13 +291,26 @@ export const postsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "TOO_MANY_REQUESTS" })
 			}
 
-			return await ctx.prisma.post.create({
+			const createdReply = await ctx.prisma.post.create({
 				data: {
 					authorId,
 					content: input.content,
 					replyId: input.replyPostId,
 				},
 			})
+
+			const replyPostCacheKey: CacheSpecialKey = { id: input.replyPostId, type: "post" }
+			const replayPost = await getCacheData<Post>(replyPostCacheKey)
+			if (replayPost) {
+				replayPost.replyCount += 1
+				void setCacheData(replyPostCacheKey, replayPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+			}
+
+			const returnPost = createPostOfPrismaPost(createdReply)
+			const replyCacheKey: CacheSpecialKey = { id: createdReply.id, type: "post" }
+			void setCacheData(replyCacheKey, returnPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+
+			return returnPost
 		}),
 	deletePost: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
