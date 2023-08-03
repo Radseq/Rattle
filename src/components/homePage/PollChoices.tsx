@@ -41,7 +41,7 @@ export const PollChoices: FC<{
 				<PrimaryOutlineButton
 					onClick={() => dispatch({ type: "add", index: 0, value: "" })}
 				>
-					Add choise
+					Add choice
 				</PrimaryOutlineButton>
 			)}
 		</div>

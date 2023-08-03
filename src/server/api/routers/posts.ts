@@ -156,7 +156,7 @@ export const postsRouter = createTRPCRouter({
 						choices: z
 							.string()
 							.array()
-							.min(1, { message: "Post poll shoud have at last two elements!" }),
+							.min(1, { message: "Post poll should have at last two elements!" }),
 						length: z.object({
 							days: z.number(),
 							hours: z.number(),
@@ -178,7 +178,7 @@ export const postsRouter = createTRPCRouter({
 
 			if (input.poll) {
 				await ctx.prisma.$transaction(async (tx) => {
-					// input.poll give us belowe error even if code is in quard if (input.poll)
+					// input.poll give us below error even if code is in guard if (input.poll)
 					if (!input.poll) {
 						throw new Error("Poll is not provided for post!")
 					}
@@ -444,7 +444,7 @@ export const postsRouter = createTRPCRouter({
 			if (!forwardedPost) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
-					message: "Post is not frowarded!",
+					message: "Post is not forwarded!",
 				})
 			}
 
