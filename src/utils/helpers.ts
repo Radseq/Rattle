@@ -4,8 +4,8 @@ import { type PostAuthor } from "~/components/profilePage/types"
 import relativeTime from "dayjs/plugin/relativeTime"
 dayjs.extend(relativeTime)
 
-export const getFullName = (frstName: string | null, lastName: string | null) => {
-	let fullName = frstName
+export const getFullName = (firstName: string | null, lastName: string | null) => {
+	let fullName = firstName
 	if (fullName && lastName) {
 		fullName += " " + lastName
 	}
