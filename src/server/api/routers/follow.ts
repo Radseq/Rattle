@@ -3,7 +3,7 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc"
 import { clerkClient } from "@clerk/nextjs/server"
 import { TRPCError } from "@trpc/server"
 import { prisma } from "~/server/db"
-import { isFolloweed } from "../follow"
+import { isFollowed } from "../follow"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 
 const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
@@ -16,7 +16,7 @@ export const followRouter = createTRPCRouter({
 				return false
 			}
 
-			return isFolloweed(ctx.authUserId, input)
+			return isFollowed(ctx.authUserId, input)
 		}),
 	addUserToFollow: privateProcedure
 		.input(z.string().min(32, { message: "Wrong user input!" }))

@@ -14,7 +14,7 @@ import { SetUpProfileModal } from "~/components/profilePage/setUpProfileModal"
 import { useState } from "react"
 import { useProfileType } from "~/hooks/useProfileType"
 import { getProfileByUserName } from "~/server/api/profile"
-import { isFolloweed } from "~/server/api/follow"
+import { isFollowed } from "~/server/api/follow"
 import { CONFIG } from "~/config"
 import { Icon } from "~/components/Icon"
 import { clerkClient, type User } from "@clerk/nextjs/dist/api"
@@ -37,7 +37,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	const { userId } = getAuth(props.req)
 
-	const isUserFollowProfile = userId ? await isFolloweed(userId, profile.id) : false
+	const isUserFollowProfile = userId ? await isFollowed(userId, profile.id) : false
 
 	const user = userId ? await clerkClient.users.getUser(userId) : undefined
 
