@@ -6,10 +6,10 @@ import { prisma } from "~/server/db"
 import { isFollowed } from "../follow"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 
-const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
+const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const followRouter = createTRPCRouter({
-	isFolloweed: publicProcedure
+	isFollowed: publicProcedure
 		.input(z.string().min(32, { message: "Wrong user input!" }))
 		.query(async ({ ctx, input }) => {
 			if (!ctx.authUserId) {
@@ -50,7 +50,7 @@ export const followRouter = createTRPCRouter({
 					void setCacheData(
 						cacheKey,
 						[followingCache, following.id],
-						MAX_CHACHE_USER_LIFETIME_IN_SECONDS
+						MAX_CACHE_USER_LIFETIME_IN_SECONDS
 					)
 				}
 
@@ -96,7 +96,7 @@ export const followRouter = createTRPCRouter({
 					void setCacheData(
 						cacheKey,
 						followingCache.filter((userId) => userId != followed),
-						MAX_CHACHE_USER_LIFETIME_IN_SECONDS
+						MAX_CACHE_USER_LIFETIME_IN_SECONDS
 					)
 				}
 			}

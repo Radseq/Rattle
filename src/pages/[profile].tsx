@@ -62,7 +62,7 @@ const Profile: NextPage<{
 	const { mutate: addUserToFollow, isLoading: isFolloweed } =
 		api.follow.addUserToFollow.useMutation({
 			onSuccess: () => {
-				toast.success(`${profile.username} is now followeed`)
+				toast.success(`${profile.username} is now followed`)
 				window.location.reload()
 			},
 			onError: () => {
@@ -75,7 +75,7 @@ const Profile: NextPage<{
 	const { mutate: stopFollowing, isLoading: isUnFollowing } =
 		api.follow.stopFollowing.useMutation({
 			onSuccess: () => {
-				toast.success(`${profile.username} is now Unfolloweed`)
+				toast.success(`${profile.username} is now Unfollowed`)
 				window.location.reload()
 			},
 			onError: () => {
