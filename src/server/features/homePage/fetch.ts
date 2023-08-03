@@ -95,7 +95,7 @@ export const fetchHomePosts = async (
 	const posts = await Promise.all(postIds.map((id) => getPostById(id)))
 	const newPosts: Post[] = []
 
-	// to cast 'old post' to new post (from homepost types)
+	// to cast 'old post' to HomePost
 	posts.forEach((loopPost) => {
 		newPosts.push(loopPost as Post)
 	})

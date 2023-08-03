@@ -75,7 +75,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 
 	const handleCreatePost = () => {
 		if (postContent.poll) {
-			const notNullchoices = [...pollChoicesState].filter((choice) => {
+			const notNullChoices = [...pollChoicesState].filter((choice) => {
 				if (choice) {
 					return choice
 				}
@@ -83,13 +83,13 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 			setPostContent({
 				...postContent,
 				poll: {
-					choices: notNullchoices,
+					choices: notNullChoices,
 					length: pollLengthState,
 				},
 			})
 			mutate({
 				message: postContent.message,
-				poll: { choices: notNullchoices, length: pollLengthState },
+				poll: { choices: notNullChoices, length: pollLengthState },
 			})
 		} else {
 			mutate(postContent)
@@ -120,7 +120,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 
 	const addUserToFollow = api.follow.addUserToFollow.useMutation({
 		onSuccess: (result) => {
-			toast.success(`${result.addedUserName} is now followeed`)
+			toast.success(`${result.addedUserName} is now followed`)
 		},
 		onError: () => {
 			toast.error("Failed to follow! Please try again later", {
