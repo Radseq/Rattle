@@ -194,10 +194,10 @@ export const profileRouter = createTRPCRouter({
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
-			const chacheIds = await getCacheData<string[]>(userCacheKey)
-			if (chacheIds) {
-				chacheIds.push(result.postId)
-				void setCacheData(userCacheKey, chacheIds, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+			const cacheIds = await getCacheData<string[]>(userCacheKey)
+			if (cacheIds) {
+				cacheIds.push(result.postId)
+				void setCacheData(userCacheKey, cacheIds, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			return result.postId
@@ -236,9 +236,9 @@ export const profileRouter = createTRPCRouter({
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
-			const chacheIds = await getCacheData<string[]>(userCacheKey)
-			if (chacheIds) {
-				const res = chacheIds.filter((postId) => postId != input)
+			const cacheIds = await getCacheData<string[]>(userCacheKey)
+			if (cacheIds) {
+				const res = cacheIds.filter((postId) => postId != input)
 				void setCacheData(userCacheKey, res, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 

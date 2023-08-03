@@ -417,10 +417,10 @@ export const postsRouter = createTRPCRouter({
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
-			const chacheIds = await getCacheData<string[]>(userCacheKey)
-			if (chacheIds) {
-				chacheIds.push(input)
-				void setCacheData(userCacheKey, chacheIds, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+			const cacheIds = await getCacheData<string[]>(userCacheKey)
+			if (cacheIds) {
+				cacheIds.push(input)
+				void setCacheData(userCacheKey, cacheIds, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			// todo uncomment after testing
@@ -466,9 +466,9 @@ export const postsRouter = createTRPCRouter({
 			void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
-			const chacheIds = await getCacheData<string[]>(userCacheKey)
-			if (chacheIds) {
-				const removed = chacheIds.filter((postId) => postId !== input)
+			const cacheIds = await getCacheData<string[]>(userCacheKey)
+			if (cacheIds) {
+				const removed = cacheIds.filter((postId) => postId !== input)
 				void setCacheData(userCacheKey, removed, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
