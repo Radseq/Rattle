@@ -4,7 +4,7 @@ import { api } from "~/utils/api"
 import { LoadingSpinner } from "../LoadingPage"
 import { StyledInput, StyledLabel, StyledTextArea } from "../styledHTMLElements/FloatingStyles"
 import { useRestrictedInput, useRestrictedTextArea } from "~/hooks/useRestrictedInput"
-import { PrimalyButton } from "../styledHTMLElements/StyledButtons"
+import { PrimaryButton } from "../styledHTMLElements/StyledButtons"
 
 const BANNER_MAX_LETTERS = 100
 const PROFILE_MAX_LETTERS = 100
@@ -133,7 +133,7 @@ export const SetUpProfileModal: FC<{
 							{isUpdating ? (
 								<LoadingSpinner />
 							) : (
-								<PrimalyButton
+								<PrimaryButton
 									onClick={(e) => {
 										e.preventDefault()
 										mutate({
@@ -145,7 +145,7 @@ export const SetUpProfileModal: FC<{
 									}}
 								>
 									Save Changes
-								</PrimalyButton>
+								</PrimaryButton>
 							)}
 						</div>
 					)}
