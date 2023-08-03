@@ -4,7 +4,7 @@ import { prisma } from "../db"
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const isFollowed = async (watched: string, watching: string) => {
-	const followed = await prisma.followeed.findFirst({
+	const followed = await prisma.followed.findFirst({
 		where: {
 			watched,
 			watching,
@@ -19,12 +19,12 @@ export const isFollowed = async (watched: string, watching: string) => {
 }
 
 export const userFollowFollowedCount = async (userId: string) => {
-	const watchedCount = prisma.followeed.count({
+	const watchedCount = prisma.followed.count({
 		where: {
 			watched: userId,
 		},
 	})
-	const watchingCount = prisma.followeed.count({
+	const watchingCount = prisma.followed.count({
 		where: {
 			watching: userId,
 		},
@@ -44,7 +44,7 @@ export const getUserFollowList = async (userId: string) => {
 		return followingCache
 	}
 
-	const follow = await prisma.followeed.findMany({
+	const follow = await prisma.followed.findMany({
 		where: {
 			watched: userId,
 		},

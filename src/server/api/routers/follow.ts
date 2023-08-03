@@ -37,7 +37,7 @@ export const followRouter = createTRPCRouter({
 				})
 			}
 
-			const create = await prisma.followeed.create({
+			const create = await prisma.followed.create({
 				data: {
 					watched: followed,
 					watching: following.id,
@@ -83,7 +83,7 @@ export const followRouter = createTRPCRouter({
 				})
 			}
 
-			const deleted = await prisma.followeed.deleteMany({
+			const deleted = await prisma.followed.deleteMany({
 				where: {
 					watched: followed,
 					watching: following.id,

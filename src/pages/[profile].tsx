@@ -59,7 +59,7 @@ const Profile: NextPage<{
 
 	const profileType = useProfileType(profile.id, user, isUserFollowProfile)
 
-	const { mutate: addUserToFollow, isLoading: isFolloweed } =
+	const { mutate: addUserToFollow, isLoading: isFollowed } =
 		api.follow.addUserToFollow.useMutation({
 			onSuccess: () => {
 				toast.success(`${profile.username} is now followed`)
@@ -124,7 +124,7 @@ const Profile: NextPage<{
 										}
 									}}
 								/>
-								{(isFolloweed || isUnFollowing) && <LoadingSpinner />}
+								{(isFollowed || isUnFollowing) && <LoadingSpinner />}
 								{showModal ? (
 									<div>
 										<SetUpProfileModal
