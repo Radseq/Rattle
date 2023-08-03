@@ -16,11 +16,12 @@ import {
 } from "../profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type PostAuthor } from "~/components/profilePage/types"
+import { fetchHomePosts } from "~/server/features/homePage"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
-const MAX_CHACHE_POST_LIFETIME_IN_SECONDS = 60
-const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
+const MAX_CACHE_POST_LIFETIME_IN_SECONDS = 60
+const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -67,7 +68,7 @@ export const postsRouter = createTRPCRouter({
 		let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 		if (!author) {
 			author = await getPostAuthor(input)
-			void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 		}
 
 		if (!author || !author.username) {
@@ -105,6 +106,17 @@ export const postsRouter = createTRPCRouter({
 
 		return result
 	}),
+	getHomePosts: privateProcedure
+		.input(
+			z.object({
+				limit: z.number(),
+				cursor: z.string().nullish(),
+				skip: z.number().optional(),
+			})
+		)
+		.query(async ({ ctx, input }) => {
+			return fetchHomePosts(ctx.authUserId, input.limit, input.cursor, input.skip)
+		}),
 	getAll: publicProcedure.query(async ({ ctx }) => {
 		// todo delete
 		const posts = await ctx.prisma.post.findMany({ take: 10 })
@@ -144,7 +156,7 @@ export const postsRouter = createTRPCRouter({
 						choices: z
 							.string()
 							.array()
-							.min(1, { message: "Post poll shoud have at last two elements!" }),
+							.min(1, { message: "Post poll should have at last two elements!" }),
 						length: z.object({
 							days: z.number(),
 							hours: z.number(),
@@ -166,7 +178,7 @@ export const postsRouter = createTRPCRouter({
 
 			if (input.poll) {
 				await ctx.prisma.$transaction(async (tx) => {
-					// input.poll give us belowe error even if code is in quard if (input.poll)
+					// input.poll give us below error even if code is in guard if (input.poll)
 					if (!input.poll) {
 						throw new Error("Poll is not provided for post!")
 					}
@@ -220,7 +232,7 @@ export const postsRouter = createTRPCRouter({
 			}
 
 			const postCacheKey: CacheSpecialKey = { id: result.id, type: "post" }
-			void setCacheData(postCacheKey, result, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+			void setCacheData(postCacheKey, result, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 			return result
 		}),
@@ -394,21 +406,21 @@ export const postsRouter = createTRPCRouter({
 			} else {
 				post = await getPostById(input)
 			}
-			void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+			void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 			const authorCacheKey: CacheSpecialKey = { id: post.authorId, type: "author" }
 			let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 			if (!author) {
 				author = await getPostAuthor(post.authorId)
 
-				void setCacheData(authorCacheKey, author, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+				void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
-			const chacheIds = await getCacheData<string[]>(userCacheKey)
-			if (chacheIds) {
-				chacheIds.push(input)
-				void setCacheData(userCacheKey, chacheIds, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			const cacheIds = await getCacheData<string[]>(userCacheKey)
+			if (cacheIds) {
+				cacheIds.push(input)
+				void setCacheData(userCacheKey, cacheIds, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			// todo uncomment after testing
@@ -432,7 +444,7 @@ export const postsRouter = createTRPCRouter({
 			if (!forwardedPost) {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
-					message: "Post is not frowarded!",
+					message: "Post is not forwarded!",
 				})
 			}
 
@@ -451,13 +463,13 @@ export const postsRouter = createTRPCRouter({
 			} else {
 				post = await getPostById(input)
 			}
-			void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+			void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
-			const chacheIds = await getCacheData<string[]>(userCacheKey)
-			if (chacheIds) {
-				const removed = chacheIds.filter((postId) => postId !== input)
-				void setCacheData(userCacheKey, removed, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			const cacheIds = await getCacheData<string[]>(userCacheKey)
+			if (cacheIds) {
+				const removed = cacheIds.filter((postId) => postId !== input)
+				void setCacheData(userCacheKey, removed, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			return post

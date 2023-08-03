@@ -1,12 +1,11 @@
 import { type User } from "@clerk/nextjs/dist/api"
 import dayjs from "dayjs"
-import { type PostWithAuthor } from "~/components/postsPage/types"
 import { type PostAuthor } from "~/components/profilePage/types"
 import relativeTime from "dayjs/plugin/relativeTime"
 dayjs.extend(relativeTime)
 
-export const getFullName = (frstName: string | null, lastName: string | null) => {
-	let fullName = frstName
+export const getFullName = (firstName: string | null, lastName: string | null) => {
+	let fullName = firstName
 	if (fullName && lastName) {
 		fullName += " " + lastName
 	}
@@ -20,13 +19,6 @@ export const filterClarkClientToAuthor = (user: User) => {
 		profileImageUrl: user.profileImageUrl,
 		fullName: getFullName(user.firstName, user.lastName),
 	} as PostAuthor
-}
-
-export const canOpenPostQuoteDialog = (post: PostWithAuthor | null, user: User | undefined) => {
-	if (post && user) {
-		return true
-	}
-	return false
 }
 
 export const createAndIncrementFill = (arrayLength: number, minValue = 0) => {

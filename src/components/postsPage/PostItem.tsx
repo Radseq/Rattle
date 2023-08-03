@@ -58,7 +58,11 @@ export const PostItem: FC<{
 							onClick={(e) => e.stopPropagation()}
 							href={`/post/${post.quotedPost.author.username}/status/${post.quotedPost.post.id}`}
 						>
-							<PostQuoteItem postWithAuthor={post.quotedPost} />
+							<PostQuoteItem
+								author={author}
+								createdAt={post.createdAt}
+								message={post.content}
+							/>
 						</Link>
 					)}
 					{footer}

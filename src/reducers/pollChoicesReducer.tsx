@@ -3,9 +3,9 @@ export type PollChoicesAction = { type: "add" | "remove" | "change"; index: numb
 export const pollChoicesReducer = (state: string[], action: PollChoicesAction): string[] => {
 	switch (action.type) {
 		case "add": {
-			const newChoise = [...state]
-			newChoise.push("")
-			return newChoise
+			const newChoices = [...state]
+			newChoices.push("")
+			return newChoices
 		}
 		case "remove": {
 			return state.filter((_, ind) => ind !== action.index)

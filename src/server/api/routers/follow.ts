@@ -3,17 +3,20 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc"
 import { clerkClient } from "@clerk/nextjs/server"
 import { TRPCError } from "@trpc/server"
 import { prisma } from "~/server/db"
-import { isFolloweed } from "../follow"
+import { isFollowed } from "../follow"
+import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
+
+const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const followRouter = createTRPCRouter({
-	isFolloweed: publicProcedure
+	isFollowed: publicProcedure
 		.input(z.string().min(32, { message: "Wrong user input!" }))
 		.query(async ({ ctx, input }) => {
 			if (!ctx.authUserId) {
 				return false
 			}
 
-			return isFolloweed(ctx.authUserId, input)
+			return isFollowed(ctx.authUserId, input)
 		}),
 	addUserToFollow: privateProcedure
 		.input(z.string().min(32, { message: "Wrong user input!" }))
@@ -34,13 +37,23 @@ export const followRouter = createTRPCRouter({
 				})
 			}
 
-			const create = await prisma.followeed.create({
+			const create = await prisma.followed.create({
 				data: {
 					watched: followed,
 					watching: following.id,
 				},
 			})
 			if (create) {
+				const cacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "UserFollowList" }
+				const followingCache = await getCacheData<string[]>(cacheKey)
+				if (followingCache) {
+					void setCacheData(
+						cacheKey,
+						[followingCache, following.id],
+						MAX_CACHE_USER_LIFETIME_IN_SECONDS
+					)
+				}
+
 				return {
 					addedUserName: following.username,
 					idAdded: create.watching,
@@ -70,11 +83,22 @@ export const followRouter = createTRPCRouter({
 				})
 			}
 
-			return await prisma.followeed.deleteMany({
+			const deleted = await prisma.followed.deleteMany({
 				where: {
 					watched: followed,
 					watching: following.id,
 				},
 			})
+			if (deleted.count) {
+				const cacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "UserFollowList" }
+				const followingCache = await getCacheData<string[]>(cacheKey)
+				if (followingCache) {
+					void setCacheData(
+						cacheKey,
+						followingCache.filter((userId) => userId != followed),
+						MAX_CACHE_USER_LIFETIME_IN_SECONDS
+					)
+				}
+			}
 		}),
 })

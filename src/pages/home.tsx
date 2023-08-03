@@ -1,14 +1,12 @@
 import { type GetServerSideProps, type NextPage } from "next"
 import { Layout } from "~/components/Layout"
-
 import { api } from "~/utils/api"
-import { FetchPosts } from "~/components/postsPage/FetchPosts"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
 import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import { type User } from "@clerk/nextjs/dist/api"
 import { Icon } from "~/components/Icon"
-import { PrimalyButton } from "~/components/styledHTMLElements/StyledButtons"
+import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 import { type PostContent } from "~/components/homePage/types"
 import { useReducer, useState } from "react"
 import { CreatePoll } from "~/components/homePage/CreatePoll"
@@ -17,6 +15,7 @@ import { pollChoicesReducer } from "~/reducers/pollChoicesReducer"
 import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 import { type UserToFollow, WhoToFollow } from "~/features/whoToFollow"
 import { whoToFollow } from "~/server/features/whoToFollow"
+import { HomeFetchPosts } from "~/features/homePage/components/HomeFetchPosts"
 
 const INIT_POLL_LENGTH = {
 	days: 1,
@@ -76,7 +75,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 
 	const handleCreatePost = () => {
 		if (postContent.poll) {
-			const notNullchoices = [...pollChoicesState].filter((choice) => {
+			const notNullChoices = [...pollChoicesState].filter((choice) => {
 				if (choice) {
 					return choice
 				}
@@ -84,13 +83,13 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 			setPostContent({
 				...postContent,
 				poll: {
-					choices: notNullchoices,
+					choices: notNullChoices,
 					length: pollLengthState,
 				},
 			})
 			mutate({
 				message: postContent.message,
-				poll: { choices: notNullchoices, length: pollLengthState },
+				poll: { choices: notNullChoices, length: pollLengthState },
 			})
 		} else {
 			mutate(postContent)
@@ -121,7 +120,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 
 	const addUserToFollow = api.follow.addUserToFollow.useMutation({
 		onSuccess: (result) => {
-			toast.success(`${result.addedUserName} is now followeed`)
+			toast.success(`${result.addedUserName} is now followed`)
 		},
 		onError: () => {
 			toast.error("Failed to follow! Please try again later", {
@@ -172,12 +171,12 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 					</div>
 					<div className="w-full"></div>
 					<div className="mr-2">
-						<PrimalyButton onClick={handleCreatePost}>Post</PrimalyButton>
+						<PrimaryButton onClick={handleCreatePost}>Post</PrimaryButton>
 					</div>
 				</footer>
 
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
-				<FetchPosts isUserFollowProfile={null} user={user} userId={user.id} />
+				<HomeFetchPosts isUserFollowProfile={null} user={user} userId={user.id} />
 			</div>
 		</Layout>
 	)

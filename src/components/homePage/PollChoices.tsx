@@ -1,6 +1,6 @@
 import type { Dispatch, FC } from "react"
 import { PollInput } from "./PollInput"
-import { DangerButton, PrimalyOutlineButton } from "../styledHTMLElements/StyledButtons"
+import { DangerButton, PrimaryOutlineButton } from "../styledHTMLElements/StyledButtons"
 import { type PollChoicesAction } from "~/reducers/pollChoicesReducer"
 
 // todo add to env instead hard coded
@@ -38,11 +38,11 @@ export const PollChoices: FC<{
 				)
 			})}
 			{choices.length < MAX_POLL_CHOICES && (
-				<PrimalyOutlineButton
+				<PrimaryOutlineButton
 					onClick={() => dispatch({ type: "add", index: 0, value: "" })}
 				>
-					Add choise
-				</PrimalyOutlineButton>
+					Add choice
+				</PrimaryOutlineButton>
 			)}
 		</div>
 	)

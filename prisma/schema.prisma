@@ -45,7 +45,7 @@ model UserPollVote{
     postId      String  @db.VarChar(32)
 }
 
-model Followeed {
+model Followed {
     id          Int     @id @default(autoincrement())
     watching    String  @db.VarChar(64)
     watched     String  @db.VarChar(64)

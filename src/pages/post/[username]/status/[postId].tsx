@@ -6,11 +6,10 @@ import { CreatePost } from "~/components/postsPage/CreatePost"
 import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile } from "~/components/profilePage/types"
-import { isFolloweed } from "~/server/api/follow"
+import { isFollowed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
 import { getPostIdsForwardedByUser, getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
-import { canOpenPostQuoteDialog } from "~/utils/helpers"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
@@ -42,7 +41,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		}
 	}
 
-	const isUserFollowProfile = userId ? await isFolloweed(userId, author.id) : false
+	const isUserFollowProfile = userId ? await isFollowed(userId, author.id) : false
 	const postIdsForwardedByUser = userId ? await getPostIdsForwardedByUser(userId) : []
 
 	const user = userId ? await clerkClient.users.getUser(userId) : undefined
@@ -206,6 +205,8 @@ const PostReplies: NextPage<{
 		}
 	}
 
+	const openDialog = quotePopUp != null && user != null
+
 	return (
 		<Layout>
 			<div className="h-48 flex-col pt-2">
@@ -275,8 +276,6 @@ const PostReplies: NextPage<{
 								}}
 								footer={
 									<PostFooter
-										isForwardedByUser={reply.post.isForwardedPostBySignInUser}
-										postWithUser={reply}
 										onForwardClick={() => {
 											if (reply.post.isForwardedPostBySignInUser) {
 												removePostForward.mutate(reply.post.id)
@@ -294,6 +293,15 @@ const PostReplies: NextPage<{
 										onQuoteClick={() => {
 											setQuotePopUp(reply)
 										}}
+										isForwarded={reply.post.isForwardedPostBySignInUser}
+										sharedCount={
+											reply.post.quotedCount + reply.post.forwardsCount
+										}
+										isLiked={reply.post.isLikedBySignInUser}
+										likeCount={reply.post.likeCount}
+										username={reply.author.username}
+										replyCount={0}
+										postId={reply.post.id}
 									/>
 								}
 							/>
@@ -301,12 +309,10 @@ const PostReplies: NextPage<{
 					</ul>
 				)}
 			</div>
-			<dialog open={canOpenPostQuoteDialog(quotePopUp, user)}>
+			<dialog open={openDialog}>
 				{quotePopUp && user && (
 					<PostQuotePopUp
-						profileImageUrl={user.profileImageUrl}
 						onCloseModal={() => setQuotePopUp(null)}
-						post={quotePopUp}
 						onPostQuote={() => {
 							quotePost.mutate({
 								content: quoteMessage ?? "",
@@ -314,6 +320,9 @@ const PostReplies: NextPage<{
 							})
 						}}
 						onMessageChange={(message) => setQuoteMessage(message)}
+						author={quotePopUp.author}
+						createdAt={quotePopUp.post.createdAt}
+						message={quotePopUp.post.content}
 					/>
 				)}
 			</dialog>
