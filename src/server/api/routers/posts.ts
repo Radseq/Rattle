@@ -5,7 +5,7 @@ import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
 import { addTimeToDate, filterClarkClientToAuthor, type TimeAddToDate } from "~/utils/helpers"
-import { getPostById, isPostExists } from "../posts"
+import { createPostOfPrismaPost, getPostById, isPostExists } from "../posts"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
 	getPostAuthor,
@@ -228,21 +228,7 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			const returnPost = {
-				id: createdPost.id,
-				createdAt: createdPost.createdAt.toString(),
-				content: createdPost.content,
-				authorId: createdPost.authorId,
-				imageUrl: createdPost.imageUrl,
-				mediaUrl: createdPost.mediaUrl,
-				replyId: createdPost.replyId,
-				likeCount: 0,
-				replyCount: 0,
-				forwardsCount: 0,
-				quotedPost: null,
-				quotedCount: 0,
-				poll: null,
-			} as Post
+			const returnPost = createPostOfPrismaPost(createdPost)
 
 			const postCacheKey: CacheSpecialKey = { id: returnPost.id, type: "post" }
 			void setCacheData(postCacheKey, returnPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
@@ -320,21 +306,7 @@ export const postsRouter = createTRPCRouter({
 				void setCacheData(replyPostCacheKey, replayPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 			}
 
-			const returnPost = {
-				id: createdReply.id,
-				createdAt: createdReply.createdAt.toString(),
-				content: createdReply.content,
-				authorId: createdReply.authorId,
-				imageUrl: createdReply.imageUrl,
-				mediaUrl: createdReply.mediaUrl,
-				replyId: createdReply.replyId,
-				likeCount: 0,
-				replyCount: 0,
-				forwardsCount: 0,
-				quotedPost: null,
-				quotedCount: 0,
-				poll: null,
-			} as Post
+			const returnPost = createPostOfPrismaPost(createdReply)
 			const replyCacheKey: CacheSpecialKey = { id: createdReply.id, type: "post" }
 			void setCacheData(replyCacheKey, returnPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
