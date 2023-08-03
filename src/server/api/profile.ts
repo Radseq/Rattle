@@ -3,7 +3,7 @@ import type { PostAuthor, Profile, ProfileExtend } from "~/components/profilePag
 import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
-import { userFollowFolloweedCount } from "./follow"
+import { userFollowFollowedCount } from "./follow"
 
 const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
 
@@ -32,7 +32,7 @@ export const getProfileByUserName = async (userName: string) => {
 		return null
 	}
 
-	const { watchedCount, watchingCount } = await userFollowFolloweedCount(author.id)
+	const { watchedCount, watchingCount } = await userFollowFollowedCount(author.id)
 
 	const result = {
 		id: author.id,
