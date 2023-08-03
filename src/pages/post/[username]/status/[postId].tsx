@@ -6,7 +6,7 @@ import { CreatePost } from "~/components/postsPage/CreatePost"
 import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile } from "~/components/profilePage/types"
-import { isFolloweed } from "~/server/api/follow"
+import { isFollowed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
 import { getPostIdsForwardedByUser, getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
@@ -41,7 +41,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		}
 	}
 
-	const isUserFollowProfile = userId ? await isFolloweed(userId, author.id) : false
+	const isUserFollowProfile = userId ? await isFollowed(userId, author.id) : false
 	const postIdsForwardedByUser = userId ? await getPostIdsForwardedByUser(userId) : []
 
 	const user = userId ? await clerkClient.users.getUser(userId) : undefined

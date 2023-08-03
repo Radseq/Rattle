@@ -4,7 +4,7 @@ import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import { getPostAuthor } from "./profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 
-const MAX_CHACHE_LIFETIME_IN_SECONDS = 60
+const MAX_CACHE_LIFETIME_IN_SECONDS = 60
 
 export const getPostById = async (postId: string) => {
 	const cacheKey: CacheSpecialKey = { id: postId, type: "post" }
@@ -60,7 +60,7 @@ export const getPostById = async (postId: string) => {
 		poll: postPoll,
 	} as Post
 
-	void setCacheData(cacheKey, returnPost, MAX_CHACHE_LIFETIME_IN_SECONDS)
+	void setCacheData(cacheKey, returnPost, MAX_CACHE_LIFETIME_IN_SECONDS)
 
 	return returnPost
 }

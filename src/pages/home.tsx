@@ -6,7 +6,7 @@ import { CONFIG } from "~/config"
 import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import { type User } from "@clerk/nextjs/dist/api"
 import { Icon } from "~/components/Icon"
-import { PrimalyButton } from "~/components/styledHTMLElements/StyledButtons"
+import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 import { type PostContent } from "~/components/homePage/types"
 import { useReducer, useState } from "react"
 import { CreatePoll } from "~/components/homePage/CreatePoll"
@@ -75,7 +75,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 
 	const handleCreatePost = () => {
 		if (postContent.poll) {
-			const notNullchoices = [...pollChoicesState].filter((choice) => {
+			const notNullChoices = [...pollChoicesState].filter((choice) => {
 				if (choice) {
 					return choice
 				}
@@ -83,13 +83,13 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 			setPostContent({
 				...postContent,
 				poll: {
-					choices: notNullchoices,
+					choices: notNullChoices,
 					length: pollLengthState,
 				},
 			})
 			mutate({
 				message: postContent.message,
-				poll: { choices: notNullchoices, length: pollLengthState },
+				poll: { choices: notNullChoices, length: pollLengthState },
 			})
 		} else {
 			mutate(postContent)
@@ -120,7 +120,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 
 	const addUserToFollow = api.follow.addUserToFollow.useMutation({
 		onSuccess: (result) => {
-			toast.success(`${result.addedUserName} is now followeed`)
+			toast.success(`${result.addedUserName} is now followed`)
 		},
 		onError: () => {
 			toast.error("Failed to follow! Please try again later", {
@@ -171,7 +171,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 					</div>
 					<div className="w-full"></div>
 					<div className="mr-2">
-						<PrimalyButton onClick={handleCreatePost}>Post</PrimalyButton>
+						<PrimaryButton onClick={handleCreatePost}>Post</PrimaryButton>
 					</div>
 				</footer>
 

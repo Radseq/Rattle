@@ -1,30 +1,30 @@
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 import { prisma } from "../db"
 
-const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
+const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
-export const isFolloweed = async (watched: string, watching: string) => {
-	const followeed = await prisma.followeed.findFirst({
+export const isFollowed = async (watched: string, watching: string) => {
+	const followed = await prisma.followed.findFirst({
 		where: {
 			watched,
 			watching,
 		},
 	})
 
-	if (followeed) {
+	if (followed) {
 		return true
 	}
 
 	return false
 }
 
-export const userFollowFolloweedCount = async (userId: string) => {
-	const watchedCount = prisma.followeed.count({
+export const userFollowFollowedCount = async (userId: string) => {
+	const watchedCount = prisma.followed.count({
 		where: {
 			watched: userId,
 		},
 	})
-	const watchingCount = prisma.followeed.count({
+	const watchingCount = prisma.followed.count({
 		where: {
 			watching: userId,
 		},
@@ -44,7 +44,7 @@ export const getUserFollowList = async (userId: string) => {
 		return followingCache
 	}
 
-	const follow = await prisma.followeed.findMany({
+	const follow = await prisma.followed.findMany({
 		where: {
 			watched: userId,
 		},
@@ -55,7 +55,7 @@ export const getUserFollowList = async (userId: string) => {
 
 	const result: string[] = follow.map((userId) => userId.watching)
 
-	void setCacheData(cacheKey, result, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+	void setCacheData(cacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 
 	return result
 }

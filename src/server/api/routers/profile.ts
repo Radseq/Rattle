@@ -15,8 +15,8 @@ import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache
 import { type Post } from "~/components/postsPage/types"
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
-const MAX_CHACHE_POST_LIFETIME_IN_SECONDS = 60
-const MAX_CHACHE_USER_LIFETIME_IN_SECONDS = 600
+const MAX_CACHE_POST_LIFETIME_IN_SECONDS = 60
+const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const profileRouter = createTRPCRouter({
 	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ input }) => {
@@ -190,14 +190,14 @@ export const profileRouter = createTRPCRouter({
 			const post = await getCacheData<Post>(postCacheKey)
 			if (post) {
 				post.isLikedBySignInUser = true
-				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+				void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
-			const chacheIds = await getCacheData<string[]>(userCacheKey)
-			if (chacheIds) {
-				chacheIds.push(result.postId)
-				void setCacheData(userCacheKey, chacheIds, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			const cacheIds = await getCacheData<string[]>(userCacheKey)
+			if (cacheIds) {
+				cacheIds.push(result.postId)
+				void setCacheData(userCacheKey, cacheIds, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			return result.postId
@@ -232,14 +232,14 @@ export const profileRouter = createTRPCRouter({
 			const post = await getCacheData<Post>(postCacheKey)
 			if (post) {
 				post.isLikedBySignInUser = false
-				void setCacheData(postCacheKey, post, MAX_CHACHE_POST_LIFETIME_IN_SECONDS)
+				void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
-			const chacheIds = await getCacheData<string[]>(userCacheKey)
-			if (chacheIds) {
-				const res = chacheIds.filter((postId) => postId != input)
-				void setCacheData(userCacheKey, res, MAX_CHACHE_USER_LIFETIME_IN_SECONDS)
+			const cacheIds = await getCacheData<string[]>(userCacheKey)
+			if (cacheIds) {
+				const res = cacheIds.filter((postId) => postId != input)
+				void setCacheData(userCacheKey, res, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			return input

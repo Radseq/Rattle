@@ -2,7 +2,7 @@ import Link from "next/link"
 import type { FC, PropsWithChildren } from "react"
 import { Panel } from "~/components/Panel"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
-import { PrimalyButton } from "~/components/styledHTMLElements/StyledButtons"
+import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 import { type UserToFollow } from "../types"
 
 type WhoToFollow = PropsWithChildren & {
@@ -26,14 +26,14 @@ export const WhoToFollow: FC<WhoToFollow> = (props) => {
 								></ProfileSimple>
 							</Link>
 							<div className="m-auto">
-								<PrimalyButton
+								<PrimaryButton
 									onClick={(e) => {
 										e.stopPropagation()
 										props.onFollowClick(user.id)
 									}}
 								>
 									Follow
-								</PrimalyButton>
+								</PrimaryButton>
 							</div>
 						</li>
 					))}
