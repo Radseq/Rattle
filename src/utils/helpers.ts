@@ -58,3 +58,16 @@ export const addTimeToDate = (initDate: Date, timeToAdd: TimeAddToDate) => {
 	toPollEnd.setHours(toPollEnd.getHours() + timeToAdd.hours)
 	return toPollEnd
 }
+
+export const calculateSkip = (skip: number | undefined, cursor: string | null | undefined) => {
+	// with cursor, always skip first element
+	let calculatedSkip = 0
+
+	if (cursor && !skip) {
+		++calculatedSkip
+	}
+	if (cursor && skip) {
+		calculatedSkip = skip
+	}
+	return calculatedSkip
+}

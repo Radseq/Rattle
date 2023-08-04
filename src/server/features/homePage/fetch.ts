@@ -9,9 +9,11 @@ import {
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
 	getUserVotedAnyPostsPoll,
+	isPostsQuotedByUser,
 } from "~/server/api/profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { prisma } from "~/server/db"
+import { calculateSkip } from "~/utils/helpers"
 
 // todo get from config file
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
@@ -72,7 +74,7 @@ export const fetchHomePosts = async (
 		await Promise.all([
 			getPostsLikedByUser(signInUserId, postIds),
 			getUserVotedAnyPostsPoll(signInUserId, postIds),
-			isPostsAreQuoted(signInUserId, postIds),
+			isPostsQuotedByUser(signInUserId, postIds),
 		])
 	postsLikedByUser = getPostsLikedBySignInUser
 	postsPollVotedByUser = getPostsPollVotedByUser
@@ -127,40 +129,4 @@ export const fetchHomePosts = async (
 		result,
 		nextCursor,
 	}
-}
-
-const isPostsAreQuoted = async (userId: string, postsId: string[]) => {
-	const quotedByUser = await prisma.post.findMany({
-		where: {
-			authorId: userId,
-			quotedId: {
-				in: postsId,
-			},
-		},
-		select: {
-			quotedId: true,
-		},
-	})
-	const result: string[] = []
-
-	quotedByUser.forEach((post) => {
-		if (post.quotedId) {
-			result.push(post.quotedId)
-		}
-	})
-
-	return result
-}
-
-// with cursor, always skip first element
-const calculateSkip = (skip: number | undefined, cursor: string | null | undefined) => {
-	let calculatedSkip = 0
-
-	if (cursor && !skip) {
-		++calculatedSkip
-	}
-	if (cursor && skip) {
-		calculatedSkip = skip
-	}
-	return calculatedSkip
 }
