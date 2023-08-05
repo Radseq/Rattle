@@ -211,8 +211,6 @@ export const createPostOfPrismaPost = (prismaPost: PrismaPost) => {
 		quotedPost: null,
 		quotedCount: 0,
 		poll: null,
-		isForwardedPostBySignInUser: false,
-		isLikedBySignInUser: false,
 		quotedId: null,
 	} as Post
 }

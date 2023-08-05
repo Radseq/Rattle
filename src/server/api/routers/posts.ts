@@ -4,7 +4,12 @@ import { z } from "zod"
 import { CreateRateLimit } from "~/RateLimit"
 import { CONFIG } from "~/config"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc"
-import { addTimeToDate, filterClarkClientToAuthor, type TimeAddToDate } from "~/utils/helpers"
+import {
+	addTimeToDate,
+	calculateSkip,
+	filterClarkClientToAuthor,
+	type TimeAddToDate,
+} from "~/utils/helpers"
 import { createPostOfPrismaPost, getPostById, isPostExists } from "../posts"
 import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
@@ -12,6 +17,7 @@ import {
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
 	getUserVotedAnyPostsPoll,
+	isPostsQuotedByUser,
 	isUserForwardedPost,
 } from "../profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
@@ -56,13 +62,17 @@ export const postsRouter = createTRPCRouter({
 			postId: string
 			choiceId: number
 		}[] = []
+		let postsQuotedByUser: string[] = []
 		if (ctx.authUserId) {
-			const [getPostsLikedBySignInUser, getPostsPollVotedByUser] = await Promise.all([
-				getPostsLikedByUser(ctx.authUserId, postIds),
-				getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
-			])
+			const [getPostsLikedBySignInUser, getPostsPollVotedByUser, getPostsIdsQuotedByUser] =
+				await Promise.all([
+					getPostsLikedByUser(ctx.authUserId, postIds),
+					getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
+					isPostsQuotedByUser(ctx.authUserId, postIds),
+				])
 			postsLikedBySignInUser = getPostsLikedBySignInUser
 			postsPollVotedByUser = getPostsPollVotedByUser
+			postsQuotedByUser = getPostsIdsQuotedByUser
 		}
 
 		const authorCacheKey: CacheSpecialKey = { id: input, type: "author" }
@@ -91,9 +101,14 @@ export const postsRouter = createTRPCRouter({
 				post: {
 					...sortedPost,
 					createdAt: sortedPost.createdAt.toString(),
-					isLikedBySignInUser: postsLikedBySignInUser.some(
-						(postId) => postId === sortedPost.id
-					),
+				},
+				signInUser: {
+					isForwarded: getPostForwardedIds.some((post) => post === sortedPost.id),
+					isLiked: postsLikedBySignInUser.some((post) => post === sortedPost.id),
+					isQuoted: postsQuotedByUser.some((post) => post === sortedPost.id),
+					isVotedChoiceId: postsPollVotedByUser.filter(
+						(vote) => vote.postId === sortedPost.id
+					)[0]?.choiceId,
 				},
 				author,
 			} as PostWithAuthor
@@ -324,14 +339,24 @@ export const postsRouter = createTRPCRouter({
 			})
 		}),
 	getPostReplies: publicProcedure
-		.input(z.string().min(25, { message: "wrong postId" }))
+		.input(
+			z.object({
+				postId: z.string().min(25, { message: "wrong postId" }),
+				limit: z.number(),
+				cursor: z.string().nullish(),
+				skip: z.number().optional(),
+			})
+		)
 		.query(async ({ input, ctx }) => {
+			const { limit, postId, cursor, skip } = input
+			const take = limit ?? CONFIG.MAX_POST_REPLIES
+
 			const getPostReplies = await ctx.prisma.post.findMany({
-				where: {
-					replyId: input,
-				},
+				where: { replyId: postId },
+				skip: calculateSkip(skip, cursor),
+				take: take + 1,
+				cursor: cursor ? { id: cursor } : undefined,
 				orderBy: { createdAt: "desc" },
-				take: CONFIG.MAX_POST_REPLIES,
 				select: {
 					id: true,
 					authorId: true,
@@ -342,20 +367,31 @@ export const postsRouter = createTRPCRouter({
 				getPostReplies.map((post) => getPostById(post.id))
 			)
 
-			let postsLikedBySignInUser: string[] = []
+			let nextCursor: typeof cursor | undefined = undefined
+			if (getPostReplies.length > limit) {
+				const nextItem = getPostReplies.pop() // return the last item from the array
+				nextCursor = nextItem?.id
+			}
+
+			let postsLikedByUser: string[] = []
+			let postsQuotedByUser: string[] = []
 
 			if (ctx.authUserId) {
-				postsLikedBySignInUser = await getPostsLikedByUser(
-					ctx.authUserId,
-					postReplies.map((post) => post.id)
-				)
+				const postReplyIds = postReplies.map((post) => post.id)
+
+				const [getPostsLikedBySignInUser, getPostsIdsQuotedByUser] = await Promise.all([
+					getPostsLikedByUser(ctx.authUserId, postReplyIds),
+					isPostsQuotedByUser(ctx.authUserId, postReplyIds),
+				])
+				postsLikedByUser = getPostsLikedBySignInUser
+				postsQuotedByUser = getPostsIdsQuotedByUser
 			}
 
 			const postAuthors = await Promise.all(
 				getPostReplies.map((post) => getPostAuthor(post.authorId))
 			)
 
-			return postReplies.map((postReply) => {
+			const result = postReplies.map((postReply) => {
 				const postAuthor = postAuthors.find((user) => user.id === postReply.authorId)
 				if (!postAuthor || !postAuthor.username) {
 					throw new TRPCError({
@@ -367,13 +403,19 @@ export const postsRouter = createTRPCRouter({
 					post: {
 						...postReply,
 						createdAt: postReply.createdAt.toString(),
-						isLikedBySignInUser: postsLikedBySignInUser.some(
-							(postId) => postId === postReply.id
-						),
+					},
+					signInUser: {
+						isLiked: postsLikedByUser.some((post) => post === postReply.id),
+						isQuoted: postsQuotedByUser.some((post) => post === postReply.id),
 					},
 					author: postAuthor,
 				} as PostWithAuthor
 			})
+
+			return {
+				result,
+				nextCursor,
+			}
 		}),
 	forwardPost: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
@@ -414,7 +456,6 @@ export const postsRouter = createTRPCRouter({
 			let post = await getCacheData<Post>(postCacheKey)
 			if (post) {
 				post.forwardsCount += 1
-				post.isForwardedPostBySignInUser = true
 			} else {
 				post = await getPostById(input)
 			}
@@ -471,7 +512,6 @@ export const postsRouter = createTRPCRouter({
 			let post = await getCacheData<Post>(postCacheKey)
 			if (post) {
 				post.forwardsCount -= 1
-				post.isForwardedPostBySignInUser = false
 			} else {
 				post = await getPostById(input)
 			}
