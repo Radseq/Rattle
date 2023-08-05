@@ -36,7 +36,11 @@ export const PostItem: FC<
 			<main className="flex">
 				<ProfileAvatarImageUrl src={author.profileImageUrl} />
 				<div className="w-full pl-2">
-					<PostTitle author={author} createdAt={post.createdAt} />
+					<PostTitle
+						fullName={author.fullName}
+						username={author.username}
+						createdAt={post.createdAt}
+					/>
 					{children}
 					{footer}
 				</div>

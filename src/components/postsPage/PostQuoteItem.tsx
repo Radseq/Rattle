@@ -19,7 +19,11 @@ export const PostQuoteItem: FC<{ author: PostAuthor; createdAt: string; message:
 					size={32}
 					src={author.profileImageUrl}
 				/>
-				<PostTitle author={author} createdAt={createdAt} />
+				<PostTitle
+					fullName={author.fullName}
+					username={author.username}
+					createdAt={createdAt}
+				/>
 			</div>
 			<span className="block">{message}</span>
 		</div>

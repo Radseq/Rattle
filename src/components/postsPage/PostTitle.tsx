@@ -1,20 +1,23 @@
 import { type FC } from "react"
 import Link from "next/link"
-import { type PostAuthor } from "../profilePage/types"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 
 dayjs.extend(relativeTime)
 
-export const PostTitle: FC<{ author: PostAuthor; createdAt: string }> = ({ author, createdAt }) => {
+export const PostTitle: FC<{ fullName: string; username: string; createdAt: string }> = ({
+	fullName,
+	username,
+	createdAt,
+}) => {
 	return (
 		<div className="text-lg font-semibold">
-			<span className="pr-1">{author.fullName}</span>
+			<span className="pr-1">{fullName}</span>
 			<span>
 				<Link
 					onClick={(e) => e.stopPropagation()}
-					href={`/${author.username}`}
-				>{`@${author.username}`}</Link>
+					href={`/${username}`}
+				>{`@${username}`}</Link>
 			</span>
 			<span className="p-1 text-slate-400">·</span>
 			<span className="font-normal text-slate-400">{dayjs(createdAt).fromNow()}</span>
