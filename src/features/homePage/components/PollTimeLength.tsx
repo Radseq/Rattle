@@ -1,9 +1,9 @@
 import type { Dispatch, FC } from "react"
 import { createAndIncrementFill } from "~/utils/helpers"
 import React from "react"
-import { type PollLengthAction } from "~/reducers/pollLengthReducer"
 import { type PollLength } from "../types"
 import { StyledLabel, StyledSelect } from "~/components/styledHTMLElements/FloatingStyles"
+import { type PollLengthAction } from "../hooks"
 
 const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	length,
@@ -25,7 +25,6 @@ const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 // todo add to env instead hard coded
 const MIN_POLL_LENGTH = 5
 
-// export const PollLength: FC<{}> = () => {
 export const PollTimeLength: FC<{ state: PollLength; dispatch: Dispatch<PollLengthAction> }> = ({
 	state,
 	dispatch,

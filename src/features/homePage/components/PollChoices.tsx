@@ -1,7 +1,7 @@
 import type { Dispatch, FC } from "react"
 import { PollInput } from "./PollInput"
-import { type PollChoicesAction } from "~/reducers/pollChoicesReducer"
 import { DangerButton, PrimaryOutlineButton } from "~/components/styledHTMLElements/StyledButtons"
+import { type PollChoicesAction } from "../hooks"
 
 // todo add to env instead hard coded
 const MAX_POLL_CHOICES = 6
