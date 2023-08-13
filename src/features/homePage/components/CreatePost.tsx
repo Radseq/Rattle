@@ -1,13 +1,13 @@
 import { type FC, type PropsWithChildren, useReducer, useState } from "react"
 import { Icon } from "~/components/Icon"
-import { CreatePoll } from "~/components/homePage/CreatePoll"
-import { type PostContent } from "~/components/homePage/types"
 import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 import { pollChoicesReducer, pollLengthReducer } from "../hooks"
 import { api } from "~/utils/api"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
+import { type PostContent } from "../types"
+import { CreatePoll } from "./CreatePoll"
 
 const INIT_POLL_LENGTH = {
 	days: 1,

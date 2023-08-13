@@ -1,9 +1,9 @@
 import type { Dispatch, FC } from "react"
 import { PollChoices } from "./PollChoices"
 import { PollTimeLength } from "./PollTimeLength"
-import { DangerOutlineButton } from "../styledHTMLElements/StyledButtons"
+import { DangerOutlineButton } from "../../../components/styledHTMLElements/StyledButtons"
 import { type PollLengthAction } from "~/reducers/pollLengthReducer"
-import { type PollLength } from "./types"
+import { type PollLength } from "../types"
 import { type PollChoicesAction } from "~/reducers/pollChoicesReducer"
 
 export const CreatePoll: FC<{
