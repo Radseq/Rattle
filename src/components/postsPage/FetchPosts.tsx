@@ -10,6 +10,7 @@ import { type PollVote, type PostWithAuthor } from "../post/types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 import { PostFooter } from "./PostFooter"
+import { PostContentSelector } from "../post/PostContentSelector"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -232,46 +233,53 @@ export const FetchPosts: FC<{
 	return (
 		<div>
 			<ul>
-				{posts?.map((postsWithUser) => (
+				{posts?.map(({ author, post, signInUser }) => (
 					<PostItem
-						key={postsWithUser.post.id}
-						postWithUser={postsWithUser}
+						key={post.id}
+						postWithUser={{ author, post, signInUser }}
 						onClickCapture={(clickCapture) => {
-							handlePostClick(clickCapture, postsWithUser)
+							handlePostClick(clickCapture, { author, post, signInUser })
 						}}
 						menuItemsType={type}
 						footer={
 							<PostFooter
-								isForwarded={postsWithUser.signInUser?.isForwarded ?? false}
+								isForwarded={signInUser?.isForwarded ?? false}
 								onForwardClick={() => {
-									if (postsWithUser.signInUser?.isForwarded) {
-										removePostForward.mutate(postsWithUser.post.id)
+									if (signInUser?.isForwarded) {
+										removePostForward.mutate(post.id)
 									} else {
-										forwardPost.mutate(postsWithUser.post.id)
+										forwardPost.mutate(post.id)
 									}
 								}}
 								onLikeClick={() => {
-									if (postsWithUser.signInUser?.isLiked) {
-										unlikePost.mutate(postsWithUser.post.id)
+									if (signInUser?.isLiked) {
+										unlikePost.mutate(post.id)
 									} else {
-										likePost.mutate(postsWithUser.post.id)
+										likePost.mutate(post.id)
 									}
 								}}
 								onQuoteClick={() => {
-									setQuotePopUp(postsWithUser)
+									setQuotePopUp({ author, post, signInUser })
 								}}
-								sharedCount={
-									postsWithUser.post.quotedCount +
-									postsWithUser.post.forwardsCount
-								}
-								isLiked={postsWithUser.signInUser?.isLiked ?? false}
-								likeCount={postsWithUser.post.likeCount}
-								username={postsWithUser.author.username}
-								replyCount={postsWithUser.post.replyCount}
-								postId={postsWithUser.post.id}
+								sharedCount={post.quotedCount + post.forwardsCount}
+								isLiked={signInUser?.isLiked ?? false}
+								likeCount={post.likeCount}
+								username={author.username}
+								replyCount={post.replyCount}
+								postId={post.id}
 							/>
 						}
-					/>
+					>
+						<PostContentSelector
+							postWithAuthor={{ author, post, signInUser }}
+							pollVote={(choiceId) =>
+								pollVote.mutate({
+									postId: post.id,
+									choiceId,
+								})
+							}
+						/>
+					</PostItem>
 				))}
 			</ul>
 			<dialog open={openDialog}>
