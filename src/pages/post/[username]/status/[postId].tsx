@@ -9,7 +9,7 @@ import { getPostIdsForwardedByUser, getProfileByUserName } from "~/server/api/pr
 import { api } from "~/utils/api"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
-import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
+import { getPostMenuItemsType } from "~/hooks/getPostMenuItemsType"
 import { LoadingPage } from "~/components/LoadingPage"
 import { useRef, useState } from "react"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
@@ -66,7 +66,7 @@ const PostReplies: NextPage<{
 	isUserFollowProfile: boolean | null
 }> = ({ post, author, user, isUserFollowProfile }) => {
 	const router = useRouter()
-	const type = usePostMenuItemsType(isUserFollowProfile, user, author.id)
+	const type = getPostMenuItemsType(isUserFollowProfile, user, author.id)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()

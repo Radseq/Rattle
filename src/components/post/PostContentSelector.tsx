@@ -29,12 +29,15 @@ export const PostContentSelector: FC<{
 		)
 	} else if (post.poll) {
 		return (
-			<PostPoll
-				pollTimeLeft={useTime}
-				poll={post.poll}
-				pollEndTime={post.poll.endDate}
-				onClickVote={pollVote}
-			/>
+			<div>
+				{post.content}
+				<PostPoll
+					pollTimeLeft={useTime}
+					poll={post.poll}
+					pollEndTime={post.poll.endDate}
+					onClickVote={pollVote}
+				/>
+			</div>
 		)
 	}
 	return <span>{post.content}</span>
