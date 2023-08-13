@@ -1,15 +1,15 @@
 import { type FC } from "react"
-import { type HomePost } from "../types"
 import Link from "next/link"
 import { PostQuoteItem } from "~/components/postsPage/PostQuoteItem"
 import { PostPoll } from "~/components/postsPage/PostPoll"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
+import { type PostWithAuthor } from "./types"
 
-export const PostContentSelector: FC<{ homePost: HomePost; pollVote: (id: number) => void }> = ({
-	homePost,
-	pollVote,
-}) => {
-	const { post, author } = homePost
+export const PostContentSelector: FC<{
+	postWithAuthor: PostWithAuthor
+	pollVote: (id: number) => void
+}> = ({ postWithAuthor, pollVote }) => {
+	const { post, author } = postWithAuthor
 	const useTime = useTimeLeft(post.createdAt, post.poll?.endDate)
 	if (post.quotedPost) {
 		return (

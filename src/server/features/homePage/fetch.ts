@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server"
+import type { PostWithAuthor } from "~/components/post/types"
 import { type PostAuthor } from "~/components/profilePage/types"
 import { CONFIG } from "~/config"
-import type { HomePost, Post } from "~/features/homePage"
 import { getUserFollowList } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
 import {
@@ -69,16 +69,23 @@ export const fetchHomePosts = async (
 		choiceId: number
 	}[] = []
 	let postsQuotedByUser: string[] = []
+	let followedUsers: string[] = []
 
-	const [getPostsLikedBySignInUser, getPostsPollVotedByUser, getPostsIdsQuotedByUser] =
-		await Promise.all([
-			getPostsLikedByUser(signInUserId, postIds),
-			getUserVotedAnyPostsPoll(signInUserId, postIds),
-			isPostsQuotedByUser(signInUserId, postIds),
-		])
+	const [
+		getPostsLikedBySignInUser,
+		getPostsPollVotedByUser,
+		getPostsIdsQuotedByUser,
+		getFollowedUsers,
+	] = await Promise.all([
+		getPostsLikedByUser(signInUserId, postIds),
+		getUserVotedAnyPostsPoll(signInUserId, postIds),
+		isPostsQuotedByUser(signInUserId, postIds),
+		getUserFollowList(signInUserId),
+	])
 	postsLikedByUser = getPostsLikedBySignInUser
 	postsPollVotedByUser = getPostsPollVotedByUser
 	postsQuotedByUser = getPostsIdsQuotedByUser
+	followedUsers = getFollowedUsers
 
 	const authorCacheKey: CacheSpecialKey = { id: signInUserId, type: "author" }
 	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
@@ -95,17 +102,11 @@ export const fetchHomePosts = async (
 	}
 
 	const posts = await Promise.all(postIds.map((id) => getPostById(id)))
-	const newPosts: Post[] = []
 
-	// to cast 'old post' to HomePost
-	posts.forEach((loopPost) => {
-		newPosts.push(loopPost as Post)
-	})
-
-	const sortedPosts = newPosts.sort(
+	const sortedPosts = posts.sort(
 		(postA, postB) => new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
 	)
-	const result: HomePost[] = []
+	const result: PostWithAuthor[] = []
 	for (const sortedPost of sortedPosts) {
 		const homePost = {
 			post: {
@@ -120,8 +121,9 @@ export const fetchHomePosts = async (
 				isVotedChoiceId: postsPollVotedByUser.filter(
 					(vote) => vote.postId === sortedPost.id
 				)[0]?.choiceId,
+				authorFollowed: followedUsers.some((authorId) => authorId === author?.id),
 			},
-		} as HomePost
+		} as PostWithAuthor
 		result.push(homePost)
 	}
 
