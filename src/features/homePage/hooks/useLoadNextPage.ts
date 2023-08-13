@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
-import { useWindowsScroll } from "~/hooks/useWindowsScroll"
+import { useWindowScroll } from "~/hooks/useWindowScroll"
 
 export const useLoadNextPage = (marginToEndPx = 400, height: number | null) => {
 	const [loadNextPage, setLoadNextPage] = useState(false)
-	const windowScroll = useWindowsScroll()
+	const windowScroll = useWindowScroll()
 
 	useEffect(() => {
 		if (height && windowScroll) {

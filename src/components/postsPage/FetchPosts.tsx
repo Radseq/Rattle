@@ -4,7 +4,7 @@ import { LoadingPage } from "../LoadingPage"
 import { type ClickCapture, PostItem } from "../post/PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
+import { getPostMenuItemsType } from "~/hooks/getPostMenuItemsType"
 import { CONFIG } from "~/config"
 import { type PollVote, type PostWithAuthor } from "../post/types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
@@ -17,7 +17,7 @@ export const FetchPosts: FC<{
 	isUserFollowProfile: boolean | null
 }> = ({ userId, isUserFollowProfile, user }) => {
 	const router = useRouter()
-	const type = usePostMenuItemsType(isUserFollowProfile, user, userId)
+	const type = getPostMenuItemsType(isUserFollowProfile, user, userId)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()

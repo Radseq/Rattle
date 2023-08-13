@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 
 type WidowScroll = { posY: number; windowHeight: number }
 
-export const useWindowsScroll = () => {
+export const useWindowScroll = () => {
 	const [windowScroll, setWindowScroll] = useState<WidowScroll | null>(null)
 
 	useEffect(() => {
