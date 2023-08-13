@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server"
+import type { PostWithAuthor } from "~/components/post/types"
 import { type PostAuthor } from "~/components/profilePage/types"
 import { CONFIG } from "~/config"
-import type { HomePost, Post } from "~/features/homePage"
 import { getUserFollowList } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
 import {
@@ -9,9 +9,11 @@ import {
 	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
 	getUserVotedAnyPostsPoll,
+	isPostsQuotedByUser,
 } from "~/server/api/profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { prisma } from "~/server/db"
+import { calculateSkip } from "~/utils/helpers"
 
 // todo get from config file
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
@@ -67,16 +69,23 @@ export const fetchHomePosts = async (
 		choiceId: number
 	}[] = []
 	let postsQuotedByUser: string[] = []
+	let followedUsers: string[] = []
 
-	const [getPostsLikedBySignInUser, getPostsPollVotedByUser, getPostsIdsQuotedByUser] =
-		await Promise.all([
-			getPostsLikedByUser(signInUserId, postIds),
-			getUserVotedAnyPostsPoll(signInUserId, postIds),
-			isPostsAreQuoted(signInUserId, postIds),
-		])
+	const [
+		getPostsLikedBySignInUser,
+		getPostsPollVotedByUser,
+		getPostsIdsQuotedByUser,
+		getFollowedUsers,
+	] = await Promise.all([
+		getPostsLikedByUser(signInUserId, postIds),
+		getUserVotedAnyPostsPoll(signInUserId, postIds),
+		isPostsQuotedByUser(signInUserId, postIds),
+		getUserFollowList(signInUserId),
+	])
 	postsLikedByUser = getPostsLikedBySignInUser
 	postsPollVotedByUser = getPostsPollVotedByUser
 	postsQuotedByUser = getPostsIdsQuotedByUser
+	followedUsers = getFollowedUsers
 
 	const authorCacheKey: CacheSpecialKey = { id: signInUserId, type: "author" }
 	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
@@ -93,17 +102,11 @@ export const fetchHomePosts = async (
 	}
 
 	const posts = await Promise.all(postIds.map((id) => getPostById(id)))
-	const newPosts: Post[] = []
 
-	// to cast 'old post' to HomePost
-	posts.forEach((loopPost) => {
-		newPosts.push(loopPost as Post)
-	})
-
-	const sortedPosts = newPosts.sort(
+	const sortedPosts = posts.sort(
 		(postA, postB) => new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
 	)
-	const result: HomePost[] = []
+	const result: PostWithAuthor[] = []
 	for (const sortedPost of sortedPosts) {
 		const homePost = {
 			post: {
@@ -118,8 +121,9 @@ export const fetchHomePosts = async (
 				isVotedChoiceId: postsPollVotedByUser.filter(
 					(vote) => vote.postId === sortedPost.id
 				)[0]?.choiceId,
+				authorFollowed: followedUsers.some((authorId) => authorId === author?.id),
 			},
-		} as HomePost
+		} as PostWithAuthor
 		result.push(homePost)
 	}
 
@@ -127,40 +131,4 @@ export const fetchHomePosts = async (
 		result,
 		nextCursor,
 	}
-}
-
-const isPostsAreQuoted = async (userId: string, postsId: string[]) => {
-	const quotedByUser = await prisma.post.findMany({
-		where: {
-			authorId: userId,
-			quotedId: {
-				in: postsId,
-			},
-		},
-		select: {
-			quotedId: true,
-		},
-	})
-	const result: string[] = []
-
-	quotedByUser.forEach((post) => {
-		if (post.quotedId) {
-			result.push(post.quotedId)
-		}
-	})
-
-	return result
-}
-
-// with cursor, always skip first element
-const calculateSkip = (skip: number | undefined, cursor: string | null | undefined) => {
-	let calculatedSkip = 0
-
-	if (cursor && !skip) {
-		++calculatedSkip
-	}
-	if (cursor && skip) {
-		calculatedSkip = skip
-	}
-	return calculatedSkip
 }

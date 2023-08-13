@@ -1,4 +1,4 @@
-import { type PollLength } from "~/components/homePage/types"
+import { type PollLength } from "../types"
 
 const POLL_MIN_HOURS = 1
 const POLL_MIN_MINUTES = 1

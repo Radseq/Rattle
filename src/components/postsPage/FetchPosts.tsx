@@ -1,15 +1,16 @@
 import { type FC, useEffect, useState } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../LoadingPage"
-import { type ClickCapture, PostItem } from "./PostItem"
+import { type ClickCapture, PostItem } from "../post/PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
+import { getPostMenuItemsType } from "~/hooks/getPostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PollVote, type PostWithAuthor } from "./types"
+import { type PollVote, type PostWithAuthor } from "../post/types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 import { PostFooter } from "./PostFooter"
+import { PostContentSelector } from "../post/PostContentSelector"
 
 export const FetchPosts: FC<{
 	userId: string
@@ -17,7 +18,7 @@ export const FetchPosts: FC<{
 	isUserFollowProfile: boolean | null
 }> = ({ userId, isUserFollowProfile, user }) => {
 	const router = useRouter()
-	const type = usePostMenuItemsType(isUserFollowProfile, user, userId)
+	const type = getPostMenuItemsType(isUserFollowProfile, user, userId)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
@@ -30,9 +31,9 @@ export const FetchPosts: FC<{
 		if (getPosts.data) {
 			if (forwardedPostIdsByUser.data) {
 				const posts = getPosts.data.map((post) => {
-					post.post.isForwardedPostBySignInUser = forwardedPostIdsByUser.data.some(
-						(postId) => postId === post.post.id
-					)
+					// post.post.isForwardedPostBySignInUser = forwardedPostIdsByUser.data.some(
+					// 	(postId) => postId === post.post.id
+					// )
 					return post
 				})
 				setPosts(posts)
@@ -73,7 +74,7 @@ export const FetchPosts: FC<{
 				const copyPosts = posts.map((post) => {
 					if (post.post.id === postId) {
 						post.post.likeCount += 1
-						post.post.isLikedBySignInUser = true
+						post.signInUser!.isLiked = true
 					}
 					return post
 				})
@@ -94,7 +95,7 @@ export const FetchPosts: FC<{
 				const copyPosts = posts.map((postWithAuthor) => {
 					if (postWithAuthor.post.id === postId) {
 						postWithAuthor.post.likeCount -= 1
-						postWithAuthor.post.isLikedBySignInUser = false
+						postWithAuthor.signInUser!.isLiked = false
 					}
 					return postWithAuthor
 				})
@@ -219,11 +220,6 @@ export const FetchPosts: FC<{
 			case "deletePost":
 				deletePost.mutate(post.id)
 				break
-			case "vote":
-				if (clickCapture.choiceId) {
-					pollVote.mutate({ postId: post.id, choiceId: clickCapture.choiceId })
-				}
-				break
 			default:
 				toast.error("Error while post click", {
 					duration: CONFIG.TOAST_ERROR_DURATION_MS,
@@ -237,46 +233,53 @@ export const FetchPosts: FC<{
 	return (
 		<div>
 			<ul>
-				{posts?.map((postsWithUser) => (
+				{posts?.map(({ author, post, signInUser }) => (
 					<PostItem
-						key={postsWithUser.post.id}
-						postWithUser={postsWithUser}
+						key={post.id}
+						postWithUser={{ author, post, signInUser }}
 						onClickCapture={(clickCapture) => {
-							handlePostClick(clickCapture, postsWithUser)
+							handlePostClick(clickCapture, { author, post, signInUser })
 						}}
 						menuItemsType={type}
 						footer={
 							<PostFooter
-								isForwarded={postsWithUser.post.isForwardedPostBySignInUser}
+								isForwarded={signInUser?.isForwarded ?? false}
 								onForwardClick={() => {
-									if (postsWithUser.post.isForwardedPostBySignInUser) {
-										removePostForward.mutate(postsWithUser.post.id)
+									if (signInUser?.isForwarded) {
+										removePostForward.mutate(post.id)
 									} else {
-										forwardPost.mutate(postsWithUser.post.id)
+										forwardPost.mutate(post.id)
 									}
 								}}
 								onLikeClick={() => {
-									if (postsWithUser.post.isLikedBySignInUser) {
-										unlikePost.mutate(postsWithUser.post.id)
+									if (signInUser?.isLiked) {
+										unlikePost.mutate(post.id)
 									} else {
-										likePost.mutate(postsWithUser.post.id)
+										likePost.mutate(post.id)
 									}
 								}}
 								onQuoteClick={() => {
-									setQuotePopUp(postsWithUser)
+									setQuotePopUp({ author, post, signInUser })
 								}}
-								sharedCount={
-									postsWithUser.post.quotedCount +
-									postsWithUser.post.forwardsCount
-								}
-								isLiked={postsWithUser.post.isLikedBySignInUser}
-								likeCount={postsWithUser.post.likeCount}
-								username={postsWithUser.author.username}
-								replyCount={postsWithUser.post.replyCount}
-								postId={postsWithUser.post.id}
+								sharedCount={post.quotedCount + post.forwardsCount}
+								isLiked={signInUser?.isLiked ?? false}
+								likeCount={post.likeCount}
+								username={author.username}
+								replyCount={post.replyCount}
+								postId={post.id}
 							/>
 						}
-					/>
+					>
+						<PostContentSelector
+							postWithAuthor={{ author, post, signInUser }}
+							pollVote={(choiceId) =>
+								pollVote.mutate({
+									postId: post.id,
+									choiceId,
+								})
+							}
+						/>
+					</PostItem>
 				))}
 			</ul>
 			<dialog open={openDialog}>

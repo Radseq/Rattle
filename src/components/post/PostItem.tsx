@@ -2,12 +2,11 @@ import type { FC, PropsWithChildren, ReactNode } from "react"
 
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { type HomePost } from "../types"
-import { type PostMenuItemsType } from "~/components/postsPage/types"
 import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
 import { PostTitle } from "~/components/postsPage/PostTitle"
 import { PostOptionMenu } from "~/components/postsPage/PostOptionMenu"
 import { Icon } from "~/components/Icon"
+import type { PostMenuItemsType, PostWithAuthor } from "./types"
 
 dayjs.extend(relativeTime)
 
@@ -17,7 +16,7 @@ export type ClickCapture = {
 
 export const PostItem: FC<
 	{
-		postWithUser: HomePost
+		postWithUser: PostWithAuthor
 		menuItemsType: PostMenuItemsType
 		onClickCapture: (clickCapture: ClickCapture) => void
 		footer?: ReactNode
@@ -36,7 +35,11 @@ export const PostItem: FC<
 			<main className="flex">
 				<ProfileAvatarImageUrl src={author.profileImageUrl} />
 				<div className="w-full pl-2">
-					<PostTitle author={author} createdAt={post.createdAt} />
+					<PostTitle
+						fullName={author.fullName}
+						username={author.username}
+						createdAt={post.createdAt}
+					/>
 					{children}
 					{footer}
 				</div>

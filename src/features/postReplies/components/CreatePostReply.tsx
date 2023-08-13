@@ -1,8 +1,8 @@
-import { LoadingSpinner } from "../LoadingPage"
+import { LoadingSpinner } from "../../../components/LoadingPage"
 import { type FC, useState } from "react"
-import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
+import { ProfileAvatarImageUrl } from "../../../components/profile/ProfileAvatarImageUrl"
 
-export const CreatePost: FC<{
+export const CreatePostReply: FC<{
 	onCreatePost: (message: string) => void
 	isCreating: boolean
 	profileImageUrl: string

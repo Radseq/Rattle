@@ -168,3 +168,26 @@ export const isUserForwardedPost = async (userId: string, postId: string): Promi
 	}
 	return false
 }
+
+export const isPostsQuotedByUser = async (userId: string, postsId: string[]) => {
+	const quotedByUser = await prisma.post.findMany({
+		where: {
+			authorId: userId,
+			quotedId: {
+				in: postsId,
+			},
+		},
+		select: {
+			quotedId: true,
+		},
+	})
+	const result: string[] = []
+
+	quotedByUser.forEach((post) => {
+		if (post.quotedId) {
+			result.push(post.quotedId)
+		}
+	})
+
+	return result
+}

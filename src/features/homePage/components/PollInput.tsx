@@ -1,5 +1,5 @@
 import { type FC } from "react"
-import { StyledInput, StyledLabel } from "../styledHTMLElements/FloatingStyles"
+import { StyledInput, StyledLabel } from "~/components/styledHTMLElements/FloatingStyles"
 import { useRestrictedInput } from "~/hooks/useRestrictedInput"
 
 const MAX_CHOISE_LENGTH = 25

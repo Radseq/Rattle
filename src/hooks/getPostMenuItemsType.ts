@@ -1,7 +1,7 @@
 import { type User } from "@clerk/nextjs/dist/api"
-import type { PostMenuItemsType } from "~/components/postsPage/types"
+import { type PostMenuItemsType } from "~/components/post/types"
 
-export const usePostMenuItemsType = (
+export const getPostMenuItemsType = (
 	isUserFollowProfile: boolean | null,
 	user: User | undefined,
 	authorId: string

@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server"
 import { prisma } from "../db"
-import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import { getPostAuthor } from "./profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 import { type Post as PrismaPost } from "@prisma/client"
+import type { Post, PostWithAuthor } from "~/components/post/types"
 
 const MAX_CACHE_LIFETIME_IN_SECONDS = 60
 
@@ -211,8 +211,6 @@ export const createPostOfPrismaPost = (prismaPost: PrismaPost) => {
 		quotedPost: null,
 		quotedCount: 0,
 		poll: null,
-		isForwardedPostBySignInUser: false,
-		isLikedBySignInUser: false,
 		quotedId: null,
 	} as Post
 }

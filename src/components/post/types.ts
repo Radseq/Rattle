@@ -5,11 +5,7 @@ import { type RouterOutputs } from "~/utils/api"
 export type PostWithAuthor = {
 	author: PostAuthor
 	post: Post
-}
-
-export type PostReplies = {
-	postWithUser: PostWithAuthor
-	repliesWithAuthor: PostWithAuthor[]
+	signInUser: SignInUser | null
 }
 
 export type PostMenuItemsType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
@@ -31,11 +27,17 @@ export type Post = PrismaPost & {
 	likeCount: number
 	replyCount: number
 	forwardsCount: number
-	isLikedBySignInUser: boolean
-	isForwardedPostBySignInUser: boolean
 	quotedPost: PostWithAuthor | null
 	quotedCount: number
 	poll: Poll | null
 }
 
 export type PollVote = RouterOutputs["profile"]["votePostPoll"]
+
+export type SignInUser = {
+	isLiked: boolean
+	isForwarded: boolean
+	isQuoted: boolean
+	isVotedChoiceId: number | undefined
+	authorFollowed: boolean
+}
