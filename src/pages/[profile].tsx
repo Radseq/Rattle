@@ -75,7 +75,7 @@ const Profile: NextPage<{
 	const { mutate: stopFollowing, isLoading: isUnFollowing } =
 		api.follow.stopFollowing.useMutation({
 			onSuccess: () => {
-				toast.success(`${profile.username} is now Unfollowed`)
+				toast.success(`${profile.username} is no longer followed`)
 				window.location.reload()
 			},
 			onError: () => {
