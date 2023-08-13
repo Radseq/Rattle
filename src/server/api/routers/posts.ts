@@ -11,7 +11,6 @@ import {
 	type TimeAddToDate,
 } from "~/utils/helpers"
 import { createPostOfPrismaPost, getPostById, isPostExists } from "../posts"
-import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import {
 	getPostAuthor,
 	getPostIdsForwardedByUser,
@@ -24,6 +23,8 @@ import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache
 import { type PostAuthor } from "~/components/profilePage/types"
 import { fetchHomePosts } from "~/server/features/homePage"
 import { type Post as PrismaPost } from "@prisma/client"
+import type { Post, PostWithAuthor } from "~/components/post/types"
+import { getUserFollowList } from "../follow"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -63,16 +64,23 @@ export const postsRouter = createTRPCRouter({
 			choiceId: number
 		}[] = []
 		let postsQuotedByUser: string[] = []
+		let followedUsers: string[] = []
 		if (ctx.authUserId) {
-			const [getPostsLikedBySignInUser, getPostsPollVotedByUser, getPostsIdsQuotedByUser] =
-				await Promise.all([
-					getPostsLikedByUser(ctx.authUserId, postIds),
-					getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
-					isPostsQuotedByUser(ctx.authUserId, postIds),
-				])
+			const [
+				getPostsLikedBySignInUser,
+				getPostsPollVotedByUser,
+				getPostsIdsQuotedByUser,
+				getFollowedUsers,
+			] = await Promise.all([
+				getPostsLikedByUser(ctx.authUserId, postIds),
+				getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
+				isPostsQuotedByUser(ctx.authUserId, postIds),
+				getUserFollowList(ctx.authUserId),
+			])
 			postsLikedBySignInUser = getPostsLikedBySignInUser
 			postsPollVotedByUser = getPostsPollVotedByUser
 			postsQuotedByUser = getPostsIdsQuotedByUser
+			followedUsers = getFollowedUsers
 		}
 
 		const authorCacheKey: CacheSpecialKey = { id: input, type: "author" }
@@ -109,6 +117,7 @@ export const postsRouter = createTRPCRouter({
 					isVotedChoiceId: postsPollVotedByUser.filter(
 						(vote) => vote.postId === sortedPost.id
 					)[0]?.choiceId,
+					authorFollowed: followedUsers.some((authorId) => authorId === author?.id),
 				},
 				author,
 			} as PostWithAuthor

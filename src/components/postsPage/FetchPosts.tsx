@@ -1,12 +1,12 @@
 import { type FC, useEffect, useState } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../LoadingPage"
-import { type ClickCapture, PostItem } from "./PostItem"
+import { type ClickCapture, PostItem } from "../post/PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PollVote, type PostWithAuthor } from "./types"
+import { type PollVote, type PostWithAuthor } from "../post/types"
 import { PostQuotePopUp } from "./PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 import { PostFooter } from "./PostFooter"
@@ -30,9 +30,9 @@ export const FetchPosts: FC<{
 		if (getPosts.data) {
 			if (forwardedPostIdsByUser.data) {
 				const posts = getPosts.data.map((post) => {
-					post.post.isForwardedPostBySignInUser = forwardedPostIdsByUser.data.some(
-						(postId) => postId === post.post.id
-					)
+					// post.post.isForwardedPostBySignInUser = forwardedPostIdsByUser.data.some(
+					// 	(postId) => postId === post.post.id
+					// )
 					return post
 				})
 				setPosts(posts)
@@ -73,7 +73,7 @@ export const FetchPosts: FC<{
 				const copyPosts = posts.map((post) => {
 					if (post.post.id === postId) {
 						post.post.likeCount += 1
-						post.post.isLikedBySignInUser = true
+						post.signInUser!.isLiked = true
 					}
 					return post
 				})
@@ -94,7 +94,7 @@ export const FetchPosts: FC<{
 				const copyPosts = posts.map((postWithAuthor) => {
 					if (postWithAuthor.post.id === postId) {
 						postWithAuthor.post.likeCount -= 1
-						postWithAuthor.post.isLikedBySignInUser = false
+						postWithAuthor.signInUser!.isLiked = false
 					}
 					return postWithAuthor
 				})
@@ -219,11 +219,6 @@ export const FetchPosts: FC<{
 			case "deletePost":
 				deletePost.mutate(post.id)
 				break
-			case "vote":
-				if (clickCapture.choiceId) {
-					pollVote.mutate({ postId: post.id, choiceId: clickCapture.choiceId })
-				}
-				break
 			default:
 				toast.error("Error while post click", {
 					duration: CONFIG.TOAST_ERROR_DURATION_MS,
@@ -247,16 +242,16 @@ export const FetchPosts: FC<{
 						menuItemsType={type}
 						footer={
 							<PostFooter
-								isForwarded={postsWithUser.post.isForwardedPostBySignInUser}
+								isForwarded={postsWithUser.signInUser?.isForwarded ?? false}
 								onForwardClick={() => {
-									if (postsWithUser.post.isForwardedPostBySignInUser) {
+									if (postsWithUser.signInUser?.isForwarded) {
 										removePostForward.mutate(postsWithUser.post.id)
 									} else {
 										forwardPost.mutate(postsWithUser.post.id)
 									}
 								}}
 								onLikeClick={() => {
-									if (postsWithUser.post.isLikedBySignInUser) {
+									if (postsWithUser.signInUser?.isLiked) {
 										unlikePost.mutate(postsWithUser.post.id)
 									} else {
 										likePost.mutate(postsWithUser.post.id)
@@ -269,7 +264,7 @@ export const FetchPosts: FC<{
 									postsWithUser.post.quotedCount +
 									postsWithUser.post.forwardsCount
 								}
-								isLiked={postsWithUser.post.isLikedBySignInUser}
+								isLiked={postsWithUser.signInUser?.isLiked ?? false}
 								likeCount={postsWithUser.post.likeCount}
 								username={postsWithUser.author.username}
 								replyCount={postsWithUser.post.replyCount}
