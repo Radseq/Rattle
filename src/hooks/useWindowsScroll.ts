@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
 
+type WidowScroll = { posY: number; windowHeight: number }
+
 export const useWindowsScroll = () => {
-	const [posY, setPosY] = useState<number | null>(null)
+	const [windowScroll, setWindowScroll] = useState<WidowScroll | null>(null)
 
 	useEffect(() => {
-		function updateScrollYPos() {
-			setPosY(window.scrollY)
-		}
+		const updateScrollYPos = () =>
+			setWindowScroll({ posY: window.scrollY, windowHeight: window.innerHeight })
 
 		updateScrollYPos()
 		window.addEventListener("scroll", updateScrollYPos)
@@ -14,5 +15,5 @@ export const useWindowsScroll = () => {
 		return () => window.removeEventListener("scroll", updateScrollYPos)
 	}, [])
 
-	return posY
+	return windowScroll
 }

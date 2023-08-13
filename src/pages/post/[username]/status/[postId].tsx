@@ -2,9 +2,6 @@ import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
-import { CreatePost } from "~/components/postsPage/CreatePost"
-import { type ClickCapture, PostItem } from "~/components/postsPage/PostItem"
-import type { Post, PostWithAuthor } from "~/components/postsPage/types"
 import type { Profile } from "~/components/profilePage/types"
 import { isFollowed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
@@ -14,15 +11,19 @@ import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { usePostMenuItemsType } from "~/hooks/usePostMenuItemsType"
 import { LoadingPage } from "~/components/LoadingPage"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { type User } from "@clerk/nextjs/dist/api"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { PostPoll } from "~/components/postsPage/PostPoll"
-import { PostSummary } from "~/components/postRepliesPage/PostSummary"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 import { PostFooter } from "~/components/postsPage/PostFooter"
 import { Icon } from "~/components/Icon"
+
+import type { Post, PostWithAuthor } from "~/components/post/types"
+import { type ClickCapture, PostItem } from "~/components/post/PostItem"
+import { CreatePostReply, PostSummary, useGetPostReplies } from "~/features/postReplies"
+import { PostContentSelector } from "~/components/post/PostContentSelector"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -70,23 +71,28 @@ const PostReplies: NextPage<{
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
 
-	const postReplies = api.posts.getPostReplies.useQuery(post.id)
+	const ulRef = useRef<HTMLUListElement>(null)
+
+	const { isLoading, postReplies, refetch } = useGetPostReplies(
+		post.id,
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+	)
 
 	const { mutate, isLoading: isPosting } = api.posts.createReplyPost.useMutation({
 		onSuccess: async () => {
-			await postReplies.refetch()
+			toast.success("Add replay")
+			await refetch()
 		},
 		onError: () => {
-			toast.error("Failed to create reply! Please try again later", {
+			toast.error("Failed to add reply! Please try again later", {
 				duration: CONFIG.TOAST_ERROR_DURATION_MS,
 			})
 		},
 	})
 
 	const quotePost = api.posts.createQuotedPost.useMutation({
-		onSuccess: async () => {
-			setQuotePopUp(null)
-			await postReplies.refetch()
+		onSuccess: () => {
+			toast.success("Add quoted post")
 		},
 		onError: () => {
 			toast.error("Failed to quote post! Please try again later", {
@@ -98,7 +104,7 @@ const PostReplies: NextPage<{
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			await postReplies.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to delete post! Please try again later", {
@@ -110,7 +116,7 @@ const PostReplies: NextPage<{
 	const likePost = api.profile.setPostLiked.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Liked!")
-			await postReplies.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to like post! Please try again later", {
@@ -122,7 +128,7 @@ const PostReplies: NextPage<{
 	const unlikePost = api.profile.setPostUnliked.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Unliked!")
-			await postReplies.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to unlike post! Please try again later", {
@@ -134,7 +140,7 @@ const PostReplies: NextPage<{
 	const forwardPost = api.posts.forwardPost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Forwarded!")
-			await postReplies.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to forward post! Please try again later", {
@@ -146,7 +152,7 @@ const PostReplies: NextPage<{
 	const removePostForward = api.posts.removePostForward.useMutation({
 		onSuccess: async () => {
 			toast.success("Delete Post Forward!")
-			await postReplies.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to remove forwarded post! Please try again later", {
@@ -158,7 +164,7 @@ const PostReplies: NextPage<{
 	const pollVote = api.profile.votePostPoll.useMutation({
 		onSuccess: async () => {
 			toast.success("Voted!")
-			await postReplies.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to vote! Please try again later", {
@@ -169,7 +175,7 @@ const PostReplies: NextPage<{
 
 	const useTime = useTimeLeft(post.createdAt, post.poll?.endDate)
 
-	if (postReplies.isLoading) {
+	if (isLoading) {
 		return (
 			<div className="relative">
 				<LoadingPage />
@@ -194,11 +200,6 @@ const PostReplies: NextPage<{
 				break
 			case "deletePost":
 				deletePost.mutate(post.id)
-				break
-			case "vote":
-				if (clickCapture.choiceId) {
-					pollVote.mutate({ postId: post.id, choiceId: clickCapture?.choiceId })
-				}
 				break
 			default:
 				break
@@ -251,40 +252,41 @@ const PostReplies: NextPage<{
 					</span>
 				</footer>
 				<hr className="my-2" />
-				{user?.id !== post.authorId && (
-					<div>
-						<CreatePost
-							isCreating={isPosting}
-							onCreatePost={(respondMessage) =>
-								mutate({ content: respondMessage, replyPostId: post.id })
-							}
-							placeholderMessage="Reply & Hit Enter!"
-							profileImageUrl={author.profileImageUrl}
-						/>
-						<hr className="my-2" />
-					</div>
-				)}
-				{postReplies.data && postReplies.data.length > 0 && (
+
+				<div>
+					<CreatePostReply
+						isCreating={isPosting}
+						onCreatePost={(respondMessage) =>
+							mutate({ content: respondMessage, replyPostId: post.id })
+						}
+						placeholderMessage="Reply & Hit Enter!"
+						profileImageUrl={author.profileImageUrl}
+					/>
+					<hr className="my-2" />
+				</div>
+
+				{postReplies && (
 					<ul className="">
-						{postReplies.data.map((reply) => (
+						{postReplies.map((reply) => (
 							<PostItem
 								key={reply.post.id}
 								postWithUser={reply}
-								menuItemsType={type}
 								onClickCapture={(clickCapture) => {
 									handlePostClick(clickCapture, reply)
 								}}
+								menuItemsType={type}
 								footer={
 									<PostFooter
+										isForwarded={reply.signInUser?.isForwarded ?? false}
 										onForwardClick={() => {
-											if (reply.post.isForwardedPostBySignInUser) {
+											if (reply.signInUser?.isForwarded ?? false) {
 												removePostForward.mutate(reply.post.id)
 											} else {
 												forwardPost.mutate(reply.post.id)
 											}
 										}}
 										onLikeClick={() => {
-											if (reply.post.isLikedBySignInUser) {
+											if (reply.signInUser?.isLiked ?? false) {
 												unlikePost.mutate(reply.post.id)
 											} else {
 												likePost.mutate(reply.post.id)
@@ -293,18 +295,27 @@ const PostReplies: NextPage<{
 										onQuoteClick={() => {
 											setQuotePopUp(reply)
 										}}
-										isForwarded={reply.post.isForwardedPostBySignInUser}
 										sharedCount={
 											reply.post.quotedCount + reply.post.forwardsCount
 										}
-										isLiked={reply.post.isLikedBySignInUser}
+										isLiked={reply.signInUser?.isLiked ?? false}
 										likeCount={reply.post.likeCount}
 										username={reply.author.username}
-										replyCount={0}
+										replyCount={reply.post.replyCount}
 										postId={reply.post.id}
 									/>
 								}
-							/>
+							>
+								<PostContentSelector
+									postWithAuthor={reply}
+									pollVote={(choiceId) =>
+										pollVote.mutate({
+											postId: reply.post.id,
+											choiceId,
+										})
+									}
+								/>
+							</PostItem>
 						))}
 					</ul>
 				)}
