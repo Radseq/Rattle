@@ -20,11 +20,11 @@ import {
 	isUserForwardedPost,
 } from "../profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
-import { type PostAuthor } from "~/components/profilePage/types"
 import { fetchHomePosts } from "~/server/features/homePage"
 import { type Post as PrismaPost } from "@prisma/client"
 import type { Post, PostWithAuthor } from "~/components/post/types"
 import { getUserFollowList } from "../follow"
+import { type PostAuthor } from "~/features/profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 

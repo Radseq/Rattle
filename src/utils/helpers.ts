@@ -1,7 +1,8 @@
 import { type User } from "@clerk/nextjs/dist/api"
 import dayjs from "dayjs"
-import { type PostAuthor } from "~/components/profilePage/types"
 import relativeTime from "dayjs/plugin/relativeTime"
+import { type PostAuthor } from "~/features/profile"
+
 dayjs.extend(relativeTime)
 
 export const getFullName = (firstName: string | null, lastName: string | null) => {

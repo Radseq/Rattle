@@ -1,6 +1,6 @@
 import { type FC } from "react"
 import { type Profile } from "../types"
-import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
+import { ProfileAvatarImageUrl } from "~/features/profile"
 
 export const MenuProfileItem: FC<{
 	profile: Profile

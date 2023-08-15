@@ -1,9 +1,9 @@
 import { type FC } from "react"
 import Link from "next/link"
-import { PostQuoteItem } from "~/components/postsPage/PostQuoteItem"
-import { PostPoll } from "~/components/postsPage/PostPoll"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { type PostWithAuthor } from "./types"
+import { PostQuoteItem } from "../postsPage/PostQuoteItem"
+import { PostPoll } from "../postsPage/PostPoll"
 
 export const PostContentSelector: FC<{
 	postWithAuthor: PostWithAuthor

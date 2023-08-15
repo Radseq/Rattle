@@ -1,6 +1,6 @@
+import { ProfileAvatarImageUrl } from "~/features/profile"
 import { LoadingSpinner } from "../../../components/LoadingPage"
 import { type FC, useState } from "react"
-import { ProfileAvatarImageUrl } from "../../../components/profile/ProfileAvatarImageUrl"
 
 export const CreatePostReply: FC<{
 	onCreatePost: (message: string) => void

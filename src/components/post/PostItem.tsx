@@ -2,11 +2,11 @@ import type { FC, PropsWithChildren, ReactNode } from "react"
 
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { ProfileAvatarImageUrl } from "~/components/profile/ProfileAvatarImageUrl"
-import { PostTitle } from "~/components/postsPage/PostTitle"
-import { PostOptionMenu } from "~/components/postsPage/PostOptionMenu"
 import { Icon } from "~/components/Icon"
 import type { PostMenuItemsType, PostWithAuthor } from "./types"
+import { ProfileAvatarImageUrl } from "~/features/profile"
+import { PostTitle } from "../postsPage/PostTitle"
+import { PostOptionMenu } from "../postsPage/PostOptionMenu"
 
 dayjs.extend(relativeTime)
 

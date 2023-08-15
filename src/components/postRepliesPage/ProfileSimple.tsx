@@ -1,5 +1,5 @@
 import type { FC, PropsWithChildren } from "react"
-import { ProfileAvatarImageUrl } from "../profile/ProfileAvatarImageUrl"
+import { ProfileAvatarImageUrl } from "~/features/profile"
 
 type ProfileSimple = PropsWithChildren & {
 	profileImageUrl: string
