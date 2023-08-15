@@ -2,7 +2,6 @@ import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
-import type { Profile } from "~/components/profilePage/types"
 import { isFollowed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
 import { getPostIdsForwardedByUser, getProfileByUserName } from "~/server/api/profile"
@@ -24,6 +23,7 @@ import type { Post, PostWithAuthor } from "~/components/post/types"
 import { type ClickCapture, PostItem } from "~/components/post/PostItem"
 import { CreatePostReply, PostSummary, useGetPostReplies } from "~/features/postReplies"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
+import { type Profile } from "~/features/profile"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -66,7 +66,7 @@ const PostReplies: NextPage<{
 	isUserFollowProfile: boolean | null
 }> = ({ post, author, user, isUserFollowProfile }) => {
 	const router = useRouter()
-	const type = getPostMenuItemsType(isUserFollowProfile, user, author.id)
+	const type = getPostMenuItemsType(isUserFollowProfile, user?.id, author.id)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
