@@ -1,10 +1,14 @@
 import { type FC } from "react"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
-import { LoadingSpinner } from "../LoadingPage"
-import { StyledInput, StyledLabel, StyledTextArea } from "../styledHTMLElements/FloatingStyles"
 import { useRestrictedInput, useRestrictedTextArea } from "~/hooks/useRestrictedInput"
-import { PrimaryButton } from "../styledHTMLElements/StyledButtons"
+import {
+	StyledInput,
+	StyledLabel,
+	StyledTextArea,
+} from "~/components/styledHTMLElements/FloatingStyles"
+import { LoadingSpinner } from "~/components/LoadingPage"
+import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 
 const BANNER_MAX_LETTERS = 100
 const PROFILE_MAX_LETTERS = 100
