@@ -47,6 +47,7 @@ export const getProfileByUserName = async (userName: string) => {
 	} as Profile
 
 	void setCacheData(userCacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	return result
 }
 
 export const getPostAuthor = async (authorId: string) => {
