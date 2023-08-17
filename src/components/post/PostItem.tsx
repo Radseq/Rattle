@@ -3,7 +3,7 @@ import type { FC, PropsWithChildren, ReactNode } from "react"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { Icon } from "~/components/Icon"
-import type { PostMenuItemsType, PostWithAuthor } from "./types"
+import type { PostProfileType, PostWithAuthor } from "./types"
 import { ProfileAvatarImageUrl } from "~/features/profile"
 import { PostTitle } from "../postsPage/PostTitle"
 import { PostOptionMenu } from "../postsPage/PostOptionMenu"
@@ -17,7 +17,7 @@ export type ClickCapture = {
 export const PostItem: FC<
 	{
 		postWithUser: PostWithAuthor
-		menuItemsType: PostMenuItemsType
+		menuItemsType: PostProfileType
 		onClickCapture: (clickCapture: ClickCapture) => void
 		footer?: ReactNode
 	} & PropsWithChildren

@@ -17,7 +17,7 @@ import { PostContentSelector } from "~/components/post/PostContentSelector"
 import { PostFooter } from "~/components/postsPage/PostFooter"
 import { useRouter } from "next/router"
 import { ConnectorCreatePost } from "~/features/homePage"
-import { getPostMenuItemsType } from "~/hooks/getPostMenuItemsType"
+import { getPostProfileType } from "~/utils/helpers"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)
@@ -217,9 +217,9 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 								onClickCapture={(clickCapture) => {
 									handlePostClick(clickCapture, { author, post, signInUser })
 								}}
-								menuItemsType={getPostMenuItemsType(
+								menuItemsType={getPostProfileType(
 									signInUser?.authorFollowed ?? false,
-									user,
+									user.id,
 									author.id
 								)}
 								footer={

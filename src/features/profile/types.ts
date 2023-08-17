@@ -16,8 +16,6 @@ export type ProfileExtend = {
 	country: string | null
 }
 
-export type ProfilePageType = "view" | "own" | "follow" | "unfollow"
-
 export type PostAuthor = {
 	id: string
 	username: string

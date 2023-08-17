@@ -8,7 +8,7 @@ export type PostWithAuthor = {
 	signInUser: SignInUser | null
 }
 
-export type PostMenuItemsType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
+export type PostProfileType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
 
 type UserPollVotes = {
 	id: number
