@@ -23,7 +23,7 @@ import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache
 import { fetchHomePosts } from "~/server/features/homePage"
 import { type Post as PrismaPost } from "@prisma/client"
 import type { Post, PostWithAuthor } from "~/components/post/types"
-import { getUserFollowList } from "../follow"
+import { getUserFollowList, isFollowed } from "../follow"
 import { type PostAuthor } from "~/features/profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
@@ -384,16 +384,19 @@ export const postsRouter = createTRPCRouter({
 
 			let postsLikedByUser: string[] = []
 			let postsQuotedByUser: string[] = []
-
+			let isAuthorFollowed = false
 			if (ctx.authUserId) {
 				const postReplyIds = postReplies.map((post) => post.id)
 
-				const [getPostsLikedBySignInUser, getPostsIdsQuotedByUser] = await Promise.all([
-					getPostsLikedByUser(ctx.authUserId, postReplyIds),
-					isPostsQuotedByUser(ctx.authUserId, postReplyIds),
-				])
+				const [getPostsLikedBySignInUser, getPostsIdsQuotedByUser, getAuthorFollowed] =
+					await Promise.all([
+						getPostsLikedByUser(ctx.authUserId, postReplyIds),
+						isPostsQuotedByUser(ctx.authUserId, postReplyIds),
+						isFollowed(ctx.authUserId, postReplies[0]?.authorId ?? ""),
+					])
 				postsLikedByUser = getPostsLikedBySignInUser
 				postsQuotedByUser = getPostsIdsQuotedByUser
+				isAuthorFollowed = getAuthorFollowed
 			}
 
 			const postAuthors = await Promise.all(
@@ -416,6 +419,7 @@ export const postsRouter = createTRPCRouter({
 					signInUser: {
 						isLiked: postsLikedByUser.some((post) => post === postReply.id),
 						isQuoted: postsQuotedByUser.some((post) => post === postReply.id),
+						authorFollowed: isAuthorFollowed,
 					},
 					author: postAuthor,
 				} as PostWithAuthor

@@ -1,18 +1,14 @@
-import { clerkClient, getAuth } from "@clerk/nextjs/server"
 import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
-import { isFollowed } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"
-import { getPostIdsForwardedByUser, getProfileByUserName } from "~/server/api/profile"
+import { getProfileByUserName } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
-import { getPostMenuItemsType } from "~/hooks/getPostMenuItemsType"
 import { LoadingPage } from "~/components/LoadingPage"
 import { useRef, useState } from "react"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
-import { type User } from "@clerk/nextjs/dist/api"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { PostPoll } from "~/components/postsPage/PostPoll"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
@@ -24,12 +20,12 @@ import { type ClickCapture, PostItem } from "~/components/post/PostItem"
 import { CreatePostReply, PostSummary, useGetPostReplies } from "~/features/postReplies"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
 import { type Profile } from "~/features/profile"
+import { getPostProfileType } from "~/utils/helpers"
+import { useAuth } from "@clerk/nextjs"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
-
-	const { userId } = getAuth(props.req)
 
 	const [post, author] = await Promise.all([getPostById(postId), getProfileByUserName(username)])
 
@@ -42,18 +38,10 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 		}
 	}
 
-	const isUserFollowProfile = userId ? await isFollowed(userId, author.id) : false
-	const postIdsForwardedByUser = userId ? await getPostIdsForwardedByUser(userId) : []
-
-	const user = userId ? await clerkClient.users.getUser(userId) : undefined
-
 	return {
 		props: {
 			post,
 			author,
-			user: JSON.parse(JSON.stringify(user)) as User,
-			isUserFollowProfile: isUserFollowProfile ? isUserFollowProfile : null,
-			postIdsForwardedByUser,
 		},
 	}
 }
@@ -62,11 +50,10 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 const PostReplies: NextPage<{
 	post: Post
 	author: Profile
-	user: User | undefined
-	isUserFollowProfile: boolean | null
-}> = ({ post, author, user, isUserFollowProfile }) => {
+}> = ({ post, author }) => {
 	const router = useRouter()
-	const type = getPostMenuItemsType(isUserFollowProfile, user?.id, author.id)
+
+	const user = useAuth()
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
@@ -206,7 +193,7 @@ const PostReplies: NextPage<{
 		}
 	}
 
-	const openDialog = quotePopUp != null && user != null
+	const openDialog = quotePopUp != null && user.userId != null
 
 	return (
 		<Layout>
@@ -274,7 +261,11 @@ const PostReplies: NextPage<{
 								onClickCapture={(clickCapture) => {
 									handlePostClick(clickCapture, reply)
 								}}
-								menuItemsType={type}
+								menuItemsType={getPostProfileType(
+									reply.signInUser?.authorFollowed,
+									author.id,
+									user.userId
+								)}
 								footer={
 									<PostFooter
 										isForwarded={reply.signInUser?.isForwarded ?? false}
@@ -321,7 +312,7 @@ const PostReplies: NextPage<{
 				)}
 			</div>
 			<dialog open={openDialog}>
-				{quotePopUp && user && (
+				{quotePopUp && user.userId && (
 					<PostQuotePopUp
 						onCloseModal={() => setQuotePopUp(null)}
 						onPostQuote={() => {
