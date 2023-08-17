@@ -1,31 +1,27 @@
-import { type FC, useEffect, useState } from "react"
+import { type FC, useState } from "react"
 import { api } from "~/utils/api"
-import { LoadingPage } from "../LoadingPage"
-import { type ClickCapture, PostItem } from "../post/PostItem"
+import { LoadingPage } from "../../../components/LoadingPage"
+import { type ClickCapture, PostItem } from "../../../components/post/PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { getPostMenuItemsType } from "~/hooks/getPostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PollVote, type PostWithAuthor } from "../post/types"
-import { PostQuotePopUp } from "./PostQuotePopUp"
-import { type User } from "@clerk/nextjs/dist/api"
-import { PostFooter } from "./PostFooter"
-import { PostContentSelector } from "../post/PostContentSelector"
+import { type PollVote, type PostWithAuthor } from "../../../components/post/types"
+import { PostQuotePopUp } from "../../../components/postsPage/PostQuotePopUp"
+import { PostFooter } from "../../../components/postsPage/PostFooter"
+import { PostContentSelector } from "../../../components/post/PostContentSelector"
+import { getPostProfileType } from "~/utils/helpers"
 
 export const FetchPosts: FC<{
-	userId: string
-	user: User | undefined
-	isUserFollowProfile: boolean | null
-}> = ({ userId, isUserFollowProfile, user }) => {
+	authorId: string
+	userId: string | undefined | null
+}> = ({ authorId, userId }) => {
 	const router = useRouter()
-	const type = getPostMenuItemsType(isUserFollowProfile, user, userId)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
 	const [posts, setPosts] = useState<PostWithAuthor[]>()
 
-	const forwardedPostIdsByUser = api.profile.getPostIdsForwardedByUser.useQuery()
-	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
+	const getPosts = api.posts.getAllByAuthorId.useQuery(authorId)
 
 	useEffect(() => {
 		if (getPosts.data) {
@@ -228,7 +224,7 @@ export const FetchPosts: FC<{
 		}
 	}
 
-	const openDialog = quotePopUp != null && user != null
+	const openDialog = quotePopUp != null && userId != null
 
 	return (
 		<div>
@@ -240,7 +236,11 @@ export const FetchPosts: FC<{
 						onClickCapture={(clickCapture) => {
 							handlePostClick(clickCapture, { author, post, signInUser })
 						}}
-						menuItemsType={type}
+						menuItemsType={getPostProfileType(
+							signInUser?.authorFollowed,
+							author.id,
+							userId
+						)}
 						footer={
 							<PostFooter
 								isForwarded={signInUser?.isForwarded ?? false}
@@ -283,7 +283,7 @@ export const FetchPosts: FC<{
 				))}
 			</ul>
 			<dialog open={openDialog}>
-				{quotePopUp && user && (
+				{quotePopUp && userId && (
 					<PostQuotePopUp
 						author={quotePopUp.author}
 						createdAt={quotePopUp.post.createdAt}
