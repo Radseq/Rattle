@@ -1,4 +1,4 @@
-import { type FC, useState } from "react"
+import { type FC, useRef, useState } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../../../components/LoadingPage"
 import { type ClickCapture, PostItem } from "../../../components/post/PostItem"
@@ -10,6 +10,7 @@ import { PostQuotePopUp } from "../../../components/postsPage/PostQuotePopUp"
 import { PostFooter } from "../../../components/postsPage/PostFooter"
 import { PostContentSelector } from "../../../components/post/PostContentSelector"
 import { getPostProfileType } from "~/utils/helpers"
+import { useGetPostsByAuthor } from "../hooks"
 
 export const FetchPosts: FC<{
 	authorId: string
@@ -19,12 +20,18 @@ export const FetchPosts: FC<{
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
-	const getPosts = api.posts.getAllByAuthorId.useQuery(authorId)
+
+	const ulRef = useRef<HTMLUListElement>(null)
+
+	const { isLoading, posts, refetch } = useGetPostsByAuthor(
+		authorId,
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+	)
 
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to delete post! Please try again later", {
@@ -36,7 +43,7 @@ export const FetchPosts: FC<{
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: async () => {
 			setQuotePopUp(null)
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to quote post! Please try again later", {
@@ -48,7 +55,7 @@ export const FetchPosts: FC<{
 	const likePost = api.profile.setPostLiked.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Liked!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to like post! Please try again later", {
@@ -60,7 +67,7 @@ export const FetchPosts: FC<{
 	const unlikePost = api.profile.setPostUnliked.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Unliked!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to unlike post! Please try again later", {
@@ -72,7 +79,7 @@ export const FetchPosts: FC<{
 	const forwardPost = api.posts.forwardPost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Forwarded!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to forward post! Please try again later", {
@@ -84,7 +91,7 @@ export const FetchPosts: FC<{
 	const removePostForward = api.posts.removePostForward.useMutation({
 		onSuccess: async () => {
 			toast.success("Delete Post Forward!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to delete forward! Please try again later", {
@@ -96,7 +103,7 @@ export const FetchPosts: FC<{
 	const pollVote = api.profile.votePostPoll.useMutation({
 		onSuccess: async () => {
 			toast.success("Voted!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to vote! Please try again later", {
@@ -105,7 +112,7 @@ export const FetchPosts: FC<{
 		},
 	})
 
-	if (getPosts.isLoading) {
+	if (isLoading) {
 		return (
 			<div className="relative">
 				<LoadingPage />
@@ -144,8 +151,8 @@ export const FetchPosts: FC<{
 
 	return (
 		<div>
-			<ul>
-				{getPosts.data?.map(({ author, post, signInUser }) => (
+			<ul ref={ulRef}>
+				{posts?.map(({ author, post, signInUser }) => (
 					<PostItem
 						key={post.id}
 						postWithUser={{ author, post, signInUser }}

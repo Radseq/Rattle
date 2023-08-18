@@ -1,5 +1,5 @@
 import { clerkClient } from "@clerk/nextjs/server"
-import { type ProfileExtend } from "~/components/profilePage/types"
+import { type ProfileExtend } from "~/features/profile"
 import { getUserFollowList } from "~/server/api/follow"
 import { getFullName } from "~/utils/helpers"
 

@@ -13,9 +13,7 @@ import {
 import { createPostOfPrismaPost, getPostById, isPostExists } from "../posts"
 import {
 	getPostAuthor,
-	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
-	getUserVotedAnyPostsPoll,
 	isPostsQuotedByUser,
 	isUserForwardedPost,
 } from "../profile"
@@ -23,8 +21,9 @@ import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache
 import { fetchHomePosts } from "~/server/features/homePage"
 import { type Post as PrismaPost } from "@prisma/client"
 import type { Post, PostWithAuthor } from "~/components/post/types"
-import { getUserFollowList, isFollowed } from "../follow"
+import { isFollowed } from "../follow"
 import { type PostAuthor } from "~/features/profile"
+import { fetchProfilePosts } from "~/server/features/profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -32,105 +31,24 @@ const MAX_CACHE_POST_LIFETIME_IN_SECONDS = 60
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const postsRouter = createTRPCRouter({
-	getAllByAuthorId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-		const postIds: string[] = []
-		const postsByAuthorIds = ctx.prisma.post.findMany({
-			where: { authorId: input, replyId: null },
-			orderBy: { createdAt: "desc" },
-			take: CONFIG.MAX_POSTS_BY_AUTHOR_ID,
-			select: {
-				id: true,
-			},
-		})
-
-		const forwardedPostsIds = getPostIdsForwardedByUser(input)
-
-		const [getPostForwardedIds, getPostsByAuthorIds] = await Promise.all([
-			forwardedPostsIds,
-			postsByAuthorIds,
-		])
-
-		for (const post of getPostsByAuthorIds) {
-			postIds.push(post.id)
-		}
-
-		for (const id of getPostForwardedIds) {
-			postIds.push(id)
-		}
-
-		let postsLikedBySignInUser: string[] = []
-		let postsPollVotedByUser: {
-			postId: string
-			choiceId: number
-		}[] = []
-		let postsQuotedByUser: string[] = []
-		let followedUsers: string[] = []
-		if (ctx.authUserId) {
-			const [
-				getPostsLikedBySignInUser,
-				getPostsPollVotedByUser,
-				getPostsIdsQuotedByUser,
-				getFollowedUsers,
-			] = await Promise.all([
-				getPostsLikedByUser(ctx.authUserId, postIds),
-				getUserVotedAnyPostsPoll(ctx.authUserId, postIds),
-				isPostsQuotedByUser(ctx.authUserId, postIds),
-				getUserFollowList(ctx.authUserId),
-			])
-			postsLikedBySignInUser = getPostsLikedBySignInUser
-			postsPollVotedByUser = getPostsPollVotedByUser
-			postsQuotedByUser = getPostsIdsQuotedByUser
-			followedUsers = getFollowedUsers
-		}
-
-		const authorCacheKey: CacheSpecialKey = { id: input, type: "author" }
-		let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
-		if (!author) {
-			author = await getPostAuthor(input)
-			void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
-		}
-
-		if (!author || !author.username) {
-			throw new TRPCError({
-				code: "INTERNAL_SERVER_ERROR",
-				message: "Author for posts not found!",
+	getAllByAuthorId: publicProcedure
+		.input(
+			z.object({
+				limit: z.number(),
+				cursor: z.string().nullish(),
+				skip: z.number().optional(),
+				authorId: z.string(),
 			})
-		}
-
-		const posts = await Promise.all(postIds.map((id) => getPostById(id)))
-
-		const sortedPosts = posts.sort(
-			(postA, postB) =>
-				new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
 		)
-		const result: PostWithAuthor[] = []
-		for (const sortedPost of sortedPosts) {
-			const postWithAuthor = {
-				post: {
-					...sortedPost,
-					createdAt: sortedPost.createdAt.toString(),
-				},
-				signInUser: {
-					isForwarded: getPostForwardedIds.some((post) => post === sortedPost.id),
-					isLiked: postsLikedBySignInUser.some((post) => post === sortedPost.id),
-					isQuoted: postsQuotedByUser.some((post) => post === sortedPost.id),
-					isVotedChoiceId: postsPollVotedByUser.filter(
-						(vote) => vote.postId === sortedPost.id
-					)[0]?.choiceId,
-					authorFollowed: followedUsers.some((authorId) => authorId === author?.id),
-				},
-				author,
-			} as PostWithAuthor
-			if (postWithAuthor.post.poll) {
-				postWithAuthor.post.poll.choiceVotedBySignInUser = postsPollVotedByUser.find(
-					(value) => value.postId === sortedPost.id
-				)?.choiceId
-			}
-			result.push(postWithAuthor)
-		}
-
-		return result
-	}),
+		.query(async ({ ctx, input }) => {
+			return fetchProfilePosts(
+				ctx.authUserId,
+				input.authorId,
+				input.limit,
+				input.cursor,
+				input.skip
+			)
+		}),
 	getHomePosts: privateProcedure
 		.input(
 			z.object({
