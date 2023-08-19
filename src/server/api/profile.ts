@@ -61,6 +61,21 @@ export const getPostAuthor = async (authorId: string) => {
 	return author
 }
 
+export const getPostAuthorByUsername = async (username: string) => {
+	const authorCacheKey: CacheSpecialKey = { id: username, type: "authorByUsername" }
+	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
+	if (!author) {
+		const users = await clerkClient.users.getUserList({ [username]: username })
+		const user = users.at(0)
+		if (user) {
+			author = filterClarkClientToAuthor(user)
+			void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+		}
+	}
+
+	return author
+}
+
 export const getUserVotedAnyPostsPoll = async (
 	userId: string,
 	postsId: string[]
