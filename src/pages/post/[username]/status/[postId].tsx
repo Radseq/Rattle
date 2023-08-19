@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
 import { getPostById } from "~/server/api/posts"
-import { getPostAuthor } from "~/server/api/profile"
+import { getPostAuthorByUsername } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
@@ -27,9 +27,12 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
 
-	const [post, author] = await Promise.all([getPostById(postId), getPostAuthor(username)])
+	const [viewedPost, author] = await Promise.all([
+		getPostById(postId),
+		getPostAuthorByUsername(username),
+	])
 
-	if (!author || !post) {
+	if (!author || !viewedPost) {
 		return {
 			redirect: {
 				destination: "/",
@@ -40,20 +43,21 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	return {
 		props: {
-			post,
+			viewedPost,
 			author,
 		},
 	}
 }
 
 const PostReplies: NextPage<{
-	post: Post
+	viewedPost: Post
 	author: PostAuthor
-}> = ({ post, author }) => {
+}> = ({ viewedPost, author }) => {
 	const router = useRouter()
 
 	const user = useAuth()
 
+	const [post, setPost] = useState<Post>(viewedPost)
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
 
@@ -67,6 +71,9 @@ const PostReplies: NextPage<{
 	const { mutate, isLoading: isPosting } = api.posts.createReplyPost.useMutation({
 		onSuccess: async () => {
 			toast.success("Add replay")
+			setPost((post) => {
+				return { ...post, replyCount: post.replyCount + 1 }
+			})
 			await refetch()
 		},
 		onError: () => {
@@ -79,6 +86,9 @@ const PostReplies: NextPage<{
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: () => {
 			toast.success("Add quoted post")
+			setPost((post) => {
+				return { ...post, quotedCount: post.quotedCount + 1 }
+			})
 		},
 		onError: () => {
 			toast.error("Failed to quote post! Please try again later", {
@@ -91,6 +101,9 @@ const PostReplies: NextPage<{
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
 			await refetch()
+			setPost((post) => {
+				return { ...post, replyCount: post.replyCount - 1 }
+			})
 		},
 		onError: () => {
 			toast.error("Failed to delete post! Please try again later", {
@@ -297,7 +310,7 @@ const PostReplies: NextPage<{
 								}
 							>
 								<PostContentSelector
-									postWithAuthor={reply}
+									post={reply.post}
 									pollVote={(choiceId) =>
 										pollVote.mutate({
 											postId: reply.post.id,
