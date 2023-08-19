@@ -16,7 +16,13 @@ import { prisma } from "~/server/db"
 import superjson from "superjson"
 import { createProxySSGHelpers } from "@trpc/react-query/ssg"
 import { useAuth } from "@clerk/nextjs"
-import { ActionButtonSelector, ProfileAvatarImageUrl, SetUpProfileModal } from "~/features/profile"
+import {
+	ActionButtonSelector,
+	ProfileAvatarImageUrl,
+	ProfileWatchedWatching,
+	SetUpProfileModal,
+	useGetProfile,
+} from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
 
 dayjs.extend(relativeTime)
@@ -63,19 +69,16 @@ const ProfilePage: NextPage<{
 	const [showModal, setShowModal] = useState<boolean>()
 
 	const user = useAuth()
+	const { profile, isUserFollowProfile, watchedWatchingCount } = useGetProfile(username)
 
-	const { data } = api.profile.getProfileByUsername.useQuery(username)
-
-	const isUserFollowProfile = api.follow.isFollowed.useQuery(data?.id ?? "")
-
-	if (!data) {
+	if (!profile) {
 		return <div>404</div>
 	}
 
 	const { mutate: addUserToFollow, isLoading: isFollowed } =
 		api.follow.addUserToFollow.useMutation({
 			onSuccess: () => {
-				toast.success(`${data.username} is now followed`)
+				toast.success(`${profile.username} is now followed`)
 				window.location.reload()
 			},
 			onError: () => {
@@ -88,7 +91,7 @@ const ProfilePage: NextPage<{
 	const { mutate: stopFollowing, isLoading: isUnFollowing } =
 		api.follow.stopFollowing.useMutation({
 			onSuccess: () => {
-				toast.success(`${data.username} is no longer followed`)
+				toast.success(`${profile.username} is no longer followed`)
 				window.location.reload()
 			},
 			onError: () => {
@@ -101,20 +104,20 @@ const ProfilePage: NextPage<{
 	return (
 		<>
 			<Head>
-				<title>{data.username}</title>
+				<title>{profile.username}</title>
 			</Head>
 			<Layout>
 				<div>
 					<div className="flex flex-col">
-						{data.extended?.bannerImgUrl ? (
-							<img src={data.extended?.bannerImgUrl} alt={"banner"}></img>
+						{profile.extended?.bannerImgUrl ? (
+							<img src={profile.extended?.bannerImgUrl} alt={"banner"}></img>
 						) : (
 							<div className="h-52 w-full bg-black"></div>
 						)}
 						<div className="flex justify-between">
 							<div className="relative w-full">
 								<ProfileAvatarImageUrl
-									src={data.profileImageUrl}
+									src={profile.profileImageUrl}
 									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white"
 								/>
 								<span
@@ -125,17 +128,17 @@ const ProfilePage: NextPage<{
 							<div className="mt-4 h-14">
 								<ActionButtonSelector
 									profileType={getPostProfileType(
-										isUserFollowProfile.data,
-										data.id,
+										isUserFollowProfile,
+										profile.id,
 										user.userId
 									)}
 									onClick={(
 										actionType: "signUp" | "follow" | "unfollow" | null
 									) => {
 										if (actionType === "unfollow") {
-											stopFollowing(data.id)
+											stopFollowing(profile.id)
 										} else if (actionType === "follow") {
-											addUserToFollow(data.id)
+											addUserToFollow(profile.id)
 										} else {
 											setShowModal(true)
 										}
@@ -145,10 +148,10 @@ const ProfilePage: NextPage<{
 								{showModal ? (
 									<div>
 										<SetUpProfileModal
-											bannerImageUrl={data.extended?.bannerImgUrl ?? ""}
-											bio={data.extended?.bio ?? ""}
-											webPage={data.extended?.webPage ?? ""}
-											profileImageUrl={data.profileImageUrl}
+											bannerImageUrl={profile.extended?.bannerImgUrl ?? ""}
+											bio={profile.extended?.bio ?? ""}
+											webPage={profile.extended?.webPage ?? ""}
+											profileImageUrl={profile.profileImageUrl}
 											showModal={(e: boolean) => setShowModal(e)}
 										/>
 										<div className="fixed inset-0 z-40 bg-black opacity-25"></div>
@@ -156,38 +159,34 @@ const ProfilePage: NextPage<{
 								) : null}
 							</div>
 						</div>
-						<h1 className="pl-2 pt-2 text-2xl font-semibold">{data.fullName}</h1>
-						<span className="pl-2 font-normal text-slate-400">@{data.username}</span>
-						<p className="ml-2 mt-2">{data.extended?.bio}</p>
+						<h1 className="pl-2 pt-2 text-2xl font-semibold">{profile.fullName}</h1>
+						<span className="pl-2 font-normal text-slate-400">@{profile.username}</span>
+						<p className="ml-2 mt-2">{profile.extended?.bio}</p>
 						<div className="flex gap-3 pt-2">
-							{data.extended?.webPage && (
+							{profile.extended?.webPage && (
 								<span className="flex pl-2">
 									<Icon iconKind="externalLink" />
-									<a href={data.extended?.webPage} className="pl-1 text-blue-500">
-										{data.extended?.webPage}
+									<a
+										href={profile.extended?.webPage}
+										className="pl-1 text-blue-500"
+									>
+										{profile.extended?.webPage}
 									</a>
 								</span>
 							)}
 							<span className="ml-2 flex">
 								<Icon iconKind="calendar" />
 								<span className="ml-1 text-slate-500">
-									since {dayjs(data.createdAt).fromNow()}
+									since {dayjs(profile.createdAt).fromNow()}
 								</span>
 							</span>
 						</div>
-						<div className="ml-2 mt-2 flex gap-10">
-							<span className="flex">
-								<span className="">{data.watchedCount}</span>
-								<span className="ml-1 text-slate-500">Watched</span>
-							</span>
-							<span className="flex">
-								<span className="">{data.watchingCount}</span>
-								<span className="pl-1 text-slate-500">Followed</span>
-							</span>
-						</div>
+						{watchedWatchingCount && (
+							<ProfileWatchedWatching watchedWatchingCount={watchedWatchingCount} />
+						)}
 					</div>
 					<div className="pt-4">
-						<FetchPosts userId={user.userId} authorId={data.id} />
+						<FetchPosts userId={user.userId} authorId={profile.id} />
 					</div>
 				</div>
 			</Layout>

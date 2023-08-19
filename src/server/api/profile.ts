@@ -33,8 +33,6 @@ export const getProfileByUserName = async (userName: string) => {
 		return null
 	}
 
-	const { watchedCount, watchingCount } = await userFollowFollowedCount(author.id)
-
 	const result = {
 		id: author.id,
 		username: author.username ?? "",
@@ -42,8 +40,6 @@ export const getProfileByUserName = async (userName: string) => {
 		fullName,
 		createdAt: author.createdAt,
 		extended,
-		watchedCount,
-		watchingCount,
 	} as Profile
 
 	void setCacheData(userCacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)

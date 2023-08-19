@@ -4,9 +4,12 @@ export type Profile = {
 	profileImageUrl: string
 	fullName: string
 	createdAt: number
+	extended: ProfileExtend | null
+}
+
+export type WatchedWatching = {
 	watchedCount: number | null
 	watchingCount: number | null
-	extended: ProfileExtend | null
 }
 
 export type ProfileExtend = {

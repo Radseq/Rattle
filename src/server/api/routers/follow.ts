@@ -3,7 +3,7 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc"
 import { clerkClient } from "@clerk/nextjs/server"
 import { TRPCError } from "@trpc/server"
 import { prisma } from "~/server/db"
-import { isFollowed } from "../follow"
+import { isFollowed, userFollowFollowedCount } from "../follow"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
@@ -101,4 +101,7 @@ export const followRouter = createTRPCRouter({
 				}
 			}
 		}),
+	getProfileWatchedWatching: publicProcedure.input(z.string()).query(async ({ input }) => {
+		return await userFollowFollowedCount(input)
+	}),
 })
