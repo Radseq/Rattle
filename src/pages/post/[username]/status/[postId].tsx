@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
 import { getPostById } from "~/server/api/posts"
-import { getProfileByUserName } from "~/server/api/profile"
+import { getPostAuthor } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
@@ -19,7 +19,7 @@ import type { Post, PostWithAuthor } from "~/components/post/types"
 import { type ClickCapture, PostItem } from "~/components/post/PostItem"
 import { CreatePostReply, PostSummary, useGetPostReplies } from "~/features/postReplies"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
-import { type Profile } from "~/features/profile"
+import { type PostAuthor } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
 import { useAuth } from "@clerk/nextjs"
 
@@ -27,7 +27,7 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
 
-	const [post, author] = await Promise.all([getPostById(postId), getProfileByUserName(username)])
+	const [post, author] = await Promise.all([getPostById(postId), getPostAuthor(username)])
 
 	if (!author || !post) {
 		return {
@@ -46,10 +46,9 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	}
 }
 
-// todo signInUser, isUserFollowProfile, postsLikedByUser as one object?
 const PostReplies: NextPage<{
 	post: Post
-	author: Profile
+	author: PostAuthor
 }> = ({ post, author }) => {
 	const router = useRouter()
 
