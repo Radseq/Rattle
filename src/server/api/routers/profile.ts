@@ -190,6 +190,7 @@ export const profileRouter = createTRPCRouter({
 			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
 			const post = await getCacheData<Post>(postCacheKey)
 			if (post) {
+				post.likeCount += 1
 				void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 			}
 
@@ -231,6 +232,7 @@ export const profileRouter = createTRPCRouter({
 			const postCacheKey: CacheSpecialKey = { id: input, type: "post" }
 			const post = await getCacheData<Post>(postCacheKey)
 			if (post) {
+				post.likeCount -= 1
 				void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 			}
 
