@@ -409,7 +409,6 @@ export const postsRouter = createTRPCRouter({
 			let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 			if (!author) {
 				author = await getPostAuthor(post.authorId)
-
 				void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
