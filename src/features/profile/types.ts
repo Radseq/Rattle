@@ -8,8 +8,8 @@ export type Profile = {
 }
 
 export type WatchedWatching = {
-	watchedCount: number | null
-	watchingCount: number | null
+	watchedCount: number
+	watchingCount: number
 }
 
 export type ProfileExtend = {
