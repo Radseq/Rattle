@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react"
 import type { Profile, SearchResult } from "../types"
-
-//todo add to config
-const LIMIT_TAG_ENTITIES = 7
-const LIMIT_PROFILE_ENTITIES = 8
+import { CONFIG } from "~/config"
 
 type Observer = (history: SearchResult) => void
 
@@ -45,13 +42,13 @@ const observedHistory = (() => {
 		add: (history: string | Profile) => {
 			const copiedValue = copySearchResult(value)
 			if (typeof history === "object") {
-				if (value.searchedProfiles.length === LIMIT_PROFILE_ENTITIES) {
+				if (value.searchedProfiles.length === CONFIG.LIMIT_PROFILE_ENTITIES) {
 					return
 				}
 				if (!value.searchedProfiles.find((profile) => profile.id === history.id)) {
 					copiedValue.searchedProfiles.push(history)
 				}
-			} else if (value.searchedTags.length < LIMIT_TAG_ENTITIES) {
+			} else if (value.searchedTags.length < CONFIG.LIMIT_TAG_ENTITIES) {
 				if (!value.searchedTags.find((tag) => tag === history)) {
 					copiedValue.searchedTags.push(history)
 				}
