@@ -4,4 +4,6 @@ export const CONFIG = {
 	MAX_POST_REPLIES: Number(process.env.MAX_POST_REPLIES),
 	MAX_POST_MESSAGE_LENGTH: Number(process.env.MAX_POST_MESSAGE_LENGTH),
 	MAX_POLL_CHOICES: Number(process.env.MAX_POLL_CHOICES),
+	POSTS_PER_PAGE: Number(process.env.POSTS_PER_PAGE),
+	SCROLL_THRESHOLD_IN_PX: Number(process.env.SCROLL_THRESHOLD_IN_PX)
 }
