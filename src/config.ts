@@ -3,4 +3,5 @@ export const CONFIG = {
 	MAX_POSTS_BY_AUTHOR_ID: Number(process.env.MAX_POSTS_BY_AUTHOR_ID),
 	MAX_POST_REPLIES: Number(process.env.MAX_POST_REPLIES),
 	MAX_POST_MESSAGE_LENGTH: Number(process.env.MAX_POST_MESSAGE_LENGTH),
+	MAX_POLL_CHOICES: Number(process.env.MAX_POLL_CHOICES),
 }
