@@ -3,12 +3,12 @@ import { type ProfileExtend } from "~/features/profile"
 import { getUserFollowList } from "~/server/api/follow"
 import { getFullName } from "~/utils/helpers"
 
-const MAS_USERS_TO_FOLLOW = 10
+const LIMIT_USERS_IN_WHO_TO_FOLLOW = 10
 
 export const whoToFollow = async (userId: string | null) => {
 	const usersToFollow = await clerkClient.users.getUserList({
 		orderBy: "-created_at",
-		limit: MAS_USERS_TO_FOLLOW,
+		limit: LIMIT_USERS_IN_WHO_TO_FOLLOW,
 	})
 
 	let users = [...usersToFollow]
