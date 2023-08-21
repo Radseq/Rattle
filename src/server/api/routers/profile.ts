@@ -17,8 +17,6 @@ import { CONFIG } from "~/config"
 
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
-const MAX_CACHE_POST_LIFETIME_IN_SECONDS = 60
-
 export const profileRouter = createTRPCRouter({
 	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ input }) => {
 		const profile = await getProfileByUserName(input)
@@ -191,7 +189,7 @@ export const profileRouter = createTRPCRouter({
 			const post = await getCacheData<Post>(postCacheKey)
 			if (post) {
 				post.likeCount += 1
-				void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+				void setCacheData(postCacheKey, post, CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }
@@ -233,7 +231,7 @@ export const profileRouter = createTRPCRouter({
 			const post = await getCacheData<Post>(postCacheKey)
 			if (post) {
 				post.likeCount -= 1
-				void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+				void setCacheData(postCacheKey, post, CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsLiked" }

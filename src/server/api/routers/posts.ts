@@ -27,8 +27,6 @@ import { fetchProfilePosts } from "~/server/features/profile"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
-const MAX_CACHE_POST_LIFETIME_IN_SECONDS = 60
-
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure
 		.input(
@@ -172,7 +170,7 @@ export const postsRouter = createTRPCRouter({
 			const returnPost = createPostOfPrismaPost(createdPost)
 
 			const postCacheKey: CacheSpecialKey = { id: returnPost.id, type: "post" }
-			void setCacheData(postCacheKey, returnPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+			void setCacheData(postCacheKey, returnPost, CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 			return returnPost
 		}),
@@ -219,7 +217,7 @@ export const postsRouter = createTRPCRouter({
 				void setCacheData(
 					quotedPostCacheKey,
 					quotedPost,
-					MAX_CACHE_POST_LIFETIME_IN_SECONDS
+					CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS
 				)
 			}
 
@@ -257,12 +255,16 @@ export const postsRouter = createTRPCRouter({
 			const replayPost = await getCacheData<Post>(replyPostCacheKey)
 			if (replayPost) {
 				replayPost.replyCount += 1
-				void setCacheData(replyPostCacheKey, replayPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+				void setCacheData(
+					replyPostCacheKey,
+					replayPost,
+					CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS
+				)
 			}
 
 			const returnPost = createPostOfPrismaPost(createdReply)
 			const replyCacheKey: CacheSpecialKey = { id: createdReply.id, type: "post" }
-			void setCacheData(replyCacheKey, returnPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+			void setCacheData(replyCacheKey, returnPost, CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 			return returnPost
 		}),
@@ -402,7 +404,7 @@ export const postsRouter = createTRPCRouter({
 			} else {
 				post = await getPostById(input)
 			}
-			void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+			void setCacheData(postCacheKey, post, CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 			const authorCacheKey: CacheSpecialKey = { id: post.authorId, type: "author" }
 			let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
@@ -457,7 +459,7 @@ export const postsRouter = createTRPCRouter({
 			} else {
 				post = await getPostById(input)
 			}
-			void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+			void setCacheData(postCacheKey, post, CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
 			const cacheIds = await getCacheData<string[]>(userCacheKey)
