@@ -7,19 +7,18 @@ import { api } from "~/utils/api"
 const POSTS_PER_PAGE = 10
 const SCROLL_THRESHOLD_IN_PX = 400
 
-export const useGetPostReplies = (postId: string, ulHeightInPx: number | null) => {
-	const [postReplies, setPostReplies] = useState<PostWithAuthor[]>()
+export const useGetPostsByAuthor = (authorId: string, ulHeightInPx: number | null) => {
+	const [posts, setPost] = useState<PostWithAuthor[]>()
 
-	const { data, fetchNextPage, refetch, isLoading } = api.posts.getPostReplies.useInfiniteQuery(
+	const { data, fetchNextPage, refetch, isLoading } = api.posts.getAllByAuthorId.useInfiniteQuery(
 		{
-			postId,
+			authorId,
 			limit: POSTS_PER_PAGE - 1,
 		},
 		{
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
 		}
 	)
-
 	const loadNextPosts = useLoadNextPage(SCROLL_THRESHOLD_IN_PX, ulHeightInPx)
 
 	useEffect(() => {
@@ -29,8 +28,8 @@ export const useGetPostReplies = (postId: string, ulHeightInPx: number | null) =
 	}, [fetchNextPage, loadNextPosts])
 
 	useEffect(() => {
-		setPostReplies(data?.pages.map((page) => page.result).flat())
+		setPost(data?.pages.map((page) => page.result).flat())
 	}, [data?.pages])
 
-	return { postReplies, refetch, isLoading }
+	return { posts, refetch, isLoading }
 }

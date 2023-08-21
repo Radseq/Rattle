@@ -1,52 +1,37 @@
-import { type FC, useEffect, useState } from "react"
+import { type FC, useRef, useState } from "react"
 import { api } from "~/utils/api"
-import { LoadingPage } from "../LoadingPage"
-import { type ClickCapture, PostItem } from "../post/PostItem"
+import { LoadingPage } from "../../../components/LoadingPage"
+import { type ClickCapture, PostItem } from "../../../components/post/PostItem"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { getPostMenuItemsType } from "~/hooks/getPostMenuItemsType"
 import { CONFIG } from "~/config"
-import { type PollVote, type PostWithAuthor } from "../post/types"
-import { PostQuotePopUp } from "./PostQuotePopUp"
-import { type User } from "@clerk/nextjs/dist/api"
-import { PostFooter } from "./PostFooter"
-import { PostContentSelector } from "../post/PostContentSelector"
+import { type PostWithAuthor } from "../../../components/post/types"
+import { PostQuotePopUp } from "../../../components/postsPage/PostQuotePopUp"
+import { PostFooter } from "../../../components/postsPage/PostFooter"
+import { PostContentSelector } from "../../../components/post/PostContentSelector"
+import { getPostProfileType } from "~/utils/helpers"
+import { useGetPostsByAuthor } from "../hooks"
 
 export const FetchPosts: FC<{
-	userId: string
-	user: User | undefined
-	isUserFollowProfile: boolean | null
-}> = ({ userId, isUserFollowProfile, user }) => {
+	authorId: string
+	userId: string | undefined | null
+}> = ({ authorId, userId }) => {
 	const router = useRouter()
-	const type = getPostMenuItemsType(isUserFollowProfile, user, userId)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
-	const [posts, setPosts] = useState<PostWithAuthor[]>()
 
-	const forwardedPostIdsByUser = api.profile.getPostIdsForwardedByUser.useQuery()
-	const getPosts = api.posts.getAllByAuthorId.useQuery(userId)
+	const ulRef = useRef<HTMLUListElement>(null)
 
-	useEffect(() => {
-		if (getPosts.data) {
-			if (forwardedPostIdsByUser.data) {
-				const posts = getPosts.data.map((post) => {
-					// post.post.isForwardedPostBySignInUser = forwardedPostIdsByUser.data.some(
-					// 	(postId) => postId === post.post.id
-					// )
-					return post
-				})
-				setPosts(posts)
-			} else {
-				setPosts(getPosts.data)
-			}
-		}
-	}, [getPosts.data, forwardedPostIdsByUser.data])
+	const { isLoading, posts, refetch } = useGetPostsByAuthor(
+		authorId,
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+	)
 
 	const deletePost = api.posts.deletePost.useMutation({
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to delete post! Please try again later", {
@@ -58,7 +43,7 @@ export const FetchPosts: FC<{
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: async () => {
 			setQuotePopUp(null)
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to quote post! Please try again later", {
@@ -68,18 +53,9 @@ export const FetchPosts: FC<{
 	})
 
 	const likePost = api.profile.setPostLiked.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Post Liked!")
-			if (posts) {
-				const copyPosts = posts.map((post) => {
-					if (post.post.id === postId) {
-						post.post.likeCount += 1
-						post.signInUser!.isLiked = true
-					}
-					return post
-				})
-				setPosts(copyPosts)
-			}
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to like post! Please try again later", {
@@ -89,18 +65,9 @@ export const FetchPosts: FC<{
 	})
 
 	const unlikePost = api.profile.setPostUnliked.useMutation({
-		onSuccess: (_, postId) => {
+		onSuccess: async () => {
 			toast.success("Post Unliked!")
-			if (posts) {
-				const copyPosts = posts.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === postId) {
-						postWithAuthor.post.likeCount -= 1
-						postWithAuthor.signInUser!.isLiked = false
-					}
-					return postWithAuthor
-				})
-				setPosts(copyPosts)
-			}
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to unlike post! Please try again later", {
@@ -110,19 +77,9 @@ export const FetchPosts: FC<{
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: (resPostWithAuthor) => {
+		onSuccess: async () => {
 			toast.success("Post Forwarded!")
-			if (posts) {
-				const modifiedPost = posts.map((postWithAuthor) => {
-					if (postWithAuthor.post.id === resPostWithAuthor.post.id) {
-						return resPostWithAuthor
-					}
-					return postWithAuthor
-				})
-				modifiedPost.push(resPostWithAuthor)
-
-				setPosts(modifiedPost)
-			}
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to forward post! Please try again later", {
@@ -134,7 +91,7 @@ export const FetchPosts: FC<{
 	const removePostForward = api.posts.removePostForward.useMutation({
 		onSuccess: async () => {
 			toast.success("Delete Post Forward!")
-			await getPosts.refetch()
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to delete forward! Please try again later", {
@@ -144,47 +101,9 @@ export const FetchPosts: FC<{
 	})
 
 	const pollVote = api.profile.votePostPoll.useMutation({
-		onSuccess: (result: PollVote, { postId }) => {
+		onSuccess: async () => {
 			toast.success("Voted!")
-			if (!posts) {
-				return
-			}
-
-			const copyPost = posts.map((postWithAuthor) => {
-				if (postWithAuthor.post.id === postId && postWithAuthor.post.poll) {
-					const poll = { ...postWithAuthor.post.poll }
-					if (result.newChoiceId && !result.oldChoiceId) {
-						poll.choiceVotedBySignInUser = result.newChoiceId
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.newChoiceId) {
-								userVote.voteCount += 1
-							}
-							return userVote
-						})
-					} else if (result.newChoiceId && result.oldChoiceId) {
-						poll.choiceVotedBySignInUser = result.newChoiceId
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.newChoiceId) {
-								userVote.voteCount += 1
-							} else if (userVote.id === result.oldChoiceId) {
-								userVote.voteCount -= 1
-							}
-							return userVote
-						})
-					} else {
-						poll.choiceVotedBySignInUser = undefined
-						poll.userVotes = [...postWithAuthor.post.poll.userVotes].map((userVote) => {
-							if (userVote.id === result.oldChoiceId) {
-								userVote.voteCount -= 1
-							}
-							return userVote
-						})
-					}
-					postWithAuthor.post.poll = poll
-				}
-				return postWithAuthor
-			})
-			setPosts(copyPost)
+			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to vote! Please try again later", {
@@ -193,7 +112,7 @@ export const FetchPosts: FC<{
 		},
 	})
 
-	if (getPosts.isLoading) {
+	if (isLoading) {
 		return (
 			<div className="relative">
 				<LoadingPage />
@@ -228,11 +147,11 @@ export const FetchPosts: FC<{
 		}
 	}
 
-	const openDialog = quotePopUp != null && user != null
+	const openDialog = quotePopUp != null && userId != null
 
 	return (
 		<div>
-			<ul>
+			<ul ref={ulRef}>
 				{posts?.map(({ author, post, signInUser }) => (
 					<PostItem
 						key={post.id}
@@ -240,7 +159,11 @@ export const FetchPosts: FC<{
 						onClickCapture={(clickCapture) => {
 							handlePostClick(clickCapture, { author, post, signInUser })
 						}}
-						menuItemsType={type}
+						menuItemsType={getPostProfileType(
+							signInUser?.authorFollowed,
+							author.id,
+							userId
+						)}
 						footer={
 							<PostFooter
 								isForwarded={signInUser?.isForwarded ?? false}
@@ -283,7 +206,7 @@ export const FetchPosts: FC<{
 				))}
 			</ul>
 			<dialog open={openDialog}>
-				{quotePopUp && user && (
+				{quotePopUp && userId && (
 					<PostQuotePopUp
 						author={quotePopUp.author}
 						createdAt={quotePopUp.post.createdAt}

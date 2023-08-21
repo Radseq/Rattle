@@ -1,7 +1,9 @@
 import { type User } from "@clerk/nextjs/dist/api"
 import dayjs from "dayjs"
-import { type PostAuthor } from "~/components/profilePage/types"
 import relativeTime from "dayjs/plugin/relativeTime"
+import { type PostProfileType } from "~/components/post/types"
+import { type PostAuthor } from "~/features/profile"
+
 dayjs.extend(relativeTime)
 
 export const getFullName = (firstName: string | null, lastName: string | null) => {
@@ -70,4 +72,19 @@ export const calculateSkip = (skip: number | undefined, cursor: string | null | 
 		calculatedSkip = skip
 	}
 	return calculatedSkip
+}
+
+export const getPostProfileType = (
+	isFollowed: boolean | undefined,
+	authorId: string,
+	userId: string | null | undefined
+): PostProfileType => {
+	if (!userId) {
+		return "view"
+	} else if (userId === authorId) {
+		return "own"
+	} else if (isFollowed) {
+		return "followedAuthor"
+	}
+	return "notFollowedAuthor"
 }

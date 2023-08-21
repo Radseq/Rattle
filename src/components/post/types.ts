@@ -1,5 +1,5 @@
 import type { Post as PrismaPost } from "@prisma/client"
-import { type PostAuthor } from "../profilePage/types"
+import { type PostAuthor } from "../../features/profile/types"
 import { type RouterOutputs } from "~/utils/api"
 
 export type PostWithAuthor = {
@@ -8,7 +8,7 @@ export type PostWithAuthor = {
 	signInUser: SignInUser | null
 }
 
-export type PostMenuItemsType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
+export type PostProfileType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
 
 type UserPollVotes = {
 	id: number

@@ -1,8 +1,8 @@
 import { SignUp, useUser } from "@clerk/nextjs"
 import type { PropsWithChildren, ReactNode } from "react"
 import { NavigationBar } from "./NavigationBar"
-import { ProfilePanel } from "./profile/ProfilePanel"
 import { Panel } from "./Panel"
+import { ProfilePanel } from "~/features/profile"
 
 type LayoutProps = PropsWithChildren & {
 	rightPanel?: ReactNode | null

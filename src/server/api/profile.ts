@@ -1,9 +1,10 @@
 import clerkClient from "@clerk/clerk-sdk-node"
-import type { PostAuthor, Profile, ProfileExtend } from "~/components/profilePage/types"
+
 import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 import { userFollowFollowedCount } from "./follow"
+import type { PostAuthor, Profile, ProfileExtend } from "~/features/profile"
 
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
@@ -46,6 +47,7 @@ export const getProfileByUserName = async (userName: string) => {
 	} as Profile
 
 	void setCacheData(userCacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	return result
 }
 
 export const getPostAuthor = async (authorId: string) => {

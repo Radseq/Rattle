@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server"
-import type { PostWithAuthor } from "~/components/post/types"
+import { type PostWithAuthor } from "~/components/post/types"
 import { CONFIG } from "~/config"
 import { type PostAuthor } from "~/features/profile"
 import { getUserFollowList } from "~/server/api/follow"
@@ -18,79 +18,78 @@ import { calculateSkip } from "~/utils/helpers"
 // todo get from config file
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
-export const fetchHomePosts = async (
-	signInUserId: string,
+export const fetchProfilePosts = async (
+	signInUserId: string | null,
+	authorId: string,
 	limit: number,
 	cursor: string | null | undefined,
 	skip: number | undefined
 ) => {
-	const followedAuthorsByUser = await getUserFollowList(signInUserId)
-
-	const take = limit ?? CONFIG.MAX_POSTS_BY_AUTHOR_ID
 	const postIds: string[] = []
 
+	const take = limit ?? CONFIG.MAX_POSTS_BY_AUTHOR_ID
+
 	const postsByAuthorIds = prisma.post.findMany({
-		where: { authorId: { in: [signInUserId, ...followedAuthorsByUser] }, replyId: null },
+		where: { authorId, replyId: null },
+		orderBy: { createdAt: "desc" },
 		skip: calculateSkip(skip, cursor),
 		take: take + 1,
 		cursor: cursor ? { id: cursor } : undefined,
-		orderBy: {
-			id: "desc",
-		},
 		select: {
 			id: true,
 		},
 	})
 
-	const forwardedPostsIds = getPostIdsForwardedByUser(signInUserId)
+	const forwardedPostsIds = getPostIdsForwardedByUser(authorId)
 
 	const [getPostForwardedIds, getPostsByAuthorIds] = await Promise.all([
 		forwardedPostsIds,
 		postsByAuthorIds,
 	])
 
-	for (const post of getPostsByAuthorIds) {
-		postIds.push(post.id)
-	}
-
 	let nextCursor: typeof cursor | undefined = undefined
 	if (getPostsByAuthorIds.length > limit) {
-		const nextItem = getPostsByAuthorIds.pop() // return the last item from the array
+		const nextItem = getPostsByAuthorIds.pop()
 		nextCursor = nextItem?.id
+	}
+
+	for (const post of getPostsByAuthorIds) {
+		postIds.push(post.id)
 	}
 
 	for (const id of getPostForwardedIds) {
 		postIds.push(id)
 	}
 
-	let postsLikedByUser: string[] = []
+	let postsLikedBySignInUser: string[] = []
 	let postsPollVotedByUser: {
 		postId: string
 		choiceId: number
 	}[] = []
 	let postsQuotedByUser: string[] = []
 	let followedUsers: string[] = []
+	if (signInUserId) {
+		const [
+			getPostsLikedBySignInUser,
+			getPostsPollVotedByUser,
+			getPostsIdsQuotedByUser,
+			getFollowedUsers,
+		] = await Promise.all([
+			getPostsLikedByUser(signInUserId, postIds),
+			getUserVotedAnyPostsPoll(signInUserId, postIds),
+			isPostsQuotedByUser(signInUserId, postIds),
+			getUserFollowList(signInUserId),
+		])
+		postsLikedBySignInUser = getPostsLikedBySignInUser
+		postsPollVotedByUser = getPostsPollVotedByUser
+		postsQuotedByUser = getPostsIdsQuotedByUser
+		followedUsers = getFollowedUsers
+	}
 
-	const [
-		getPostsLikedBySignInUser,
-		getPostsPollVotedByUser,
-		getPostsIdsQuotedByUser,
-		getFollowedUsers,
-	] = await Promise.all([
-		getPostsLikedByUser(signInUserId, postIds),
-		getUserVotedAnyPostsPoll(signInUserId, postIds),
-		isPostsQuotedByUser(signInUserId, postIds),
-		getUserFollowList(signInUserId),
-	])
-	postsLikedByUser = getPostsLikedBySignInUser
-	postsPollVotedByUser = getPostsPollVotedByUser
-	postsQuotedByUser = getPostsIdsQuotedByUser
-	followedUsers = getFollowedUsers
-
-	const authorCacheKey: CacheSpecialKey = { id: signInUserId, type: "author" }
+	const authorCacheKey: CacheSpecialKey = { id: authorId, type: "author" }
 	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 	if (!author) {
-		author = await getPostAuthor(signInUserId)
+		author = await getPostAuthor(authorId)
 		void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 	}
 
@@ -108,25 +107,29 @@ export const fetchHomePosts = async (
 	)
 	const result: PostWithAuthor[] = []
 	for (const sortedPost of sortedPosts) {
-		const homePost = {
+		const postWithAuthor = {
 			post: {
 				...sortedPost,
 				createdAt: sortedPost.createdAt.toString(),
 			},
-			author,
 			signInUser: {
 				isForwarded: getPostForwardedIds.some((post) => post === sortedPost.id),
-				isLiked: postsLikedByUser.some((post) => post === sortedPost.id),
+				isLiked: postsLikedBySignInUser.some((post) => post === sortedPost.id),
 				isQuoted: postsQuotedByUser.some((post) => post === sortedPost.id),
 				isVotedChoiceId: postsPollVotedByUser.filter(
 					(vote) => vote.postId === sortedPost.id
 				)[0]?.choiceId,
 				authorFollowed: followedUsers.some((authorId) => authorId === author?.id),
 			},
+			author,
 		} as PostWithAuthor
-		result.push(homePost)
+		if (postWithAuthor.post.poll) {
+			postWithAuthor.post.poll.choiceVotedBySignInUser = postsPollVotedByUser.find(
+				(value) => value.postId === sortedPost.id
+			)?.choiceId
+		}
+		result.push(postWithAuthor)
 	}
-
 	return {
 		result,
 		nextCursor,
