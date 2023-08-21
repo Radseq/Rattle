@@ -69,7 +69,8 @@ const ProfilePage: NextPage<{
 	const [showModal, setShowModal] = useState<boolean>()
 
 	const user = useAuth()
-	const { profile, isUserFollowProfile, watchedWatchingCount } = useGetProfile(username)
+	const { profile, isUserFollowProfile, watchedWatchingCount, setWatchedWatching } =
+		useGetProfile(username)
 
 	if (!profile) {
 		return <div>404</div>
@@ -77,6 +78,12 @@ const ProfilePage: NextPage<{
 
 	const { mutate: addUserToFollow, isLoading: isFollowed } =
 		api.follow.addUserToFollow.useMutation({
+			onMutate: () => {
+				setWatchedWatching({
+					...watchedWatchingCount,
+					watchedCount: (watchedWatchingCount.watchedCount += 1),
+				})
+			},
 			onSuccess: () => {
 				toast.success(`${profile.username} is now followed`)
 				window.location.reload()
@@ -85,11 +92,21 @@ const ProfilePage: NextPage<{
 				toast.error("Failed to follow! Please try again later", {
 					duration: CONFIG.TOAST_ERROR_DURATION_MS,
 				})
+				setWatchedWatching({
+					...watchedWatchingCount,
+					watchedCount: (watchedWatchingCount.watchedCount -= 1),
+				})
 			},
 		})
 
 	const { mutate: stopFollowing, isLoading: isUnFollowing } =
 		api.follow.stopFollowing.useMutation({
+			onMutate: () => {
+				setWatchedWatching({
+					...watchedWatchingCount,
+					watchedCount: (watchedWatchingCount.watchedCount -= 1),
+				})
+			},
 			onSuccess: () => {
 				toast.success(`${profile.username} is no longer followed`)
 				window.location.reload()
@@ -97,6 +114,10 @@ const ProfilePage: NextPage<{
 			onError: () => {
 				toast.error("Failed to stop follow! Please try again later", {
 					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
+				setWatchedWatching({
+					...watchedWatchingCount,
+					watchedCount: (watchedWatchingCount.watchedCount += 1),
 				})
 			},
 		})
