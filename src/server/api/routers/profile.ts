@@ -13,11 +13,11 @@ import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type Post } from "~/components/post/types"
 import { type ProfileExtend } from "~/features/profile"
+import { CONFIG } from "~/config"
 
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 const MAX_CACHE_POST_LIFETIME_IN_SECONDS = 60
-const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const profileRouter = createTRPCRouter({
 	getProfileByUsername: publicProcedure.input(z.string().min(3)).query(async ({ input }) => {
@@ -198,7 +198,7 @@ export const profileRouter = createTRPCRouter({
 			const cacheIds = await getCacheData<string[]>(userCacheKey)
 			if (cacheIds) {
 				cacheIds.push(result.postId)
-				void setCacheData(userCacheKey, cacheIds, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+				void setCacheData(userCacheKey, cacheIds, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			return result.postId
@@ -240,7 +240,7 @@ export const profileRouter = createTRPCRouter({
 			const cacheIds = await getCacheData<string[]>(userCacheKey)
 			if (cacheIds) {
 				const res = cacheIds.filter((postId) => postId != input)
-				void setCacheData(userCacheKey, res, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+				void setCacheData(userCacheKey, res, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			return input

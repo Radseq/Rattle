@@ -4,8 +4,7 @@ import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 import type { PostAuthor, Profile, ProfileExtend } from "~/features/profile"
-
-const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
+import { CONFIG } from "~/config"
 
 export const getProfileByUserName = async (userName: string) => {
 	const userCacheKey: CacheSpecialKey = { id: userName, type: "profileUserName" }
@@ -41,7 +40,7 @@ export const getProfileByUserName = async (userName: string) => {
 		extended,
 	} as Profile
 
-	void setCacheData(userCacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	void setCacheData(userCacheKey, result, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 	return result
 }
 
@@ -50,7 +49,7 @@ export const getPostAuthor = async (authorId: string) => {
 	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 	if (!author) {
 		author = filterClarkClientToAuthor(await clerkClient.users.getUser(authorId))
-		void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+		void setCacheData(authorCacheKey, author, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 	}
 
 	return author
@@ -64,7 +63,7 @@ export const getPostAuthorByUsername = async (username: string) => {
 		const user = users.at(0)
 		if (user) {
 			author = filterClarkClientToAuthor(user)
-			void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+			void setCacheData(authorCacheKey, author, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 		}
 	}
 
@@ -116,7 +115,7 @@ export const getPostsLikedByUser = async (userId: string, postIds: string[]) => 
 	})
 
 	const ids = posts.map((post) => post.postId)
-	void setCacheData(userCacheKey, ids, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	void setCacheData(userCacheKey, ids, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 	return ids
 }
 
@@ -157,7 +156,7 @@ export const getPostIdsForwardedByUser = async (userId: string) => {
 	})
 
 	const ids = result.map((post) => post.postId)
-	void setCacheData(userCacheKey, ids, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	void setCacheData(userCacheKey, ids, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 
 	return ids
 }

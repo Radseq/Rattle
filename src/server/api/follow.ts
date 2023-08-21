@@ -1,8 +1,7 @@
 import { type WatchedWatching } from "~/features/profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 import { prisma } from "../db"
-
-const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
+import { CONFIG } from "~/config"
 
 export const isFollowed = async (watched: string, watching: string) => {
 	const followed = await prisma.followed.findFirst({
@@ -43,7 +42,7 @@ export const userFollowFollowedCount = async (userId: string) => {
 		watchingCount: watchedWatching[1],
 	}
 
-	void setCacheData(cacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	void setCacheData(cacheKey, result, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 	return result
 }
 
@@ -65,7 +64,7 @@ export const getUserFollowList = async (userId: string) => {
 
 	const result: string[] = follow.map((userId) => userId.watching)
 
-	void setCacheData(cacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	void setCacheData(cacheKey, result, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 
 	return result
 }
@@ -82,7 +81,7 @@ export const setWatchingCountCache = async (userId: string, type: "add" | "remov
 		void setCacheData(
 			cacheWatchedWatchingKey,
 			watchedWatchingCache,
-			MAX_CACHE_USER_LIFETIME_IN_SECONDS
+			CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS
 		)
 	}
 }
@@ -99,7 +98,7 @@ export const setWatchedCountCache = async (userId: string, type: "add" | "remove
 		void setCacheData(
 			cacheWatchedWatchingKey,
 			watchedWatchingCache,
-			MAX_CACHE_USER_LIFETIME_IN_SECONDS
+			CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS
 		)
 	}
 }

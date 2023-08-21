@@ -10,8 +10,7 @@ import {
 	userFollowFollowedCount,
 } from "../follow"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
-
-const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
+import { CONFIG } from "~/config"
 
 export const followRouter = createTRPCRouter({
 	isFollowed: publicProcedure
@@ -55,7 +54,7 @@ export const followRouter = createTRPCRouter({
 					void setCacheData(
 						cacheKey,
 						[followingCache, following.id],
-						MAX_CACHE_USER_LIFETIME_IN_SECONDS
+						CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS
 					)
 				}
 
@@ -107,7 +106,7 @@ export const followRouter = createTRPCRouter({
 					void setCacheData(
 						cacheKey,
 						followingCache.filter((userId) => userId != followed),
-						MAX_CACHE_USER_LIFETIME_IN_SECONDS
+						CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS
 					)
 				}
 

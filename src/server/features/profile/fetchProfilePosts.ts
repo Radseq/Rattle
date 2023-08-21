@@ -15,9 +15,6 @@ import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache
 import { prisma } from "~/server/db"
 import { calculateSkip } from "~/utils/helpers"
 
-// todo get from config file
-const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
-
 export const fetchProfilePosts = async (
 	signInUserId: string | null,
 	authorId: string,
@@ -90,7 +87,7 @@ export const fetchProfilePosts = async (
 	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 	if (!author) {
 		author = await getPostAuthor(authorId)
-		void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+		void setCacheData(authorCacheKey, author, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 	}
 
 	if (!author || !author.username) {

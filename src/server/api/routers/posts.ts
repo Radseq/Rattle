@@ -28,7 +28,6 @@ import { fetchProfilePosts } from "~/server/features/profile"
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
 const MAX_CACHE_POST_LIFETIME_IN_SECONDS = 60
-const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
 export const postsRouter = createTRPCRouter({
 	getAllByAuthorId: publicProcedure
@@ -409,14 +408,14 @@ export const postsRouter = createTRPCRouter({
 			let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 			if (!author) {
 				author = await getPostAuthor(post.authorId)
-				void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+				void setCacheData(authorCacheKey, author, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			const userCacheKey: CacheSpecialKey = { id: ctx.authUserId, type: "postsForwarded" }
 			const cacheIds = await getCacheData<string[]>(userCacheKey)
 			if (cacheIds) {
 				cacheIds.push(input)
-				void setCacheData(userCacheKey, cacheIds, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+				void setCacheData(userCacheKey, cacheIds, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			// todo uncomment after testing
@@ -464,7 +463,7 @@ export const postsRouter = createTRPCRouter({
 			const cacheIds = await getCacheData<string[]>(userCacheKey)
 			if (cacheIds) {
 				const removed = cacheIds.filter((postId) => postId !== input)
-				void setCacheData(userCacheKey, removed, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+				void setCacheData(userCacheKey, removed, CONFIG.MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 
 			return post
