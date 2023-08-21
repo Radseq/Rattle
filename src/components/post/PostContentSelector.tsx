@@ -1,16 +1,15 @@
 import { type FC } from "react"
 import Link from "next/link"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
-import { type PostWithAuthor } from "./types"
+import { type Post } from "./types"
 import { PostQuoteItem } from "../postsPage/PostQuoteItem"
 import { PostPoll } from "../postsPage/PostPoll"
 
 export const PostContentSelector: FC<{
-	postWithAuthor: PostWithAuthor
+	post: Post
 	pollVote: (id: number) => void
-}> = ({ postWithAuthor, pollVote }) => {
-	const { post, author } = postWithAuthor
-	const useTime = useTimeLeft(post.createdAt, post.poll?.endDate)
+}> = ({ post, pollVote }) => {
+	const useTime = useTimeLeft(post.createdAt.toString(), post.poll?.endDate)
 	if (post.quotedPost) {
 		return (
 			<div>
@@ -20,9 +19,9 @@ export const PostContentSelector: FC<{
 					href={`/post/${post.quotedPost.author.username}/status/${post.quotedPost.post.id}`}
 				>
 					<PostQuoteItem
-						author={author}
-						createdAt={post.createdAt}
-						message={post.content}
+						author={post.quotedPost.author}
+						createdAt={post.quotedPost.post.createdAt}
+						message={post.quotedPost.post.content}
 					/>
 				</Link>
 			</div>

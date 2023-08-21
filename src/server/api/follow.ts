@@ -1,3 +1,4 @@
+import { type WatchedWatching } from "~/features/profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 import { prisma } from "../db"
 
@@ -19,6 +20,12 @@ export const isFollowed = async (watched: string, watching: string) => {
 }
 
 export const userFollowFollowedCount = async (userId: string) => {
+	const cacheKey: CacheSpecialKey = { id: userId, type: "watchedWatching" }
+	const watchedWatchingCache = await getCacheData<WatchedWatching>(cacheKey)
+	if (watchedWatchingCache) {
+		return watchedWatchingCache
+	}
+
 	const watchedCount = prisma.followed.count({
 		where: {
 			watched: userId,
@@ -29,12 +36,15 @@ export const userFollowFollowedCount = async (userId: string) => {
 			watching: userId,
 		},
 	})
-	const result = await Promise.all([watchedCount, watchingCount])
+	const watchedWatching = await Promise.all([watchedCount, watchingCount])
 
-	return {
-		watchedCount: result[0],
-		watchingCount: result[1],
+	const result = {
+		watchedCount: watchedWatching[0],
+		watchingCount: watchedWatching[1],
 	}
+
+	void setCacheData(cacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	return result
 }
 
 export const getUserFollowList = async (userId: string) => {
@@ -58,4 +68,38 @@ export const getUserFollowList = async (userId: string) => {
 	void setCacheData(cacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 
 	return result
+}
+
+export const setWatchingCountCache = async (userId: string, type: "add" | "remove") => {
+	const cacheWatchedWatchingKey: CacheSpecialKey = {
+		id: userId,
+		type: "watchedWatching",
+	}
+
+	const watchedWatchingCache = await getCacheData<WatchedWatching>(cacheWatchedWatchingKey)
+	if (watchedWatchingCache) {
+		watchedWatchingCache.watchingCount = type == "add" ? +1 : -1
+		void setCacheData(
+			cacheWatchedWatchingKey,
+			watchedWatchingCache,
+			MAX_CACHE_USER_LIFETIME_IN_SECONDS
+		)
+	}
+}
+
+export const setWatchedCountCache = async (userId: string, type: "add" | "remove") => {
+	const cacheWatchedWatchingKey: CacheSpecialKey = {
+		id: userId,
+		type: "watchedWatching",
+	}
+
+	const watchedWatchingCache = await getCacheData<WatchedWatching>(cacheWatchedWatchingKey)
+	if (watchedWatchingCache) {
+		watchedWatchingCache.watchedCount = type == "add" ? +1 : -1
+		void setCacheData(
+			cacheWatchedWatchingKey,
+			watchedWatchingCache,
+			MAX_CACHE_USER_LIFETIME_IN_SECONDS
+		)
+	}
 }

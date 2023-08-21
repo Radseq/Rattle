@@ -3,7 +3,6 @@ import clerkClient from "@clerk/clerk-sdk-node"
 import { filterClarkClientToAuthor, getFullName } from "~/utils/helpers"
 import { prisma } from "../db"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
-import { userFollowFollowedCount } from "./follow"
 import type { PostAuthor, Profile, ProfileExtend } from "~/features/profile"
 
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
@@ -33,8 +32,6 @@ export const getProfileByUserName = async (userName: string) => {
 		return null
 	}
 
-	const { watchedCount, watchingCount } = await userFollowFollowedCount(author.id)
-
 	const result = {
 		id: author.id,
 		username: author.username ?? "",
@@ -42,8 +39,6 @@ export const getProfileByUserName = async (userName: string) => {
 		fullName,
 		createdAt: author.createdAt,
 		extended,
-		watchedCount,
-		watchingCount,
 	} as Profile
 
 	void setCacheData(userCacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
@@ -56,6 +51,21 @@ export const getPostAuthor = async (authorId: string) => {
 	if (!author) {
 		author = filterClarkClientToAuthor(await clerkClient.users.getUser(authorId))
 		void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	}
+
+	return author
+}
+
+export const getPostAuthorByUsername = async (username: string) => {
+	const authorCacheKey: CacheSpecialKey = { id: username, type: "authorByUsername" }
+	let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
+	if (!author) {
+		const users = await clerkClient.users.getUserList({ [username]: username })
+		const user = users.at(0)
+		if (user) {
+			author = filterClarkClientToAuthor(user)
+			void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+		}
 	}
 
 	return author

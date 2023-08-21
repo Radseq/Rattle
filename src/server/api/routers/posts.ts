@@ -205,13 +205,26 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			return await ctx.prisma.post.create({
+			const create = await ctx.prisma.post.create({
 				data: {
 					authorId,
 					content: input.content,
 					quotedId: input.quotedPostId,
 				},
 			})
+
+			const quotedPostCacheKey: CacheSpecialKey = { id: input.quotedPostId, type: "post" }
+			const quotedPost = await getCacheData<Post>(quotedPostCacheKey)
+			if (quotedPost) {
+				quotedPost.quotedCount += 1
+				void setCacheData(
+					quotedPostCacheKey,
+					quotedPost,
+					MAX_CACHE_POST_LIFETIME_IN_SECONDS
+				)
+			}
+
+			return create
 		}),
 	createReplyPost: privateProcedure
 		.input(
@@ -396,7 +409,6 @@ export const postsRouter = createTRPCRouter({
 			let author: PostAuthor | null = await getCacheData<PostAuthor>(authorCacheKey)
 			if (!author) {
 				author = await getPostAuthor(post.authorId)
-
 				void setCacheData(authorCacheKey, author, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
 			}
 

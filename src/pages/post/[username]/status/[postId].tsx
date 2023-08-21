@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
 import { Layout } from "~/components/Layout"
 import { getPostById } from "~/server/api/posts"
-import { getProfileByUserName } from "~/server/api/profile"
+import { getPostAuthorByUsername } from "~/server/api/profile"
 import { api } from "~/utils/api"
 import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
@@ -19,7 +19,7 @@ import type { Post, PostWithAuthor } from "~/components/post/types"
 import { type ClickCapture, PostItem } from "~/components/post/PostItem"
 import { CreatePostReply, PostSummary, useGetPostReplies } from "~/features/postReplies"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
-import { type Profile } from "~/features/profile"
+import { type PostAuthor } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
 import { useAuth } from "@clerk/nextjs"
 
@@ -27,9 +27,12 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
 	const postId = props.params?.postId as string
 
-	const [post, author] = await Promise.all([getPostById(postId), getProfileByUserName(username)])
+	const [viewedPost, author] = await Promise.all([
+		getPostById(postId),
+		getPostAuthorByUsername(username),
+	])
 
-	if (!author || !post) {
+	if (!author || !viewedPost) {
 		return {
 			redirect: {
 				destination: "/",
@@ -40,21 +43,21 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 
 	return {
 		props: {
-			post,
+			viewedPost,
 			author,
 		},
 	}
 }
 
-// todo signInUser, isUserFollowProfile, postsLikedByUser as one object?
 const PostReplies: NextPage<{
-	post: Post
-	author: Profile
-}> = ({ post, author }) => {
+	viewedPost: Post
+	author: PostAuthor
+}> = ({ viewedPost, author }) => {
 	const router = useRouter()
 
 	const user = useAuth()
 
+	const [post, setPost] = useState<Post>(viewedPost)
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 	const [quoteMessage, setQuoteMessage] = useState<string>()
 
@@ -68,6 +71,9 @@ const PostReplies: NextPage<{
 	const { mutate, isLoading: isPosting } = api.posts.createReplyPost.useMutation({
 		onSuccess: async () => {
 			toast.success("Add replay")
+			setPost((post) => {
+				return { ...post, replyCount: post.replyCount + 1 }
+			})
 			await refetch()
 		},
 		onError: () => {
@@ -80,6 +86,9 @@ const PostReplies: NextPage<{
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: () => {
 			toast.success("Add quoted post")
+			setPost((post) => {
+				return { ...post, quotedCount: post.quotedCount + 1 }
+			})
 		},
 		onError: () => {
 			toast.error("Failed to quote post! Please try again later", {
@@ -92,6 +101,9 @@ const PostReplies: NextPage<{
 		onSuccess: async () => {
 			toast.success("Post Deleted!")
 			await refetch()
+			setPost((post) => {
+				return { ...post, replyCount: post.replyCount - 1 }
+			})
 		},
 		onError: () => {
 			toast.error("Failed to delete post! Please try again later", {
@@ -298,7 +310,7 @@ const PostReplies: NextPage<{
 								}
 							>
 								<PostContentSelector
-									postWithAuthor={reply}
+									post={reply.post}
 									pollVote={(choiceId) =>
 										pollVote.mutate({
 											postId: reply.post.id,

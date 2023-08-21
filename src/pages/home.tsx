@@ -252,7 +252,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 								}
 							>
 								<PostContentSelector
-									postWithAuthor={{ author, post, signInUser }}
+									post={post}
 									pollVote={(choiceId) =>
 										pollVote.mutate({
 											postId: post.id,

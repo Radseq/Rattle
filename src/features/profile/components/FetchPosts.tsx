@@ -194,7 +194,7 @@ export const FetchPosts: FC<{
 						}
 					>
 						<PostContentSelector
-							postWithAuthor={{ author, post, signInUser }}
+							post={post}
 							pollVote={(choiceId) =>
 								pollVote.mutate({
 									postId: post.id,
