@@ -4,6 +4,7 @@ import React from "react"
 import { type PollLength } from "../types"
 import { StyledLabel, StyledSelect } from "~/components/styledHTMLElements/FloatingStyles"
 import { type PollLengthAction } from "../hooks"
+import { CONFIG } from "~/config"
 
 const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	length,
@@ -21,9 +22,6 @@ const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 		</>
 	)
 }
-
-// todo add to env instead hard coded
-const MIN_POLL_LENGTH = 5
 
 export const PollTimeLength: FC<{ state: PollLength; dispatch: Dispatch<PollLengthAction> }> = ({
 	state,
@@ -78,7 +76,9 @@ export const PollTimeLength: FC<{ state: PollLength; dispatch: Dispatch<PollLeng
 							<PollLengthOptions
 								length={60}
 								minLength={
-									state.days === 0 && state.hours === 0 ? MIN_POLL_LENGTH : 0
+									state.days === 0 && state.hours === 0
+										? CONFIG.MIN_POLL_LENGTH_IN_MINUTES
+										: 0
 								}
 							/>
 						</StyledSelect>
