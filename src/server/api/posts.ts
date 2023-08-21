@@ -4,8 +4,7 @@ import { getPostAuthor } from "./profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "../cache"
 import { type Post as PrismaPost } from "@prisma/client"
 import type { Post, PostWithAuthor } from "~/components/post/types"
-
-const MAX_CACHE_LIFETIME_IN_SECONDS = 60
+import { CONFIG } from "~/config"
 
 export const getPostById = async (postId: string) => {
 	const cacheKey: CacheSpecialKey = { id: postId, type: "post" }
@@ -56,7 +55,7 @@ export const getPostById = async (postId: string) => {
 		poll: postPoll,
 	} as Post
 
-	void setCacheData(cacheKey, returnPost, MAX_CACHE_LIFETIME_IN_SECONDS)
+	void setCacheData(cacheKey, returnPost, CONFIG.MAX_CACHE_POST_LIFETIME_IN_SECONDS)
 
 	return returnPost
 }
