@@ -3,8 +3,7 @@ import { clerkClient } from "@clerk/nextjs/server"
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
 import { getFullName } from "~/utils/helpers"
 import { type Profile } from "~/features/search"
-
-const MAX_USERS_COUNT = 20
+import { CONFIG } from "~/config"
 
 export const searchRouter = createTRPCRouter({
 	getAllUsersAndTags: publicProcedure.input(z.string()).query(async ({ input }) => {
@@ -19,7 +18,7 @@ export const searchRouter = createTRPCRouter({
 
 		const usersMatching = await clerkClient.users.getUserList({
 			query: input,
-			limit: MAX_USERS_COUNT,
+			limit: CONFIG.LIMIT_PROFILE_ENTITIES,
 		})
 
 		//todo future search tags?
