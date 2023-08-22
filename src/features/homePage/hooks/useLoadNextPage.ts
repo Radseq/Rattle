@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useWindowScroll } from "~/hooks/useWindowScroll"
 
-export const useLoadNextPage = (marginToEndPx = 400, height: number | null) => {
+export const useLoadNextPage = (marginToEndPx: number, height: number | null) => {
 	const [loadNextPage, setLoadNextPage] = useState(false)
 	const windowScroll = useWindowScroll()
 
