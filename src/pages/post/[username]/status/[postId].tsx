@@ -204,36 +204,38 @@ const PostReplies: NextPage<{
 
 	return (
 		<Layout>
-			<div className="h-48 flex-col pt-2">
-				<ProfileSimple
-					fullName={author.fullName}
-					profileImageUrl={author.profileImageUrl}
-					username={author.username}
-				>
-					<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
-						<Icon iconKind="optionDots" />
+			<section className="h-48 flex-col pt-2">
+				<article>
+					<ProfileSimple
+						fullName={author.fullName}
+						profileImageUrl={author.profileImageUrl}
+						username={author.username}
+					>
+						<div className="flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
+							<Icon iconKind="optionDots" />
+						</div>
+					</ProfileSimple>
+					<div className="mt-2 ml-2">
+						{post.poll ? (
+							<div>
+								<span className="">{post.content}</span>
+								<PostPoll
+									pollTimeLeft={useTime}
+									poll={post.poll}
+									pollEndTime={post.poll.endDate}
+									onClickVote={(choiceId) =>
+										pollVote.mutate({ postId: post.id, choiceId })
+									}
+								/>
+							</div>
+						) : (
+							<div>
+								<span>{post.content}</span>
+								<PostSummary postCreateDate={post.createdAt} />
+							</div>
+						)}
 					</div>
-				</ProfileSimple>
-				<div className="mt-2 ml-2">
-					{post.poll ? (
-						<div>
-							<span className="">{post.content}</span>
-							<PostPoll
-								pollTimeLeft={useTime}
-								poll={post.poll}
-								pollEndTime={post.poll.endDate}
-								onClickVote={(choiceId) =>
-									pollVote.mutate({ postId: post.id, choiceId })
-								}
-							/>
-						</div>
-					) : (
-						<div>
-							<span>{post.content}</span>
-							<PostSummary postCreateDate={post.createdAt} />
-						</div>
-					)}
-				</div>
+				</article>
 				<hr className="my-2" />
 				<footer className="ml-2">
 					<span className="pr-1 font-bold">{post.replyCount}</span>
@@ -311,7 +313,7 @@ const PostReplies: NextPage<{
 						))}
 					</ul>
 				)}
-			</div>
+			</section>
 			<dialog open={openDialog}>
 				{quotePopUp && user.userId && (
 					<PostQuotePopUp
