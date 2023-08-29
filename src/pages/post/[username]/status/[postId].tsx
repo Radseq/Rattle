@@ -68,21 +68,6 @@ const PostReplies: NextPage<{
 		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
 	)
 
-	const { mutate, isLoading: isPosting } = api.posts.createReplyPost.useMutation({
-		onSuccess: async () => {
-			toast.success("Add replay")
-			setPost((post) => {
-				return { ...post, replyCount: post.replyCount + 1 }
-			})
-			await refetch()
-		},
-		onError: () => {
-			toast.error("Failed to add reply! Please try again later", {
-				duration: CONFIG.TOAST_ERROR_DURATION_MS,
-			})
-		},
-	})
-
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: () => {
 			toast.success("Add quoted post")
@@ -205,11 +190,14 @@ const PostReplies: NextPage<{
 		}
 	}
 
-	const handleCreateReply = async () => {
+	const handleCreateReply = () => {
 		setPost((post) => {
 			return { ...post, replyCount: post.replyCount + 1 }
 		})
-		await refetch()
+		const runner = async () => await refetch()
+		runner().catch(() => {
+			return
+		})
 	}
 
 	const openDialog = quotePopUp != null && user.userId != null
@@ -260,7 +248,7 @@ const PostReplies: NextPage<{
 				<hr className="my-2" />
 
 				<CreatePostReplyConnector
-					onCreateReply={() => handleCreateReply()}
+					onCreateReply={handleCreateReply}
 					profileImageUrl={author.profileImageUrl}
 					postId={viewedPost.id}
 				/>

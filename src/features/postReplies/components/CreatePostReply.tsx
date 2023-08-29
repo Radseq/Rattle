@@ -1,5 +1,5 @@
 import { ProfileAvatarImageUrl } from "~/features/profile"
-import { LoadingPage, LoadingSpinner } from "../../../components/LoadingPage"
+import { LoadingSpinner } from "../../../components/LoadingPage"
 import { type FC, useState } from "react"
 import { type KeyboardEvent } from "react"
 import toast from "react-hot-toast"
