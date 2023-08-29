@@ -55,7 +55,7 @@ export const CreatePostReplyConnector: FC<{
 	}
 
 	return (
-		<div>
+		<article>
 			<CreatePostReply
 				onCreatePost={(respondMessage) => setPostContent(respondMessage)}
 				profileImageUrl={profileImageUrl}
@@ -66,6 +66,6 @@ export const CreatePostReplyConnector: FC<{
 				}}
 				value={postContent}
 			/>
-		</div>
+		</article>
 	)
 }
