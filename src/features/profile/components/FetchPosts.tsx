@@ -1,4 +1,4 @@
-import { type FC, useRef, useState } from "react"
+import { type FC, useRef } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../../../components/LoadingPage"
 import { type ClickCapture, PostItem } from "../../../components/post/PostItem"
@@ -6,7 +6,6 @@ import { useRouter } from "next/router"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
 import { type PostWithAuthor } from "../../../components/post/types"
-import { PostQuotePopUp } from "../../../components/postsPage/PostQuotePopUp"
 import { PostFooter } from "../../../components/postsPage/PostFooter"
 import { PostContentSelector } from "../../../components/post/PostContentSelector"
 import { getPostProfileType } from "~/utils/helpers"
@@ -14,12 +13,10 @@ import { useGetPostsByAuthor } from "../hooks"
 
 export const FetchPosts: FC<{
 	authorId: string
+	postQuote: (quotedPost: PostWithAuthor) => void
 	userId: string | undefined | null
-}> = ({ authorId, userId }) => {
+}> = ({ authorId, postQuote, userId }) => {
 	const router = useRouter()
-
-	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
-	const [quoteMessage, setQuoteMessage] = useState<string>()
 
 	const ulRef = useRef<HTMLUListElement>(null)
 
@@ -35,18 +32,6 @@ export const FetchPosts: FC<{
 		},
 		onError: () => {
 			toast.error("Failed to delete post! Please try again later", {
-				duration: CONFIG.TOAST_ERROR_DURATION_MS,
-			})
-		},
-	})
-
-	const quotePost = api.posts.createQuotedPost.useMutation({
-		onSuccess: async () => {
-			setQuotePopUp(null)
-			await refetch()
-		},
-		onError: () => {
-			toast.error("Failed to quote post! Please try again later", {
 				duration: CONFIG.TOAST_ERROR_DURATION_MS,
 			})
 		},
@@ -147,81 +132,60 @@ export const FetchPosts: FC<{
 		}
 	}
 
-	const openDialog = quotePopUp != null && userId != null
-
 	return (
-		<div>
-			<ul ref={ulRef}>
-				{posts?.map(({ author, post, signInUser }) => (
-					<PostItem
-						key={post.id}
-						postWithUser={{ author, post, signInUser }}
-						onClickCapture={(clickCapture) => {
-							handlePostClick(clickCapture, { author, post, signInUser })
-						}}
-						menuItemsType={getPostProfileType(
-							signInUser?.authorFollowed,
-							author.id,
-							userId
-						)}
-						footer={
-							<PostFooter
-								isForwarded={signInUser?.isForwarded ?? false}
-								onForwardClick={() => {
-									if (signInUser?.isForwarded) {
-										removePostForward.mutate(post.id)
-									} else {
-										forwardPost.mutate(post.id)
-									}
-								}}
-								onLikeClick={() => {
-									if (signInUser?.isLiked) {
-										unlikePost.mutate(post.id)
-									} else {
-										likePost.mutate(post.id)
-									}
-								}}
-								onQuoteClick={() => {
-									setQuotePopUp({ author, post, signInUser })
-								}}
-								sharedCount={post.quotedCount + post.forwardsCount}
-								isLiked={signInUser?.isLiked ?? false}
-								likeCount={post.likeCount}
-								username={author.username}
-								replyCount={post.replyCount}
-								postId={post.id}
-							/>
-						}
-					>
-						<PostContentSelector
-							post={post}
-							pollVote={(choiceId) =>
-								pollVote.mutate({
-									postId: post.id,
-									choiceId,
-								})
-							}
+		<ul ref={ulRef}>
+			{posts?.map(({ author, post, signInUser }) => (
+				<PostItem
+					key={post.id}
+					postWithUser={{ author, post, signInUser }}
+					onClickCapture={(clickCapture) => {
+						handlePostClick(clickCapture, { author, post, signInUser })
+					}}
+					menuItemsType={getPostProfileType(
+						signInUser?.authorFollowed,
+						author.id,
+						userId
+					)}
+					footer={
+						<PostFooter
+							isForwarded={signInUser?.isForwarded ?? false}
+							onForwardClick={() => {
+								if (signInUser?.isForwarded) {
+									removePostForward.mutate(post.id)
+								} else {
+									forwardPost.mutate(post.id)
+								}
+							}}
+							onLikeClick={() => {
+								if (signInUser?.isLiked) {
+									unlikePost.mutate(post.id)
+								} else {
+									likePost.mutate(post.id)
+								}
+							}}
+							onQuoteClick={() => {
+								postQuote({ author, post, signInUser })
+							}}
+							sharedCount={post.quotedCount + post.forwardsCount}
+							isLiked={signInUser?.isLiked ?? false}
+							likeCount={post.likeCount}
+							username={author.username}
+							replyCount={post.replyCount}
+							postId={post.id}
 						/>
-					</PostItem>
-				))}
-			</ul>
-			<dialog open={openDialog}>
-				{quotePopUp && userId && (
-					<PostQuotePopUp
-						author={quotePopUp.author}
-						createdAt={quotePopUp.post.createdAt}
-						message={quotePopUp.post.content}
-						onCloseModal={() => setQuotePopUp(null)}
-						onPostQuote={() => {
-							quotePost.mutate({
-								content: quoteMessage ?? "",
-								quotedPostId: quotePopUp.post.id,
+					}
+				>
+					<PostContentSelector
+						post={post}
+						pollVote={(choiceId) =>
+							pollVote.mutate({
+								postId: post.id,
+								choiceId,
 							})
-						}}
-						onMessageChange={(message) => setQuoteMessage(message)}
+						}
 					/>
-				)}
-			</dialog>
-		</div>
+				</PostItem>
+			))}
+		</ul>
 	)
 }
