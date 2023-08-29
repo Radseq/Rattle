@@ -17,7 +17,7 @@ import { Icon } from "~/components/Icon"
 
 import type { Post, PostWithAuthor } from "~/components/post/types"
 import { type ClickCapture, PostItem } from "~/components/post/PostItem"
-import { CreatePostReply, PostSummary, useGetPostReplies } from "~/features/postReplies"
+import { CreatePostReplyConnector, PostSummary, useGetPostReplies } from "~/features/postReplies"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
 import { type PostAuthor } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
@@ -67,21 +67,6 @@ const PostReplies: NextPage<{
 		post.id,
 		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
 	)
-
-	const { mutate, isLoading: isPosting } = api.posts.createReplyPost.useMutation({
-		onSuccess: async () => {
-			toast.success("Add replay")
-			setPost((post) => {
-				return { ...post, replyCount: post.replyCount + 1 }
-			})
-			await refetch()
-		},
-		onError: () => {
-			toast.error("Failed to add reply! Please try again later", {
-				duration: CONFIG.TOAST_ERROR_DURATION_MS,
-			})
-		},
-	})
 
 	const quotePost = api.posts.createQuotedPost.useMutation({
 		onSuccess: () => {
@@ -205,6 +190,16 @@ const PostReplies: NextPage<{
 		}
 	}
 
+	const handleCreateReply = () => {
+		setPost((post) => {
+			return { ...post, replyCount: post.replyCount + 1 }
+		})
+		const runner = async () => await refetch()
+		runner().catch(() => {
+			return
+		})
+	}
+
 	const openDialog = quotePopUp != null && user.userId != null
 
 	return (
@@ -252,17 +247,11 @@ const PostReplies: NextPage<{
 				</footer>
 				<hr className="my-2" />
 
-				<div>
-					<CreatePostReply
-						isCreating={isPosting}
-						onCreatePost={(respondMessage) =>
-							mutate({ content: respondMessage, replyPostId: post.id })
-						}
-						placeholderMessage="Reply & Hit Enter!"
-						profileImageUrl={author.profileImageUrl}
-					/>
-					<hr className="my-2" />
-				</div>
+				<CreatePostReplyConnector
+					onCreateReply={handleCreateReply}
+					profileImageUrl={author.profileImageUrl}
+					postId={viewedPost.id}
+				/>
 
 				{postReplies && (
 					<ul className="">
