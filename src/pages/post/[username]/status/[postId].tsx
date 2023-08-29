@@ -235,19 +235,19 @@ const PostReplies: NextPage<{
 							</div>
 						)}
 					</div>
+					<hr className="my-2" />
+					<footer className="ml-2">
+						<span className="pr-1 font-bold">{post.replyCount}</span>
+						<span className="text-gray-500">
+							{`Response${post.replyCount > 1 ? "s" : ""}`}
+						</span>
+						<span className="p-2 font-bold">{post.quotedCount}</span>
+						<span className="text-gray-500">
+							{`Quote${post.quotedCount > 1 ? "s" : ""}`}
+						</span>
+					</footer>
+					<hr className="my-2" />
 				</article>
-				<hr className="my-2" />
-				<footer className="ml-2">
-					<span className="pr-1 font-bold">{post.replyCount}</span>
-					<span className="text-gray-500">
-						{`Response${post.replyCount > 1 ? "s" : ""}`}
-					</span>
-					<span className="p-2 font-bold">{post.quotedCount}</span>
-					<span className="text-gray-500">
-						{`Quote${post.quotedCount > 1 ? "s" : ""}`}
-					</span>
-				</footer>
-				<hr className="my-2" />
 
 				<CreatePostReplyConnector
 					onCreateReply={handleCreateReply}
