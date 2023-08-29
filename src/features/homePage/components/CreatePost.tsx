@@ -110,7 +110,7 @@ export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch: () => v
 	})
 
 	return (
-		<div>
+		<article>
 			<CreatePost
 				profileImageUrl={profileImageUrl}
 				onMessageChange={(msg) => setPostContent({ ...postContent, message: msg })}
@@ -142,6 +142,6 @@ export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch: () => v
 					})
 				}
 			/>
-		</div>
+		</article>
 	)
 }
