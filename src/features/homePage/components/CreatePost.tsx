@@ -47,7 +47,7 @@ const CreatePost: FC<CreatePostProps> = ({
 	children,
 }) => {
 	return (
-		<div className="flex">
+		<header className="flex">
 			<ProfileAvatarImageUrl src={profileImageUrl} />
 			<div className="w-full pl-1">
 				<input
@@ -58,7 +58,7 @@ const CreatePost: FC<CreatePostProps> = ({
 				></input>
 				{children}
 			</div>
-		</div>
+		</header>
 	)
 }
 
