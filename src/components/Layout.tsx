@@ -13,8 +13,8 @@ export const Layout = (props: LayoutProps) => {
 	return (
 		<main className="m-auto flex justify-center 2xl:w-3/5">
 			<section
-				className="h-full w-full grow border-x-2 border-gray-200 sm:w-full 
-								 md:mr-4 md:w-2/3 lg:p-4"
+				className="mr-1 h-full w-full grow border-x-2 border-gray-200 
+				sm:w-full md:w-2/3 lg:mr-4 lg:p-4"
 			>
 				<header className="sticky">
 					<NavigationBar />
@@ -23,7 +23,7 @@ export const Layout = (props: LayoutProps) => {
 			</section>
 			<aside className="hidden grow-0 sm:w-full md:block md:w-1/3">
 				<Panel>
-					<div className="sticky top-0 w-full p-4">
+					<div className="sticky top-0 w-full md:p-2 lg:p-4">
 						{!isSignedIn && (
 							<SignUp
 								appearance={{
