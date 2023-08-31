@@ -12,7 +12,7 @@ export const PostQuotePopUp: FC<{
 	onMessageChange: (content: string) => void
 }> = ({ author, createdAt, message, onCloseModal, onPostQuote, onMessageChange }) => {
 	return (
-		<div onClick={(e) => e.stopPropagation()}>
+		<article onClick={(e) => e.stopPropagation()}>
 			<header>
 				<button
 					className="h-8 w-8 p-1"
@@ -24,7 +24,7 @@ export const PostQuotePopUp: FC<{
 					<Icon iconKind="cross" />
 				</button>
 			</header>
-			<main className="px-4">
+			<div className="px-4">
 				<div className="flex">
 					<ProfileAvatarImageUrl src={author.profileImageUrl} />
 					<textarea
@@ -35,7 +35,7 @@ export const PostQuotePopUp: FC<{
 					/>
 				</div>
 				<PostQuoteItem author={author} createdAt={createdAt} message={message} />
-			</main>
+			</div>
 			<footer className="m-2 flex items-center justify-end rounded-b">
 				<button
 					className="mr-1 mb-1 rounded bg-blue-400 px-6 py-3 text-sm 
@@ -50,6 +50,6 @@ export const PostQuotePopUp: FC<{
 					Post
 				</button>
 			</footer>
-		</div>
+		</article>
 	)
 }
