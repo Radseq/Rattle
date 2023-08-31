@@ -32,7 +32,7 @@ export const PostItem: FC<
 				})
 			}}
 		>
-			<main className="flex">
+			<article className="flex">
 				<ProfileAvatarImageUrl src={author.profileImageUrl} />
 				<div className="w-full pl-2">
 					<PostTitle
@@ -58,7 +58,7 @@ export const PostItem: FC<
 						</div>
 					</div>
 				)}
-			</main>
+			</article>
 		</li>
 	)
 }

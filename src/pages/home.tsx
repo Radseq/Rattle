@@ -78,40 +78,38 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 				</WhoToFollow>
 			}
 		>
-			<div className="pt-2">
+			<section className="pt-2">
 				<ConnectorCreatePost
 					profileImageUrl={user.profileImageUrl}
 					refetch={() => setRefetch(true)}
 				/>
 				<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
-				<div>
-					<FetchPosts
-						postQuote={(post) => setQuotePopUp(post)}
-						signInUserId={user.id}
-						forceRefetch={refetch}
-						refetchComplete={() => {
-							setRefetch(false)
-						}}
-					/>
-					<dialog open={openDialog}>
-						{quotePopUp && user && (
-							<PostQuotePopUp
-								author={quotePopUp.author}
-								createdAt={quotePopUp.post.createdAt}
-								message={quotePopUp.post.content}
-								onCloseModal={() => setQuotePopUp(null)}
-								onPostQuote={() => {
-									quotePost.mutate({
-										content: quoteMessage ?? "",
-										quotedPostId: quotePopUp.post.id,
-									})
-								}}
-								onMessageChange={(message) => setQuoteMessage(message)}
-							/>
-						)}
-					</dialog>
-				</div>
-			</div>
+				<FetchPosts
+					postQuote={(post) => setQuotePopUp(post)}
+					signInUserId={user.id}
+					forceRefetch={refetch}
+					refetchComplete={() => {
+						setRefetch(false)
+					}}
+				/>
+				<dialog open={openDialog}>
+					{quotePopUp && user && (
+						<PostQuotePopUp
+							author={quotePopUp.author}
+							createdAt={quotePopUp.post.createdAt}
+							message={quotePopUp.post.content}
+							onCloseModal={() => setQuotePopUp(null)}
+							onPostQuote={() => {
+								quotePost.mutate({
+									content: quoteMessage ?? "",
+									quotedPostId: quotePopUp.post.id,
+								})
+							}}
+							onMessageChange={(message) => setQuoteMessage(message)}
+						/>
+					)}
+				</dialog>
+			</section>
 		</Layout>
 	)
 }

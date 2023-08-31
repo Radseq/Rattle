@@ -47,7 +47,7 @@ const CreatePost: FC<CreatePostProps> = ({
 	children,
 }) => {
 	return (
-		<div className="flex">
+		<header className="flex">
 			<ProfileAvatarImageUrl src={profileImageUrl} />
 			<div className="w-full pl-1">
 				<input
@@ -58,7 +58,7 @@ const CreatePost: FC<CreatePostProps> = ({
 				></input>
 				{children}
 			</div>
-		</div>
+		</header>
 	)
 }
 
@@ -110,7 +110,7 @@ export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch: () => v
 	})
 
 	return (
-		<div>
+		<article>
 			<CreatePost
 				profileImageUrl={profileImageUrl}
 				onMessageChange={(msg) => setPostContent({ ...postContent, message: msg })}
@@ -142,6 +142,6 @@ export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch: () => v
 					})
 				}
 			/>
-		</div>
+		</article>
 	)
 }

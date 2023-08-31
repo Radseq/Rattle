@@ -13,7 +13,7 @@ const CreatePostReply: FC<{
 	profileImageUrl: string
 }> = ({ onCreatePost, onKeyDown, value, profileImageUrl }) => {
 	return (
-		<div className="flex rounded-lg p-2 hover:bg-gray-100 ">
+		<article className="flex rounded-lg p-2 hover:bg-gray-100 ">
 			<ProfileAvatarImageUrl src={profileImageUrl} className="w-1/12 rounded-full pr-2" />
 			<input
 				className="w-full rounded-xl border-2 border-solid text-lg outline-none"
@@ -23,7 +23,7 @@ const CreatePostReply: FC<{
 				value={value}
 				onKeyDown={(e) => onKeyDown(e)}
 			></input>
-		</div>
+		</article>
 	)
 }
 
@@ -55,17 +55,15 @@ export const CreatePostReplyConnector: FC<{
 	}
 
 	return (
-		<div>
-			<CreatePostReply
-				onCreatePost={(respondMessage) => setPostContent(respondMessage)}
-				profileImageUrl={profileImageUrl}
-				onKeyDown={(e) => {
-					if (e.key === "Enter" && postContent) {
-						mutate({ content: postContent, replyPostId: postId })
-					}
-				}}
-				value={postContent}
-			/>
-		</div>
+		<CreatePostReply
+			onCreatePost={(respondMessage) => setPostContent(respondMessage)}
+			profileImageUrl={profileImageUrl}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" && postContent) {
+					mutate({ content: postContent, replyPostId: postId })
+				}
+			}}
+			value={postContent}
+		/>
 	)
 }

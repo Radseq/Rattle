@@ -24,6 +24,8 @@ import {
 	useGetProfile,
 } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
+import { type PostWithAuthor } from "~/components/post/types"
+import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 
 dayjs.extend(relativeTime)
 
@@ -67,6 +69,9 @@ const ProfilePage: NextPage<{
 	username: string
 }> = ({ username }) => {
 	const [showModal, setShowModal] = useState<boolean>()
+
+	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
+	const [quoteMessage, setQuoteMessage] = useState<string>()
 
 	const user = useAuth()
 	const { profile, isUserFollowProfile, watchedWatchingCount, setWatchedWatching } =
@@ -122,14 +127,28 @@ const ProfilePage: NextPage<{
 			},
 		})
 
+	const quotePost = api.posts.createQuotedPost.useMutation({
+		onSuccess: () => {
+			setQuotePopUp(null)
+			window.location.reload()
+		},
+		onError: () => {
+			toast.error("Failed to quote post! Please try again later", {
+				duration: CONFIG.TOAST_ERROR_DURATION_MS,
+			})
+		},
+	})
+
+	const openDialog = quotePopUp != null && user && user.userId != null
+
 	return (
 		<>
 			<Head>
 				<title>{profile.username}</title>
 			</Head>
 			<Layout>
-				<div>
-					<div className="flex flex-col">
+				<section>
+					<article className="flex flex-col pb-4">
 						{profile.extended?.bannerImgUrl ? (
 							<img src={profile.extended?.bannerImgUrl} alt={"banner"}></img>
 						) : (
@@ -205,11 +224,30 @@ const ProfilePage: NextPage<{
 						{watchedWatchingCount && (
 							<ProfileWatchedWatching watchedWatchingCount={watchedWatchingCount} />
 						)}
-					</div>
-					<div className="pt-4">
-						<FetchPosts userId={user.userId} authorId={profile.id} />
-					</div>
-				</div>
+					</article>
+					<FetchPosts
+						userId={user.userId}
+						authorId={profile.id}
+						postQuote={(post) => setQuotePopUp(post)}
+					/>
+					<dialog open={openDialog}>
+						{quotePopUp && user && user.userId && (
+							<PostQuotePopUp
+								author={quotePopUp.author}
+								createdAt={quotePopUp.post.createdAt}
+								message={quotePopUp.post.content}
+								onCloseModal={() => setQuotePopUp(null)}
+								onPostQuote={() => {
+									quotePost.mutate({
+										content: quoteMessage ?? "",
+										quotedPostId: quotePopUp.post.id,
+									})
+								}}
+								onMessageChange={(message) => setQuoteMessage(message)}
+							/>
+						)}
+					</dialog>
+				</section>
 			</Layout>
 		</>
 	)
