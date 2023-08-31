@@ -26,6 +26,7 @@ import {
 import { getPostProfileType } from "~/utils/helpers"
 import { type PostWithAuthor } from "~/components/post/types"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
+import { Dialog } from "~/components/dialog/Dialog"
 
 dayjs.extend(relativeTime)
 
@@ -139,8 +140,6 @@ const ProfilePage: NextPage<{
 		},
 	})
 
-	const openDialog = quotePopUp != null && user && user.userId != null
-
 	return (
 		<>
 			<Head>
@@ -230,8 +229,11 @@ const ProfilePage: NextPage<{
 						authorId={profile.id}
 						postQuote={(post) => setQuotePopUp(post)}
 					/>
-					<dialog open={openDialog}>
-						{quotePopUp && user && user.userId && (
+					{quotePopUp && user && (
+						<Dialog
+							open={quotePopUp != null && user != null}
+							onClose={() => setQuotePopUp(null)}
+						>
 							<PostQuotePopUp
 								author={quotePopUp.author}
 								createdAt={quotePopUp.post.createdAt}
@@ -245,8 +247,8 @@ const ProfilePage: NextPage<{
 								}}
 								onMessageChange={(message) => setQuoteMessage(message)}
 							/>
-						)}
-					</dialog>
+						</Dialog>
+					)}
 				</section>
 			</Layout>
 		</>
