@@ -12,6 +12,7 @@ import { type PostWithAuthor } from "~/components/post/types"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { ConnectorCreatePost } from "~/features/homePage"
 import { FetchPosts } from "~/features/homePage/components/FetchPosts"
+import { Dialog } from "~/components/dialog/Dialog"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)
@@ -65,8 +66,6 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 		},
 	})
 
-	const openDialog = quotePopUp != null && user != null
-
 	return (
 		<Layout
 			rightPanel={
@@ -92,8 +91,11 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 						setRefetch(false)
 					}}
 				/>
-				<dialog open={openDialog}>
-					{quotePopUp && user && (
+				{quotePopUp && user && (
+					<Dialog
+						open={quotePopUp != null && user != null}
+						onClose={() => setQuotePopUp(null)}
+					>
 						<PostQuotePopUp
 							author={quotePopUp.author}
 							createdAt={quotePopUp.post.createdAt}
@@ -107,8 +109,8 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 							}}
 							onMessageChange={(message) => setQuoteMessage(message)}
 						/>
-					)}
-				</dialog>
+					</Dialog>
+				)}
 			</section>
 		</Layout>
 	)

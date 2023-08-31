@@ -22,6 +22,7 @@ import { PostContentSelector } from "~/components/post/PostContentSelector"
 import { type PostAuthor } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
 import { useAuth } from "@clerk/nextjs"
+import { Dialog } from "~/components/dialog/Dialog"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -200,8 +201,6 @@ const PostReplies: NextPage<{
 		})
 	}
 
-	const openDialog = quotePopUp != null && user.userId != null
-
 	return (
 		<Layout>
 			<section className="h-48 flex-col pt-2">
@@ -314,9 +313,15 @@ const PostReplies: NextPage<{
 					</ul>
 				)}
 			</section>
-			<dialog open={openDialog}>
-				{quotePopUp && user.userId && (
+			{quotePopUp && user && (
+				<Dialog
+					open={quotePopUp != null && user != null}
+					onClose={() => setQuotePopUp(null)}
+				>
 					<PostQuotePopUp
+						author={quotePopUp.author}
+						createdAt={quotePopUp.post.createdAt}
+						message={quotePopUp.post.content}
 						onCloseModal={() => setQuotePopUp(null)}
 						onPostQuote={() => {
 							quotePost.mutate({
@@ -325,12 +330,9 @@ const PostReplies: NextPage<{
 							})
 						}}
 						onMessageChange={(message) => setQuoteMessage(message)}
-						author={quotePopUp.author}
-						createdAt={quotePopUp.post.createdAt}
-						message={quotePopUp.post.content}
 					/>
-				)}
-			</dialog>
+				</Dialog>
+			)}
 		</Layout>
 	)
 }
