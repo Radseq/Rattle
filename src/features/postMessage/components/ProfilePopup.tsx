@@ -1,5 +1,5 @@
-import { FC } from "react"
+import { type FC } from "react"
 
-export const ProfilePopup: FC<{}> = () => {
+export const ProfilePopup: FC<{ profileName: string }> = ({ profileName }) => {
 	return <></>
 }
