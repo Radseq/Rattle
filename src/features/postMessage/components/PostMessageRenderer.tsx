@@ -2,19 +2,20 @@ import Link from "next/link"
 import { FC } from "react"
 import { ProfilePopup } from "./ProfilePopup"
 
-const SKIP_HASH_CHAR_INDEX = 1
-const OPEN_SQUARE_BRACKED_INDEX = 1;
+// # or @
+const SKIP_SPECIAL_CHAR_INDEX = 1
 
-const createSpan = (msg: string) => {
-	return <span>{msg + " "}</span>
+const createSpan = (message: string) => {
+	return <span>{message + " "}</span>
 }
 
-const createLink = (url: string) => {
-	const replacedUrl = `http://www.google.pl/${url.replace("@", "")}`
+// e.g: message contains myHome=http://www.mypage.com
+const createLink = (message: string) => {
+	const SPLITTED_MESSAGE = message.split("=")
 	return (
 		<>
-			<Link className="text-blue-400" href={replacedUrl}>
-				{url}
+			<Link className="text-blue-400" href={SPLITTED_MESSAGE[1] || "#"}>
+				{SPLITTED_MESSAGE[0]}
 			</Link>{" "}
 		</>
 	)
@@ -36,11 +37,11 @@ export const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
 				const spanMessage = splittedMsg.slice(lastSpanIndex, index).join("")
 				elements.push(createSpan(spanMessage))
 			}
-			elements.push(createLink(message.substring(SKIP_HASH_CHAR_INDEX)))
+			elements.push(createLink(message.substring(SKIP_SPECIAL_CHAR_INDEX)))
 			lastSpanIndex = index + 1
 		} else if (message.startsWith("@")) {
 			// todo popup profile
-			elements.push(<ProfilePopup />)
+			elements.push(<ProfilePopup profileName={message.substring(SKIP_SPECIAL_CHAR_INDEX)} />)
 		}
 	}
 
