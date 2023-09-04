@@ -1,27 +1,24 @@
 import Link from "next/link"
-import { type FC, memo } from "react"
+import { type FC, memo, Key } from "react"
 import { ProfilePopup } from "./ProfilePopup"
+import React from "react"
 
 // # or @
 const SKIP_SPECIAL_CHAR_INDEX = 1
 
-const CreateSpan = (message: string) => {
-	return <span>{message + " "}</span>
-}
-
 // e.g: message contains myHome=http://www.mypage.com
-const CreateLink = (message: string) => {
+const CreateLink = (message: string, key: Key) => {
 	const SPLITTED_MESSAGE = message.split("=")
 	return (
-		<>
+		<React.Fragment key={key}>
 			<Link className="text-blue-400" href={SPLITTED_MESSAGE[1] || "#"}>
-				{SPLITTED_MESSAGE[0]}
+				{`#${SPLITTED_MESSAGE[0] || ""}`}
 			</Link>{" "}
-		</>
+		</React.Fragment>
 	)
 }
 
-const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
+const parseMessage = (message: string) => {
 	const elements: React.ReactElement[] = []
 
 	const splittedMsg = message.split(" ")
@@ -34,18 +31,21 @@ const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
 
 		if (message.startsWith("#")) {
 			if (lastSpanIndex != index) {
-				const spanMessage = splittedMsg.slice(lastSpanIndex, index).join("")
-				elements.push(CreateSpan(spanMessage))
+				const spanMessage = splittedMsg.slice(lastSpanIndex, index).join(" ")
+				elements.push(<span key={index - 1}>{spanMessage + " "}</span>)
 			}
-			elements.push(CreateLink(message.substring(SKIP_SPECIAL_CHAR_INDEX)))
+			elements.push(CreateLink(message.substring(SKIP_SPECIAL_CHAR_INDEX), index))
 			lastSpanIndex = index + 1
 		} else if (message.startsWith("@")) {
 			// todo popup profile
 			elements.push(<ProfilePopup profileName={message.substring(SKIP_SPECIAL_CHAR_INDEX)} />)
 		}
 	}
+	return elements
+}
 
-	return <div>{elements}</div>
+const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
+	return <div>{parseMessage(message)}</div>
 }
 
 export default memo(PostMessageRenderer)
