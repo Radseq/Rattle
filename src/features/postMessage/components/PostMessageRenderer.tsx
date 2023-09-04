@@ -45,6 +45,12 @@ const parseMessage = (message: string) => {
 			lastSpanIndex = index + 1
 		}
 	}
+
+	if (lastSpanIndex < splittedMsg.length) {
+		const spanMessage = splittedMsg.slice(lastSpanIndex, splittedMsg.length).join(" ")
+		elements.push(<span key={splittedMsg.length}>{spanMessage}</span>)
+	}
+
 	return elements
 }
 
