@@ -37,8 +37,12 @@ const parseMessage = (message: string) => {
 			elements.push(CreateLink(message.substring(SKIP_SPECIAL_CHAR_INDEX), index))
 			lastSpanIndex = index + 1
 		} else if (message.startsWith("@")) {
-			// todo popup profile
+			if (lastSpanIndex != index) {
+				const spanMessage = splittedMsg.slice(lastSpanIndex, index).join(" ")
+				elements.push(<span key={index - 1}>{spanMessage + " "}</span>)
+			}
 			elements.push(<ProfilePopup profileName={message.substring(SKIP_SPECIAL_CHAR_INDEX)} />)
+			lastSpanIndex = index + 1
 		}
 	}
 	return elements
