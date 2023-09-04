@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { type FC, memo, Key } from "react"
+import { type FC, type Key, memo } from "react"
 import { ProfilePopup } from "./ProfilePopup"
 import React from "react"
 
