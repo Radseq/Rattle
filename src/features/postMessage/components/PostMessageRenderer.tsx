@@ -55,7 +55,7 @@ const parseMessage = (message: string) => {
 }
 
 const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
-	return <div>{parseMessage(message)}</div>
+	return <>{parseMessage(message)}</>
 }
 
 export default memo(PostMessageRenderer)

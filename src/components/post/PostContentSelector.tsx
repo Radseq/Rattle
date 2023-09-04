@@ -4,6 +4,7 @@ import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { type Post } from "./types"
 import { PostQuoteItem } from "../postsPage/PostQuoteItem"
 import { PostPoll } from "../postsPage/PostPoll"
+import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
 
 export const PostContentSelector: FC<{
 	post: Post
@@ -13,7 +14,7 @@ export const PostContentSelector: FC<{
 	if (post.quotedPost) {
 		return (
 			<div>
-				<span>{post.content}</span>
+				<PostMessageRenderer message={post.content} />
 				<Link
 					onClick={(e) => e.stopPropagation()}
 					href={`/post/${post.quotedPost.author.username}/status/${post.quotedPost.post.id}`}
@@ -29,7 +30,7 @@ export const PostContentSelector: FC<{
 	} else if (post.poll) {
 		return (
 			<div>
-				{post.content}
+				<PostMessageRenderer message={post.content} />
 				<PostPoll
 					pollTimeLeft={useTime}
 					poll={post.poll}
@@ -39,5 +40,5 @@ export const PostContentSelector: FC<{
 			</div>
 		)
 	}
-	return <span>{post.content}</span>
+	return <PostMessageRenderer message={post.content} />
 }
