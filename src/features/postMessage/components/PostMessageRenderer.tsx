@@ -41,7 +41,7 @@ const parseMessage = (message: string) => {
 				const spanMessage = splittedMsg.slice(lastSpanIndex, index).join(" ")
 				elements.push(<span key={index - 1}>{spanMessage + " "}</span>)
 			}
-			elements.push(<ProfilePopup profileName={message.substring(SKIP_SPECIAL_CHAR_INDEX)} />)
+			elements.push(<ProfilePopup profileName={`@${message.substring(SKIP_SPECIAL_CHAR_INDEX)}`} />)
 			lastSpanIndex = index + 1
 		}
 	}

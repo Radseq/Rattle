@@ -30,8 +30,7 @@ const Profile = () => {
 				</header>
 				<div className="mt-2">
 					<span>
-						SpaceX designs, manufactures and launches the world’s most advanced rockets
-						and spacecraft
+						my bio
 					</span>
 				</div>
 				<footer className="mt-2">
