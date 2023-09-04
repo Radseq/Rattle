@@ -2,9 +2,18 @@ import { type FC } from "react"
 import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 import { ProfileAvatarImageUrl, ProfileWatchedWatching } from "~/features/profile"
 
+const hasSpecialChar = (message: string) => {
+	// eslint-disable-next-line no-useless-escape
+	const format = /[ `!$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
+	return format.test(message)
+}
+
 const Profile = () => {
 	return (
-		<article className="absolute left-0 top-4 z-20 hidden rounded-lg  border-2 border-gray-400 bg-gray-200 p-4 text-black group-hover:flex">
+		<article
+			className="absolute left-0 top-4 z-20 hidden rounded-lg  border-2 border-gray-400 
+			bg-gray-200 p-4 text-black group-hover:flex"
+		>
 			<div className="relative w-72">
 				<header className="flex justify-between ">
 					<div>
@@ -29,9 +38,7 @@ const Profile = () => {
 					</div>
 				</header>
 				<div className="mt-2">
-					<span>
-						my bio
-					</span>
+					<span>my bio</span>
 				</div>
 				<footer className="mt-2">
 					<ProfileWatchedWatching
@@ -43,10 +50,20 @@ const Profile = () => {
 	)
 }
 
-export const ProfilePopup: FC<{ profileName: string }> = ({ profileName }) => {
+export const ProfilePopup: FC<{ profileNameProp: string }> = ({ profileNameProp }) => {
+	const lastCharacter = profileNameProp.slice(-1)
+	const hasSpecialCharResult = hasSpecialChar(lastCharacter)
+	let profileName = profileNameProp
+	if (hasSpecialCharResult) {
+		profileName = profileName.replace(lastCharacter, "")
+	}
 	return (
-		<span className="group relative  text-blue-400 ">
-			{`@${profileName}`} <Profile />
-		</span>
+		<>
+			<span className="group relative  text-blue-400 ">
+				{`@${profileName}`}
+				<Profile />
+			</span>
+			{hasSpecialCharResult && <span>{lastCharacter}</span>}
+		</>
 	)
 }

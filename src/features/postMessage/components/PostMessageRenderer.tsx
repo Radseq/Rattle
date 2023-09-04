@@ -8,14 +8,26 @@ const SKIP_SPECIAL_CHAR_INDEX = 1
 
 // e.g: message contains myHome=http://www.mypage.com
 const CreateLink = (message: string, key: Key) => {
-	const SPLITTED_MESSAGE = message.split("=")
+	const lastCharacter = message.slice(-1)
+	const hasSpecialCharResult = hasSpecialChar(lastCharacter)
+	const splitted_message = message.split("=")
+	if (hasSpecialCharResult && splitted_message[1]) {
+		splitted_message[1] = splitted_message[1].replace(lastCharacter, "")
+	}
 	return (
 		<React.Fragment key={key}>
-			<Link className="text-blue-400" href={SPLITTED_MESSAGE[1] || "#"}>
-				{`#${SPLITTED_MESSAGE[0] || ""}`}
-			</Link>{" "}
+			<Link className="text-blue-400" href={splitted_message[1] || "#"}>
+				{`#${splitted_message[0] || ""}`}
+			</Link>
+			{`${hasSpecialCharResult ? lastCharacter : ""} `}
 		</React.Fragment>
 	)
+}
+
+const hasSpecialChar = (message: string) => {
+	// eslint-disable-next-line no-useless-escape
+	const format = /[ `!$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
+	return format.test(message)
 }
 
 const parseMessage = (message: string) => {
@@ -41,7 +53,9 @@ const parseMessage = (message: string) => {
 				const spanMessage = splittedMsg.slice(lastSpanIndex, index).join(" ")
 				elements.push(<span key={index - 1}>{spanMessage + " "}</span>)
 			}
-			elements.push(<ProfilePopup profileName={message.substring(SKIP_SPECIAL_CHAR_INDEX)} />)
+			elements.push(
+				<ProfilePopup profileNameProp={message.substring(SKIP_SPECIAL_CHAR_INDEX)} />
+			)
 			lastSpanIndex = index + 1
 		}
 	}
