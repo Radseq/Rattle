@@ -46,7 +46,7 @@ const Profile = () => {
 export const ProfilePopup: FC<{ profileName: string }> = ({ profileName }) => {
 	return (
 		<span className="group relative  text-blue-400 ">
-			{profileName} <Profile />
+			{`@${profileName}`} <Profile />
 		</span>
 	)
 }
