@@ -2,12 +2,6 @@ import { type FC } from "react"
 import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 import { ProfileAvatarImageUrl, ProfileWatchedWatching } from "~/features/profile"
 
-const hasSpecialChar = (message: string) => {
-	// eslint-disable-next-line no-useless-escape
-	const format = /[ `!$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
-	return format.test(message)
-}
-
 const Profile = () => {
 	return (
 		<article
@@ -50,20 +44,13 @@ const Profile = () => {
 	)
 }
 
-export const ProfilePopup: FC<{ profileNameProp: string }> = ({ profileNameProp }) => {
-	const lastCharacter = profileNameProp.slice(-1)
-	const hasSpecialCharResult = hasSpecialChar(lastCharacter)
-	let profileName = profileNameProp
-	if (hasSpecialCharResult) {
-		profileName = profileName.replace(lastCharacter, "")
-	}
+export const ProfilePopup: FC<{ profileName: string }> = ({ profileName }) => {
 	return (
 		<>
 			<span className="group relative  text-blue-400 ">
-				{`@${profileName}`}
+				{profileName}
 				<Profile />
 			</span>
-			{hasSpecialCharResult && <span>{lastCharacter}</span>}
 		</>
 	)
 }

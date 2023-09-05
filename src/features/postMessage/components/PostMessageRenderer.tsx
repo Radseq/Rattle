@@ -1,75 +1,80 @@
 import Link from "next/link"
-import { type FC, type Key, memo } from "react"
+import { type FC, memo } from "react"
 import { ProfilePopup } from "./ProfilePopup"
 import React from "react"
 
-// # or @
-const SKIP_SPECIAL_CHAR_INDEX = 1
-
-// e.g: message contains myHome=http://www.mypage.com
-const CreateLink = (message: string, key: Key) => {
-	const lastCharacter = message.slice(-1)
-	const hasSpecialCharResult = hasSpecialChar(lastCharacter)
-	const splitted_message = message.split("=")
-	if (hasSpecialCharResult && splitted_message[1]) {
-		splitted_message[1] = splitted_message[1].replace(lastCharacter, "")
-	}
-	return (
-		<React.Fragment key={key}>
-			<Link className="text-blue-400" href={splitted_message[1] || "#"}>
-				{`#${splitted_message[0] || ""}`}
-			</Link>
-			{`${hasSpecialCharResult ? lastCharacter : ""} `}
-		</React.Fragment>
-	)
-}
-
 const hasSpecialChar = (message: string) => {
 	// eslint-disable-next-line no-useless-escape
-	const format = /[ `!$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
+	const format = /[ `#@!$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
 	return format.test(message)
 }
 
-const parseMessage = (message: string) => {
-	const elements: React.ReactElement[] = []
+type Token = { type: "normal" | "tag" | "profile"; value: string; connectedValue: string }
 
-	const splittedMsg = message.split(" ")
-	let lastSpanIndex = 0
-	for (let index = 0; index < splittedMsg.length; index++) {
-		const message = splittedMsg[index]
-		if (!message) {
-			break
+const parseText = (text: string): Token[] => {
+	const tokens: Token[] = []
+	const separator = " "
+	for (const rawWord of text.split(separator)) {
+		let type: "normal" | "tag" | "profile" = "normal"
+
+		let toSkipIndex = 0
+		let index = 1
+		for (const char of rawWord) {
+			if (char === "#") {
+				type = "tag"
+				continue
+			} else if (char === "@") {
+				type = "profile"
+				continue
+			}
+			if (hasSpecialChar(char)) {
+				toSkipIndex = index
+				break
+			}
+
+			++index
 		}
 
-		if (message.startsWith("#")) {
-			if (lastSpanIndex != index) {
-				const spanMessage = splittedMsg.slice(lastSpanIndex, index).join(" ")
-				elements.push(<span key={index - 1}>{spanMessage + " "}</span>)
-			}
-			elements.push(CreateLink(message.substring(SKIP_SPECIAL_CHAR_INDEX), index))
-			lastSpanIndex = index + 1
-		} else if (message.startsWith("@")) {
-			if (lastSpanIndex != index) {
-				const spanMessage = splittedMsg.slice(lastSpanIndex, index).join(" ")
-				elements.push(<span key={index - 1}>{spanMessage + " "}</span>)
-			}
-			elements.push(
-				<ProfilePopup profileNameProp={message.substring(SKIP_SPECIAL_CHAR_INDEX)} />
-			)
-			lastSpanIndex = index + 1
+		if (toSkipIndex > 0) {
+			tokens.push({ type, value: rawWord.slice(0, toSkipIndex), connectedValue: "" })
+			tokens.push({
+				type: "normal",
+				value: rawWord.slice(toSkipIndex, rawWord.length),
+				connectedValue: separator,
+			})
+		}
+
+		if (toSkipIndex === 0) {
+			tokens.push({ type, value: rawWord, connectedValue: separator })
+		} else {
+			toSkipIndex = 0
 		}
 	}
-
-	if (lastSpanIndex < splittedMsg.length) {
-		const spanMessage = splittedMsg.slice(lastSpanIndex, splittedMsg.length).join(" ")
-		elements.push(<span key={splittedMsg.length}>{spanMessage}</span>)
-	}
-
-	return elements
+	return tokens
 }
 
 const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
-	return <>{parseMessage(message)}</>
+	const tokens = parseText(message)
+	return (
+		<>
+			{tokens.map((token) => {
+				if (token.type === "tag") {
+					return (
+						<Link
+							key={token.value}
+							className="text-blue-400"
+							href={`/hashTag/${token.value}`}
+						>
+							{`${token.value}${token.connectedValue}`}
+						</Link>
+					)
+				} else if (token.type === "profile") {
+					return <ProfilePopup key={token.value} profileName={token.value} />
+				}
+				return `${token.value}${token.connectedValue}`
+			})}
+		</>
+	)
 }
 
 export default memo(PostMessageRenderer)
