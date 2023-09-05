@@ -34,7 +34,7 @@ const parseText = (text: string): Token[] => {
 
 			++index
 		}
-
+		// use to separated special character/s from tag/profile name e.g #someTag!!!
 		if (toSkipIndex > 0) {
 			tokens.push({ type, value: rawWord.slice(0, toSkipIndex), connectedValue: "" })
 			tokens.push({
