@@ -76,10 +76,10 @@ export const calculateSkip = (skip: number | undefined, cursor: string | null | 
 
 export const getPostProfileType = (
 	isFollowed: boolean | undefined,
-	authorId: string,
+	authorId: string | null | undefined,
 	userId: string | null | undefined
 ): PostProfileType => {
-	if (!userId) {
+	if (!userId || !authorId) {
 		return "view"
 	} else if (userId === authorId) {
 		return "own"
