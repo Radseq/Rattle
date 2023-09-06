@@ -30,14 +30,14 @@ const ProfileWindow: FC<{ profileName: string }> = ({ profileName }) => {
 						</div>
 					</div>
 					<div>
-						<ActionButtonSelector
+						{/* <ActionButtonSelector
 							profileType={profileType}
 							onClick={(actionType) => {
 								if (actionType === "unfollow") {
 								} else if (actionType === "follow") {
 								}
 							}}
-						/>
+						/> */}
 					</div>
 				</header>
 				<div className="mt-2">
