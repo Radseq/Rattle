@@ -108,7 +108,7 @@ export const ProfilePopup: FC<{ profileName: string }> = ({ profileName }) => {
 	return (
 		<ProfilePopupUI profile={profile} watchedWatchingCount={watchedWatchingCount}>
 			<ActionButtonSelector
-				isLoading={true}
+				isLoading={isFollowed || isUnFollowing}
 				profileType={profileType}
 				onClick={(actionType) => {
 					if (actionType === "unfollow") {
