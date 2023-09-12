@@ -23,6 +23,7 @@ import { type PostAuthor } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
 import { useAuth } from "@clerk/nextjs"
 import { Dialog } from "~/components/dialog/Dialog"
+import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
@@ -217,7 +218,7 @@ const PostReplies: NextPage<{
 					<div className="mt-2 ml-2">
 						{post.poll ? (
 							<div>
-								<span className="">{post.content}</span>
+								<PostMessageRenderer message={post.content} />
 								<PostPoll
 									pollTimeLeft={useTime}
 									poll={post.poll}
@@ -229,7 +230,7 @@ const PostReplies: NextPage<{
 							</div>
 						) : (
 							<div>
-								<span>{post.content}</span>
+								<PostMessageRenderer message={post.content} />
 								<PostSummary postCreateDate={post.createdAt} />
 							</div>
 						)}

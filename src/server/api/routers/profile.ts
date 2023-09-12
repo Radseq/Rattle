@@ -25,7 +25,7 @@ export const profileRouter = createTRPCRouter({
 		if (!profile) {
 			throw new TRPCError({
 				code: "INTERNAL_SERVER_ERROR",
-				message: "Profile not found!",
+				message: `Profile not found! username:${input}`,
 			})
 		}
 		return profile

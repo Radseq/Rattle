@@ -10,7 +10,9 @@ export const useGetProfile = (username: string) => {
 
 	const profile = api.profile.getProfileByUsername.useQuery(username)
 
-	const isUserFollowProfile = api.follow.isFollowed.useQuery(profile.data?.id ?? "")
+	const isUserFollowProfile = api.follow.isFollowed.useQuery(profile.data?.id ?? "", {
+		enabled: !!profile.data,
+	})
 
 	const watchedWatchingCount = api.follow.getProfileWatchedWatching.useQuery(
 		profile.data?.id ?? "",
