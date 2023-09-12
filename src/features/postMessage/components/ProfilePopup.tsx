@@ -1,20 +1,24 @@
 import { useAuth } from "@clerk/nextjs"
-import { type FC, useState } from "react"
-import { ProfileAvatarImageUrl, ProfileWatchedWatching, useGetProfile } from "~/features/profile"
+import { type FC, type PropsWithChildren } from "react"
+import {
+	type Profile,
+	ProfileAvatarImageUrl,
+	ProfileWatchedWatching,
+	useGetProfile,
+	type WatchedWatching,
+} from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
 import { ActionButtonSelector } from "./ActionButtonSelector"
+import { api } from "~/utils/api"
+import toast from "react-hot-toast"
+import { CONFIG } from "~/config"
 
-const ProfileWindow: FC<{ profileName: string }> = ({ profileName }) => {
-	const { profile, isUserFollowProfile, watchedWatchingCount } = useGetProfile(
-		profileName.replace("@", "")
-	)
-	const user = useAuth()
-	const profileType = getPostProfileType(isUserFollowProfile, profile?.id, user.userId)
-
-	if (!profile) {
-		return <></>
-	}
-
+export const ProfilePopupUI: FC<
+	{
+		profile: Profile
+		watchedWatchingCount: WatchedWatching
+	} & PropsWithChildren
+> = ({ profile, watchedWatchingCount, children }) => {
 	return (
 		<article
 			className="absolute left-0 top-4 z-20  flex  rounded-lg border-2 
@@ -29,16 +33,7 @@ const ProfileWindow: FC<{ profileName: string }> = ({ profileName }) => {
 							<div className="text-gray-500">{`@${profile.username}`}</div>
 						</div>
 					</div>
-					<div>
-						{/* <ActionButtonSelector
-							profileType={profileType}
-							onClick={(actionType) => {
-								if (actionType === "unfollow") {
-								} else if (actionType === "follow") {
-								}
-							}}
-						/> */}
-					</div>
+					{children}
 				</header>
 				<div className="mt-2">
 					<span>{profile.extended && profile.extended.bio}</span>
@@ -52,16 +47,77 @@ const ProfileWindow: FC<{ profileName: string }> = ({ profileName }) => {
 }
 
 export const ProfilePopup: FC<{ profileName: string }> = ({ profileName }) => {
-	const [showProfile, setShowProfile] = useState<string | null>(null)
+	const normalizedProfileName = profileName.replace("@", "")
+	const user = useAuth()
+
+	const { profile, isUserFollowProfile, watchedWatchingCount, setWatchedWatching } =
+		useGetProfile(normalizedProfileName)
+
+	const profileType = getPostProfileType(isUserFollowProfile, profile?.id, user.userId)
+
+	const { mutate: addUserToFollow, isLoading: isFollowed } =
+		api.follow.addUserToFollow.useMutation({
+			onMutate: () => {
+				setWatchedWatching({
+					...watchedWatchingCount,
+					watchedCount: (watchedWatchingCount.watchedCount += 1),
+				})
+			},
+			onSuccess: () => {
+				toast.success(`${profile?.username ?? ""} is now followed`)
+				window.location.reload()
+			},
+			onError: () => {
+				toast.error("Failed to follow! Please try again later", {
+					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
+				setWatchedWatching({
+					...watchedWatchingCount,
+					watchedCount: (watchedWatchingCount.watchedCount -= 1),
+				})
+			},
+		})
+
+	const { mutate: stopFollowing, isLoading: isUnFollowing } =
+		api.follow.stopFollowing.useMutation({
+			onMutate: () => {
+				setWatchedWatching({
+					...watchedWatchingCount,
+					watchedCount: (watchedWatchingCount.watchedCount -= 1),
+				})
+			},
+			onSuccess: () => {
+				toast.success(`${profile?.username ?? ""} is no longer followed`)
+				window.location.reload()
+			},
+			onError: () => {
+				toast.error("Failed to stop follow! Please try again later", {
+					duration: CONFIG.TOAST_ERROR_DURATION_MS,
+				})
+				setWatchedWatching({
+					...watchedWatchingCount,
+					watchedCount: (watchedWatchingCount.watchedCount += 1),
+				})
+			},
+		})
+
+	if (!profile) {
+		return <></>
+	}
 
 	return (
-		<span
-			onMouseLeave={() => setShowProfile(null)}
-			onMouseEnter={() => setShowProfile(profileName)}
-			className=" relative  text-blue-400 "
-		>
-			{profileName}
-			{showProfile && <ProfileWindow profileName={showProfile} />}
-		</span>
+		<ProfilePopupUI profile={profile} watchedWatchingCount={watchedWatchingCount}>
+			<ActionButtonSelector
+				isLoading={true}
+				profileType={profileType}
+				onClick={(actionType) => {
+					if (actionType === "unfollow") {
+						stopFollowing(profile.id)
+					} else {
+						addUserToFollow(profile.id)
+					}
+				}}
+			/>
+		</ProfilePopupUI>
 	)
 }
