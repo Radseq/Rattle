@@ -57,7 +57,6 @@ const TokenProfileTag: FC<{ profileName: string }> = ({ profileName }) => {
 	const [showProfile, setShowProfile] = useState<string | null>(null)
 	return (
 		<span
-			key={profileName}
 			onMouseLeave={() => setShowProfile(null)}
 			onMouseEnter={() => setShowProfile(profileName)}
 			className="relative  text-blue-400 "
@@ -84,7 +83,7 @@ const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
 						</Link>
 					)
 				} else if (token.type === "profile") {
-					return <TokenProfileTag profileName={token.value} />
+					return <TokenProfileTag key={token.value} profileName={token.value} />
 				}
 				return `${token.value}${token.connectedValue}`
 			})}
