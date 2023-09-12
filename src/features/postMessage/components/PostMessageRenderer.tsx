@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { type FC, memo } from "react"
+import { type FC, memo, useState } from "react"
 import { ProfilePopup } from "./ProfilePopup"
 import React from "react"
 
@@ -53,6 +53,21 @@ const parseText = (text: string): Token[] => {
 	return tokens
 }
 
+const TokenProfileTag: FC<{ profileName: string }> = ({ profileName }) => {
+	const [showProfile, setShowProfile] = useState<string | null>(null)
+	return (
+		<span
+			key={profileName}
+			onMouseLeave={() => setShowProfile(null)}
+			onMouseEnter={() => setShowProfile(profileName)}
+			className="relative  text-blue-400 "
+		>
+			{profileName}
+			{showProfile && <ProfilePopup profileName={showProfile} />}
+		</span>
+	)
+}
+
 const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
 	const tokens = parseText(message)
 	return (
@@ -69,7 +84,7 @@ const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
 						</Link>
 					)
 				} else if (token.type === "profile") {
-					return <ProfilePopup key={token.value} profileName={token.value} />
+					return <TokenProfileTag profileName={token.value} />
 				}
 				return `${token.value}${token.connectedValue}`
 			})}
