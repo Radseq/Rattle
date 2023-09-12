@@ -57,6 +57,7 @@ const TokenProfileTag: FC<{ profileName: string }> = ({ profileName }) => {
 	const [showProfile, setShowProfile] = useState<string | null>(null)
 	return (
 		<span
+			onClick={(e) => e.stopPropagation()}
 			onMouseLeave={() => setShowProfile(null)}
 			onMouseEnter={() => setShowProfile(profileName)}
 			className="relative  text-blue-400 "
@@ -74,13 +75,15 @@ const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
 			{tokens.map((token) => {
 				if (token.type === "tag") {
 					return (
-						<Link
-							key={token.value}
-							className="text-blue-400"
-							href={`/hashTag/${token.value}`}
-						>
-							{`${token.value}${token.connectedValue}`}
-						</Link>
+						<span onClick={(e) => e.preventDefault()}>
+							<Link
+								key={token.value}
+								className="text-blue-400"
+								href={`/hashTag/${token.value}`}
+							>
+								{`${token.value}${token.connectedValue}`}
+							</Link>
+						</span>
 					)
 				} else if (token.type === "profile") {
 					return <TokenProfileTag key={token.value} profileName={token.value} />

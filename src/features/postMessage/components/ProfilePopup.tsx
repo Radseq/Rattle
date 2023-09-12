@@ -12,6 +12,7 @@ import { ActionButtonSelector } from "./ActionButtonSelector"
 import { api } from "~/utils/api"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
+import Link from "next/link"
 
 export const ProfilePopupUI: FC<
 	{
@@ -20,29 +21,31 @@ export const ProfilePopupUI: FC<
 	} & PropsWithChildren
 > = ({ profile, watchedWatchingCount, children }) => {
 	return (
-		<article
-			className="absolute left-0 top-4 z-20  flex  rounded-lg border-2 
+		<Link href={`/${profile.username}`}>
+			<article
+				className="absolute left-0 top-4 z-20  flex  rounded-lg border-2 
 			border-gray-400 bg-gray-200 p-4 text-black"
-		>
-			<div className=" w-72">
-				<header className="flex justify-between ">
-					<div>
-						<ProfileAvatarImageUrl src={profile.profileImageUrl} />
-						<div className=" mt-1 flex w-10/12 flex-col">
-							<div className="h-5 font-bold">{profile.fullName}</div>
-							<div className="text-gray-500">{`@${profile.username}`}</div>
+			>
+				<div className=" w-72">
+					<header className="flex justify-between ">
+						<div>
+							<ProfileAvatarImageUrl src={profile.profileImageUrl} />
+							<div className=" mt-1 flex w-10/12 flex-col">
+								<div className="h-5 font-bold">{profile.fullName}</div>
+								<div className="text-gray-500">{`@${profile.username}`}</div>
+							</div>
 						</div>
+						<div onClick={(e) => e.preventDefault()}>{children}</div>
+					</header>
+					<div className="mt-2">
+						<span>{profile.extended && profile.extended.bio}</span>
 					</div>
-					{children}
-				</header>
-				<div className="mt-2">
-					<span>{profile.extended && profile.extended.bio}</span>
+					<footer className="mt-2">
+						<ProfileWatchedWatching watchedWatchingCount={watchedWatchingCount} />
+					</footer>
 				</div>
-				<footer className="mt-2">
-					<ProfileWatchedWatching watchedWatchingCount={watchedWatchingCount} />
-				</footer>
-			</div>
-		</article>
+			</article>
+		</Link>
 	)
 }
 
