@@ -75,11 +75,11 @@ const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
 			{tokens.map((token) => {
 				if (token.type === "tag") {
 					return (
-						<span onClick={(e) => e.preventDefault()}>
+						<span onClick={(e) => e.stopPropagation()}>
 							<Link
 								key={token.value}
 								className="text-blue-400"
-								href={`/hashTag/${token.value}`}
+								href={`/hashTag/${token.value.replace("#", "")}`}
 							>
 								{`${token.value}${token.connectedValue}`}
 							</Link>
