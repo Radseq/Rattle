@@ -1,22 +1,14 @@
-import type { GetServerSideProps, NextPage } from "next"
-import Link from "next/link"
+import type { NextPage } from "next"
+import { useRouter } from "next/router"
 import { useState } from "react"
 
 import { Layout } from "~/components/Layout"
-import { TabSelectorItem, TopTab } from "~/features/hashTagPage"
+import { LatestPosts, Peoples, TabSelectorItem } from "~/features/hashTagPage"
 
-export const getServerSideProps: GetServerSideProps = async (props) => {
-	const hashTag = props.params?.hashTag as string
-	console.log(props.params)
+const HashTag: NextPage = () => {
+	const router = useRouter()
 
-	return {
-		props: { hashTag },
-	}
-}
-
-const HashTag: NextPage<{
-	hashTag: string
-}> = ({ hashTag }) => {
+	const hashTag = (router.query.hashTag as string) || ""
 	const [selectedTab, setSelectedTab] = useState(0)
 	return (
 		<Layout>
@@ -33,7 +25,12 @@ const HashTag: NextPage<{
 					</TabSelectorItem>
 				</header>
 				<hr className="mb-2" />
-				{selectedTab === 0 && <TopTab />}
+				{selectedTab === 0 && hashTag && (
+					<div>
+						<Peoples tag={hashTag} />
+						<LatestPosts tag={hashTag} />
+					</div>
+				)}
 			</section>
 		</Layout>
 	)
