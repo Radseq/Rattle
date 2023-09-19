@@ -75,7 +75,7 @@ const PostMessageRenderer: FC<{ message: string }> = ({ message }) => {
 			{tokens.map((token) => {
 				if (token.type === "tag") {
 					return (
-						<span onClick={(e) => e.stopPropagation()}>
+						<span key={token.value} onClick={(e) => e.stopPropagation()}>
 							<Link
 								key={token.value}
 								className="text-blue-400"
