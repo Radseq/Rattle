@@ -88,9 +88,8 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 	})
 
 	const forwardPost = api.posts.forwardPost.useMutation({
-		onSuccess: async () => {
+		onSuccess: () => {
 			toast.success("Post Forwarded!")
-			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to forward post! Please try again later", {
@@ -124,9 +123,8 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 	})
 
 	const quotePost = api.posts.createQuotedPost.useMutation({
-		onSuccess: async () => {
+		onSuccess: () => {
 			setQuotePopUp(null)
-			await refetch()
 		},
 		onError: () => {
 			toast.error("Failed to quote post! Please try again later", {
