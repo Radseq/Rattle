@@ -1,9 +1,13 @@
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
-import { useState } from "react"
+import { type FC, useState } from "react"
 
 import { Layout } from "~/components/Layout"
 import { LatestPosts, Peoples, TabSelectorItem } from "~/features/hashTagPage"
+
+const TOP_TAB_INDEX = 0
+const LATEST_POSTS_TAB_INDEX = 1
+const PEOPLES_TAB_INDEX = 2
 
 const HashTag: NextPage = () => {
 	const router = useRouter()
@@ -12,7 +16,7 @@ const HashTag: NextPage = () => {
 	const [selectedTab, setSelectedTab] = useState(0)
 	return (
 		<Layout>
-			<section>
+			<div>
 				<header className="flex justify-between font-bold text-gray-500">
 					<TabSelectorItem onClick={() => setSelectedTab(0)} name="Top">
 						{selectedTab === 0 && <SelectedTabMark />}
@@ -25,15 +29,31 @@ const HashTag: NextPage = () => {
 					</TabSelectorItem>
 				</header>
 				<hr className="mb-2" />
-				{selectedTab === 0 && hashTag && (
-					<div>
-						<Peoples tag={hashTag} />
-						<LatestPosts tag={hashTag} />
-					</div>
-				)}
-			</section>
+				{hashTag && <TabContentSelector hashTag={hashTag} selectedTab={selectedTab} />}
+			</div>
 		</Layout>
 	)
+}
+
+const TabContentSelector: FC<{ selectedTab: number; hashTag: string }> = ({
+	selectedTab,
+	hashTag,
+}) => {
+	switch (selectedTab) {
+		case TOP_TAB_INDEX:
+			return (
+				<div>
+					<Peoples tag={hashTag} />
+					<LatestPosts tag={hashTag} />
+				</div>
+			)
+		case LATEST_POSTS_TAB_INDEX:
+			return <LatestPosts tag={hashTag} />
+		case PEOPLES_TAB_INDEX:
+			return <Peoples tag={hashTag} />
+		default:
+			return null
+	}
 }
 
 const SelectedTabMark = () => {
