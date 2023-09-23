@@ -45,14 +45,6 @@ export const Peoples: FC<{ tag: string }> = ({ tag }) => {
 		return null
 	}
 
-	if (peoplesLoading) {
-		return (
-			<div className="relative">
-				<LoadingPage />
-			</div>
-		)
-	}
-
 	const addUserToFollow = api.follow.addUserToFollow.useMutation({
 		onSuccess: (result) => {
 			toast.success(`${result.addedUserName} is now followed`)
@@ -63,6 +55,14 @@ export const Peoples: FC<{ tag: string }> = ({ tag }) => {
 			})
 		},
 	})
+
+	if (peoplesLoading) {
+		return (
+			<div className="relative">
+				<LoadingPage />
+			</div>
+		)
+	}
 
 	return (
 		<div>
