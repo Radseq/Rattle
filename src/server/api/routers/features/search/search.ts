@@ -8,6 +8,7 @@ import { CONFIG } from "~/config"
 import { prisma } from "~/server/db"
 import {
 	getPostAuthor,
+	getPostIdsForwardedByUser,
 	getPostsLikedByUser,
 	getUserVotedAnyPostsPoll,
 	isPostsQuotedByUser,
@@ -135,6 +136,7 @@ export const searchRouter = createTRPCRouter({
 			}[] = []
 			let postsQuotedByUser: string[] = []
 			let followedUsers: string[] = []
+			let forwardedPostsIds: string[] = []
 
 			const postsIds = postsDb.map((post) => post.id)
 
@@ -144,16 +146,19 @@ export const searchRouter = createTRPCRouter({
 					getPostsPollVotedByUser,
 					getPostsIdsQuotedByUser,
 					getFollowedUsers,
+					getForwardedPostsIds,
 				] = await Promise.all([
 					getPostsLikedByUser(signInUserId, postsIds),
 					getUserVotedAnyPostsPoll(signInUserId, postsIds),
 					isPostsQuotedByUser(signInUserId, postsIds),
 					getUserFollowList(signInUserId),
+					getPostIdsForwardedByUser(signInUserId),
 				])
 				postsLikedByUser = getPostsLikedBySignInUser
 				postsPollVotedByUser = getPostsPollVotedByUser
 				postsQuotedByUser = getPostsIdsQuotedByUser
 				followedUsers = getFollowedUsers
+				forwardedPostsIds = getForwardedPostsIds
 			}
 
 			const posts = await Promise.all(postsIds.map((id) => getPostById(id)))
@@ -176,9 +181,9 @@ export const searchRouter = createTRPCRouter({
 					},
 					author,
 					signInUser: {
-						isForwarded: false,
-						isLiked: postsLikedByUser.some((post) => post === sortedPost.id),
-						isQuoted: postsQuotedByUser.some((post) => post === sortedPost.id),
+						isForwarded: forwardedPostsIds.some((postId) => postId === sortedPost.id),
+						isLiked: postsLikedByUser.some((postId) => postId === sortedPost.id),
+						isQuoted: postsQuotedByUser.some((postId) => postId === sortedPost.id),
 						isVotedChoiceId: postsPollVotedByUser.filter(
 							(vote) => vote.postId === sortedPost.id
 						)[0]?.choiceId,
