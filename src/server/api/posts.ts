@@ -234,3 +234,26 @@ export const deletePost = async (postId: string, authorId: string) => {
 
 	return getDeletedPost.count > 0
 }
+
+export const deleteRepliesFromPost = async (postId: string) => {
+	const replies = await prisma.post.findMany({ where: { replyId: postId }, select: { id: true } })
+
+	for (let index = 0; index < replies.length; index++) {
+		const reply = replies[index]
+		if (!reply) {
+			continue
+		}
+		const replyCacheKey: CacheSpecialKey = { id: reply.id, type: "post" }
+		const deletedReplyPostCache = await getCacheData<Post>(replyCacheKey)
+		if (deletedReplyPostCache) {
+			void setCacheData(replyCacheKey, null, 0)
+		}
+	}
+
+	const replyPostsDelete = await prisma.post.deleteMany({
+		where: {
+			replyId: postId,
+		},
+	})
+	return replyPostsDelete.count > 0
+}

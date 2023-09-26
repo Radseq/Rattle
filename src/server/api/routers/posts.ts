@@ -13,6 +13,7 @@ import {
 import {
 	createPostOfPrismaPost,
 	deletePost,
+	deleteRepliesFromPost,
 	getPostById,
 	isPostExists,
 } from "../posts"
@@ -280,7 +281,10 @@ export const postsRouter = createTRPCRouter({
 			const authorId = ctx.authUserId
 			const deletedPost = await deletePost(postId, authorId)
 			if (deletedPost) {
-				await Promise.all([removeForwardedPostFromUser(authorId, postId)])
+				await Promise.all([
+					removeForwardedPostFromUser(authorId, postId),
+					deleteRepliesFromPost(postId),
+				])
 			}
 			return deletedPost
 		}),
