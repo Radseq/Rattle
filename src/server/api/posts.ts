@@ -214,3 +214,23 @@ export const createPostOfPrismaPost = (prismaPost: PrismaPost) => {
 		quotedId: null,
 	} as Post
 }
+
+export const deletePost = async (postId: string, authorId: string) => {
+	const result = prisma.post.deleteMany({
+		where: {
+			id: postId,
+			authorId,
+		},
+	})
+
+	const cacheKey: CacheSpecialKey = { id: postId, type: "post" }
+	const postCache = getCacheData<Post>(cacheKey)
+
+	const [getDeletedPost, getCachedPost] = await Promise.all([result, postCache])
+
+	if (getCachedPost) {
+		void setCacheData(cacheKey, null, 0)
+	}
+
+	return getDeletedPost.count > 0
+}

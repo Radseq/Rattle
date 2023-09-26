@@ -10,7 +10,7 @@ import {
 	filterClarkClientToAuthor,
 	type TimeAddToDate,
 } from "~/utils/helpers"
-import { createPostOfPrismaPost, getPostById, isPostExists } from "../posts"
+import { createPostOfPrismaPost, deletePost, getPostById, isPostExists } from "../posts"
 import {
 	getPostAuthor,
 	getPostsLikedByUser,
@@ -270,13 +270,11 @@ export const postsRouter = createTRPCRouter({
 	deletePost: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
-			// todo delete data from all related tables
-			return await ctx.prisma.post.deleteMany({
-				where: {
-					id: input,
-					authorId: ctx.authUserId,
-				},
-			})
+			const postId = input
+			const authorId = ctx.authUserId
+			const deletedPost = await deletePost(postId, authorId)
+
+			return deletedPost
 		}),
 	getPostReplies: publicProcedure
 		.input(
