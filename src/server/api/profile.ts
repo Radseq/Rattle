@@ -203,3 +203,29 @@ export const isPostsQuotedByUser = async (userId: string, postsId: string[]) => 
 
 	return result
 }
+
+export const removeForwardedPostFromUser = async (authorId: string, postId: string) => {
+	const userCacheKey: CacheSpecialKey = { id: authorId, type: "postsForwarded" }
+	const forwardedPostsIds = getCacheData<string[]>(userCacheKey)
+
+	const deletedForwardedPosts = prisma.userPostForward.deleteMany({
+		where: {
+			postId,
+		},
+	})
+
+	const [getForwardedPostsIds, getDeletedForwardedPosts] = await Promise.all([
+		forwardedPostsIds,
+		deletedForwardedPosts,
+	])
+
+	if (getForwardedPostsIds) {
+		void setCacheData(
+			userCacheKey,
+			getForwardedPostsIds.filter((id) => id !== postId),
+			MAX_CACHE_USER_LIFETIME_IN_SECONDS
+		)
+	}
+
+	return getDeletedForwardedPosts.count > 0
+}

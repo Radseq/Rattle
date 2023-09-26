@@ -10,12 +10,18 @@ import {
 	filterClarkClientToAuthor,
 	type TimeAddToDate,
 } from "~/utils/helpers"
-import { createPostOfPrismaPost, deletePost, getPostById, isPostExists } from "../posts"
+import {
+	createPostOfPrismaPost,
+	deletePost,
+	getPostById,
+	isPostExists,
+} from "../posts"
 import {
 	getPostAuthor,
 	getPostsLikedByUser,
 	isPostsQuotedByUser,
 	isUserForwardedPost,
+	removeForwardedPostFromUser,
 } from "../profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { fetchHomePosts } from "~/server/features/homePage"
@@ -273,7 +279,9 @@ export const postsRouter = createTRPCRouter({
 			const postId = input
 			const authorId = ctx.authUserId
 			const deletedPost = await deletePost(postId, authorId)
-
+			if (deletedPost) {
+				await Promise.all([removeForwardedPostFromUser(authorId, postId)])
+			}
 			return deletedPost
 		}),
 	getPostReplies: publicProcedure
