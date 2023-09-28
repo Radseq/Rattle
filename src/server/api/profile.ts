@@ -229,3 +229,13 @@ export const removeForwardedPostFromUser = async (authorId: string, postId: stri
 
 	return getDeletedForwardedPosts.count > 0
 }
+
+export const deleteLikesFromPost = async (postId: string) => {
+	const deletedLikes = await prisma.userLikePost.deleteMany({
+		where: {
+			postId,
+		},
+	})
+
+	return deletedLikes.count > 0
+}
