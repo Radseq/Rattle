@@ -12,6 +12,7 @@ import {
 } from "~/utils/helpers"
 import {
 	createPostOfPrismaPost,
+	deletePollFromPost,
 	deletePost,
 	deletePostsByQuotedId,
 	deleteRepliesFromPost,
@@ -19,6 +20,7 @@ import {
 	isPostExists,
 } from "../posts"
 import {
+	deleteLikesFromPost,
 	getPostAuthor,
 	getPostsLikedByUser,
 	isPostsQuotedByUser,
@@ -283,6 +285,8 @@ export const postsRouter = createTRPCRouter({
 			const deletedPost = await deletePost(postId, authorId)
 			if (deletedPost) {
 				await Promise.all([
+					deletePollFromPost(postId),
+					deleteLikesFromPost(postId),
 					removeForwardedPostFromUser(authorId, postId),
 					deleteRepliesFromPost(postId),
 					deletePostsByQuotedId(postId),
