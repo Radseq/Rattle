@@ -10,12 +10,22 @@ import {
 	filterClarkClientToAuthor,
 	type TimeAddToDate,
 } from "~/utils/helpers"
-import { createPostOfPrismaPost, getPostById, isPostExists } from "../posts"
 import {
+	createPostOfPrismaPost,
+	deletePollFromPost,
+	deletePost,
+	deletePostsByQuotedId,
+	deleteRepliesFromPost,
+	getPostById,
+	isPostExists,
+} from "../posts"
+import {
+	deleteLikesFromPost,
 	getPostAuthor,
 	getPostsLikedByUser,
 	isPostsQuotedByUser,
 	isUserForwardedPost,
+	removeForwardedPostFromUser,
 } from "../profile"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { fetchHomePosts } from "~/server/features/homePage"
@@ -270,13 +280,19 @@ export const postsRouter = createTRPCRouter({
 	deletePost: privateProcedure
 		.input(z.string().min(25, { message: "wrong postId" }))
 		.mutation(async ({ ctx, input }) => {
-			// todo delete data from all related tables
-			return await ctx.prisma.post.deleteMany({
-				where: {
-					id: input,
-					authorId: ctx.authUserId,
-				},
-			})
+			const postId = input
+			const authorId = ctx.authUserId
+			const deletedPost = await deletePost(postId, authorId)
+			if (deletedPost) {
+				await Promise.all([
+					deletePollFromPost(postId),
+					deleteLikesFromPost(postId),
+					removeForwardedPostFromUser(authorId, postId),
+					deleteRepliesFromPost(postId),
+					deletePostsByQuotedId(postId),
+				])
+			}
+			return deletedPost
 		}),
 	getPostReplies: publicProcedure
 		.input(
