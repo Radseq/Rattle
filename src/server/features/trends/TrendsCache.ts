@@ -1,3 +1,5 @@
+import { prisma } from "~/server/db"
+
 export type Trend = {
 	addDate: Date
 	word: string
@@ -16,6 +18,8 @@ const globalTrendsRegionalCache = global as unknown as { cache: Map<string, Tren
 	}
 	globalTrendsRegionalCache.cache = new Map<string, Trend[]>()
 })()
+
+// remove older trends than 1 day
 ;(function () {
 	setInterval(() => {
 		globalTrendsRegionalCache.cache.forEach((value, key) => {
@@ -84,3 +88,13 @@ export const Trends = () => {
 			TrendsCache.GetTrendPostIds(region, trendWord),
 	}
 }
+// temp to feed trends
+;(async function () {
+	const trends = Trends()
+	if (!trends.GetTrends("word", 1).length) {
+		const posts = await prisma.post.findMany()
+		posts.forEach((element) => {
+			trends.AddTrends(element.content, element.id, "world")
+		})
+	}
+})()
