@@ -88,13 +88,3 @@ export const Trends = () => {
 			TrendsCache.GetTrendPostIds(region, trendWord),
 	}
 }
-// temp to feed trends
-;(async function () {
-	const trends = Trends()
-	if (!trends.GetTrends("word", 1).length) {
-		const posts = await prisma.post.findMany()
-		posts.forEach((element) => {
-			trends.AddTrends(element.content, element.id, "world")
-		})
-	}
-})()
