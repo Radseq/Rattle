@@ -1,5 +1,3 @@
-import { prisma } from "~/server/db"
-
 export type Trend = {
 	addDate: Date
 	word: string
