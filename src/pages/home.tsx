@@ -13,6 +13,7 @@ import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { ConnectorCreatePost } from "~/features/homePage"
 import { FetchPosts } from "~/features/homePage/components/FetchPosts"
 import { Dialog } from "~/components/dialog/Dialog"
+import { Trends } from "~/features/trends"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)
@@ -69,12 +70,15 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 	return (
 		<Layout
 			rightPanel={
-				<WhoToFollow
-					users={usersToFollow}
-					onFollowClick={(id) => addUserToFollow.mutate(id)}
-				>
-					<h1 className="p-2 text-2xl font-semibold">Who to follow</h1>
-				</WhoToFollow>
+				<div>
+					<WhoToFollow
+						users={usersToFollow}
+						onFollowClick={(id) => addUserToFollow.mutate(id)}
+					>
+						<h1 className="p-2 text-2xl font-semibold">Who to follow</h1>
+					</WhoToFollow>
+					<Trends />
+				</div>
 			}
 		>
 			<section className="pt-2">
