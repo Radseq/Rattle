@@ -1,1 +1,1 @@
-export * from "./trend"
+export * from "./trends"
