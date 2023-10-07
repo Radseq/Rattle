@@ -6,7 +6,6 @@ export type Trend = {
 
 // TODO write whole api for cache trends.... xD
 
-const MAX_REGION_CACHE_ENTITIES = 12
 const CLEAR_CACHE_EVERY_MS = 3 * 60 * 60 * 1000 // 3hours
 
 const globalTrendsRegionalCache = global as unknown as { cache: Map<string, Trend[]> }
@@ -55,9 +54,12 @@ const TrendsCache = (() => {
 			cache.sort((a, b) => b.postIds.length - a.postIds.length)
 			globalTrendsRegionalCache.cache.set(region, cache)
 		},
-		GetLastTrends: (region: string) => {
+		GeTrends: (region: string, limit?: number) => {
 			const cache = globalTrendsRegionalCache.cache.get(region) || []
-			return cache.slice(0, MAX_REGION_CACHE_ENTITIES)
+			if (limit) {
+				return cache.slice(0, limit)
+			}
+			return cache
 		},
 		GetLastTrendPostIds: (region: string, trendWord: string) => {
 			const cache = globalTrendsRegionalCache.cache.get(region) || []
@@ -72,10 +74,10 @@ const TrendsCache = (() => {
 
 export const Trends = () => {
 	return {
-		AddToCache: (postMessage: string, postId: string, region: string) =>
+		AddTrends: (postMessage: string, postId: string, region: string) =>
 			TrendsCache.AddToCache(postMessage, postId, region),
-		GetLastTrends: (region: string) => TrendsCache.GetLastTrends(region),
-		GetLastTrendPosts: (region: string, trendWord: string) =>
+		GetTrends: (region: string, limit?: number) => TrendsCache.GeTrends(region, limit),
+		GetTrendPosts: (region: string, trendWord: string) =>
 			TrendsCache.GetLastTrendPostIds(region, trendWord),
 	}
 }
