@@ -16,8 +16,10 @@ import {
 import { getUserFollowList } from "~/server/api/follow"
 import { type PostWithAuthor } from "~/components/post/types"
 import { getPostById } from "~/server/api/posts"
+import { Trends } from "~/server/features/trends/TrendsCache"
 
 const MAX_USERS_COUNT = 20
+const MAX_TRENDS_LOADED = 12
 
 export const searchRouter = createTRPCRouter({
 	getAllUsersAndTags: publicProcedure.input(z.string()).query(async ({ input }) => {
@@ -198,4 +200,8 @@ export const searchRouter = createTRPCRouter({
 				nextCursor,
 			}
 		}),
+	getLastTrends: publicProcedure.query(async () => {
+		const trends = Trends()
+		return trends.GetTrends("world", MAX_TRENDS_LOADED)
+	}),
 })
