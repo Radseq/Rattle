@@ -55,13 +55,16 @@ const TrendsCache = (() => {
 			globalTrendsRegionalCache.cache.set(region, cache)
 		},
 		GeTrends: (region: string, limit?: number) => {
-			const cache = globalTrendsRegionalCache.cache.get(region) || []
+			const cacheTrends = globalTrendsRegionalCache.cache.get(region) || []
+			const trends = cacheTrends.map((trend) => {
+				return { word: trend.word, postsCount: trend.postIds.length }
+			})
 			if (limit) {
-				return cache.slice(0, limit)
+				return trends.slice(0, limit)
 			}
-			return cache
+			return trends
 		},
-		GetLastTrendPostIds: (region: string, trendWord: string) => {
+		GetTrendPostIds: (region: string, trendWord: string) => {
 			const cache = globalTrendsRegionalCache.cache.get(region) || []
 			const trend = cache.find((trend) => trend.word === trendWord.toLocaleLowerCase())
 			if (trend) {
@@ -78,6 +81,6 @@ export const Trends = () => {
 			TrendsCache.AddToCache(postMessage, postId, region),
 		GetTrends: (region: string, limit?: number) => TrendsCache.GeTrends(region, limit),
 		GetTrendPosts: (region: string, trendWord: string) =>
-			TrendsCache.GetLastTrendPostIds(region, trendWord),
+			TrendsCache.GetTrendPostIds(region, trendWord),
 	}
 }
