@@ -200,7 +200,7 @@ export const searchRouter = createTRPCRouter({
 				nextCursor,
 			}
 		}),
-	getLastTrends: publicProcedure.query(async () => {
+	getLastTrends: publicProcedure.query(() => {
 		const trends = Trends()
 		return trends.GetTrends("world", MAX_TRENDS_LOADED)
 	}),

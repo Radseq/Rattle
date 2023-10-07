@@ -21,5 +21,5 @@ export const Trends = () => {
 		return null
 	}
 
-	return <TrendPanel trends={trends } />
+	return <TrendPanel trends={trends} />
 }
