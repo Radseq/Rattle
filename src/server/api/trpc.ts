@@ -45,10 +45,10 @@ const createInnerTRPCContext = (_opts: CreateContextOptions) => {
 export const createTRPCContext = (opts?: CreateNextContextOptions) => {
 	const prisma = createInnerTRPCContext({}).prisma
 
-	let authId: string | null = null
+	let authId: string | undefined = undefined
 	if (opts) {
 		const auth = getAuth(opts.req)
-		authId = auth.userId
+		authId = auth.userId || undefined
 	}
 
 	return {

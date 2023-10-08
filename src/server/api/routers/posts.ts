@@ -45,25 +45,25 @@ export const postsRouter = createTRPCRouter({
 		.input(
 			z.object({
 				limit: z.number(),
-				cursor: z.string().nullish(),
+				cursor: z.string().optional(),
 				skip: z.number().optional(),
 				authorId: z.string(),
 			})
 		)
 		.query(async ({ ctx, input }) => {
 			return fetchProfilePosts(
-				ctx.authUserId,
 				input.authorId,
 				input.limit,
 				input.cursor,
-				input.skip
+				input.skip,
+				ctx.authUserId
 			)
 		}),
 	getHomePosts: privateProcedure
 		.input(
 			z.object({
 				limit: z.number(),
-				cursor: z.string().nullish(),
+				cursor: z.string().optional(),
 				skip: z.number().optional(),
 			})
 		)

@@ -21,8 +21,8 @@ const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 export const fetchHomePosts = async (
 	signInUserId: string,
 	limit: number,
-	cursor: string | null | undefined,
-	skip: number | undefined
+	cursor?: string,
+	skip?: number
 ) => {
 	const followedAuthorsByUser = await getUserFollowList(signInUserId)
 
