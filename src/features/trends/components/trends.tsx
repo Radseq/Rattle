@@ -34,7 +34,7 @@ const TrendPanel: FC<{
 
 export const Trends = () => {
 	const trends = useGetTrends()
-	if (!trends) {
+	if (!trends.length) {
 		return null
 	}
 
