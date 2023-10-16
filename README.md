@@ -14,7 +14,7 @@ A Twitter like application!
 - Post replay page
 - Add replay post
 
-## Technologies using in this project:
+## Technologies used in this project:
 - Cache [Redis](https://upstash.com/)
 - Authorization [Clerk](https://clerk.com/)
 - Database at [PlanetScale](https://planetscale.com/)
