@@ -1,9 +1,9 @@
 import { SignUp, useUser } from "@clerk/nextjs"
 import type { PropsWithChildren, ReactNode } from "react"
-import { NavigationBar } from "../../../components/NavigationBar"
 import { Panel } from "../../../components/Panel"
 import { ProfilePanel } from "~/features/profile"
 import { Menu } from "./Menu"
+import { SearchInput } from "./SearchInput"
 
 type LayoutProps = PropsWithChildren & {
 	rightPanel?: ReactNode | null
@@ -18,12 +18,10 @@ export const Layout = (props: LayoutProps) => {
 					<Menu isSignedIn={isSignedIn || false} />
 				</header>
 				<main className="mx-1 h-full w-full grow border-x-2 border-gray-200 sm:w-full md:w-2/3 lg:mx-4 lg:p-4">
-					<header className="sticky">
-						<NavigationBar />
-					</header>
 					{props.children}
 				</main>
 				<aside className="hidden grow-0 md:block md:w-96">
+					<SearchInput />
 					<Panel>
 						<div className="sticky top-0 w-full md:p-2 lg:p-4">
 							{!isSignedIn && (
