@@ -4,7 +4,6 @@ import Image from "next/image"
 import { useState } from "react"
 import { useDebounce } from "~/features/search"
 import { useSearchHistory } from "~/features/search/hooks/useSearchHistory"
-import { Panel } from "~/components/Panel"
 
 const debounceTimeout = 200
 
