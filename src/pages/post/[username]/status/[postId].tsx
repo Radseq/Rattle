@@ -1,6 +1,5 @@
 import type { GetServerSideProps, NextPage } from "next"
 import toast from "react-hot-toast"
-import { Layout } from "~/components/Layout"
 import { getPostById } from "~/server/api/posts"
 import { getPostAuthorByUsername } from "~/server/api/profile"
 import { api } from "~/utils/api"
@@ -24,6 +23,7 @@ import { getPostProfileType } from "~/utils/helpers"
 import { useAuth } from "@clerk/nextjs"
 import { Dialog } from "~/components/dialog/Dialog"
 import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
+import { Layout } from "~/features/layout"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string
