@@ -1,6 +1,5 @@
 import type { GetStaticProps, NextPage } from "next"
 import Head from "next/head"
-import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -27,6 +26,7 @@ import { getPostProfileType } from "~/utils/helpers"
 import { type PostWithAuthor } from "~/components/post/types"
 import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { Dialog } from "~/components/dialog/Dialog"
+import { Layout } from "~/features/layout"
 
 dayjs.extend(relativeTime)
 

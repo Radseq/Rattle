@@ -1,5 +1,4 @@
 import { type GetServerSideProps, type NextPage } from "next"
-import { Layout } from "~/components/Layout"
 import { api } from "~/utils/api"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
@@ -13,6 +12,7 @@ import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { ConnectorCreatePost } from "~/features/homePage"
 import { FetchPosts } from "~/features/homePage/components/FetchPosts"
 import { Dialog } from "~/components/dialog/Dialog"
+import { Layout } from "~/features/layout"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)

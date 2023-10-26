@@ -1,9 +1,8 @@
 import type { NextPage } from "next"
 import { useRouter } from "next/router"
 import { type FC, useState } from "react"
-
-import { Layout } from "~/components/Layout"
 import { LatestPosts, Peoples, TabSelectorItem } from "~/features/hashTagPage"
+import { Layout } from "~/features/layout"
 
 const TOP_TAB_INDEX = 0
 const LATEST_POSTS_TAB_INDEX = 1
