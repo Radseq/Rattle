@@ -3,6 +3,7 @@ import { type FC } from "react"
 import { HomeIcon } from "./HomeIcon"
 import { MenuItem } from "./MenuItem"
 import { MessageIcon } from "./MessageIcon"
+import { AddPostIcon } from "./AddPostIcon"
 
 export const Menu: FC<{ isSignedIn: boolean }> = ({ isSignedIn }) => {
 	const homeUrl = isSignedIn ? "/home" : "/"
@@ -19,6 +20,12 @@ export const Menu: FC<{ isSignedIn: boolean }> = ({ isSignedIn }) => {
 					<MessageIcon />
 					<span className="my-auto hidden xl:inline">Messages</span>
 				</Link>
+			</MenuItem>
+			<MenuItem>
+				<div>
+					<AddPostIcon />
+					<span className="my-auto hidden xl:inline">New post</span>
+				</div>
 			</MenuItem>
 		</ul>
 	)
