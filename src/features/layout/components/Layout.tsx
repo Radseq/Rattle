@@ -17,7 +17,7 @@ export const Layout = (props: LayoutProps) => {
 				<header className="w-16 min-w-[40px] xl:w-72">
 					<Menu isSignedIn={isSignedIn || false} />
 				</header>
-				<main className="mx-1 h-full w-full grow border-x-2 border-gray-200 sm:w-full md:w-2/3 lg:mx-4 lg:p-4">
+				<main className="sm:mx-1 h-full w-full grow sm:border-x-2 border-gray-200 sm:w-full md:w-2/3 lg:mx-4 lg:p-4">
 					{props.children}
 				</main>
 				<aside className="hidden grow-0 md:block md:w-96">
