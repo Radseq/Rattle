@@ -1,4 +1,5 @@
 import { type FC, type PropsWithChildren, useEffect, useRef, useState } from "react"
+import { Icon } from "../Icon"
 
 export const Dialog: FC<{ open: boolean; onClose: () => void } & PropsWithChildren> = ({
 	children,
@@ -21,7 +22,20 @@ export const Dialog: FC<{ open: boolean; onClose: () => void } & PropsWithChildr
 
 	return (
 		<dialog ref={modalRef} onClose={handleClose} className="fixed rounded-lg">
-			{children}
+			<article onClick={(e) => e.stopPropagation()}>
+				<header>
+					<button
+						className="h-8 w-8 p-1"
+						onClick={(e) => {
+							e.stopPropagation()
+							handleClose()
+						}}
+					>
+						<Icon iconKind="cross" />
+					</button>
+				</header>
+				{children}
+			</article>
 		</dialog>
 	)
 }
