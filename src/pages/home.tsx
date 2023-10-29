@@ -100,7 +100,6 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 							author={quotePopUp.author}
 							createdAt={quotePopUp.post.createdAt}
 							message={quotePopUp.post.content}
-							onCloseModal={() => setQuotePopUp(null)}
 							onPostQuote={() => {
 								quotePost.mutate({
 									content: quoteMessage ?? "",

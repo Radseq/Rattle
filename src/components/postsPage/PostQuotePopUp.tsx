@@ -1,5 +1,4 @@
 import { type FC } from "react"
-import { Icon } from "../Icon"
 import { PostQuoteItem } from "./PostQuoteItem"
 import { type PostAuthor, ProfileAvatarImageUrl } from "~/features/profile"
 
@@ -7,23 +6,11 @@ export const PostQuotePopUp: FC<{
 	author: PostAuthor
 	createdAt: string
 	message: string
-	onCloseModal: () => void
 	onPostQuote: () => void
 	onMessageChange: (content: string) => void
-}> = ({ author, createdAt, message, onCloseModal, onPostQuote, onMessageChange }) => {
+}> = ({ author, createdAt, message, onPostQuote, onMessageChange }) => {
 	return (
-		<article onClick={(e) => e.stopPropagation()}>
-			<header>
-				<button
-					className="h-8 w-8 p-1"
-					onClick={(e) => {
-						e.stopPropagation()
-						onCloseModal()
-					}}
-				>
-					<Icon iconKind="cross" />
-				</button>
-			</header>
+		<div>
 			<div className="px-4">
 				<div className="flex">
 					<ProfileAvatarImageUrl src={author.profileImageUrl} />
@@ -50,6 +37,6 @@ export const PostQuotePopUp: FC<{
 					Post
 				</button>
 			</footer>
-		</article>
+		</div>
 	)
 }
