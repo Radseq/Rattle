@@ -1,12 +1,18 @@
 import Link from "next/link"
-import { type FC } from "react"
+import { useState } from "react"
 import { HomeIcon } from "./HomeIcon"
 import { MenuItem } from "./MenuItem"
 import { MessageIcon } from "./MessageIcon"
 import { AddPostIcon } from "./AddPostIcon"
+import { Dialog } from "~/components/dialog/Dialog"
+import { useUser } from "@clerk/nextjs"
+import { ConnectorCreatePost } from "~/features/homePage"
 
-export const Menu: FC<{ isSignedIn: boolean }> = ({ isSignedIn }) => {
+export const Menu = () => {
+	const { user, isSignedIn } = useUser()
 	const homeUrl = isSignedIn ? "/home" : "/"
+	const [quotePopUp, setQuotePopUp] = useState(false)
+
 	return (
 		<ul className="my-2 rounded-xl border bg-gray-200">
 			<MenuItem>
@@ -21,12 +27,18 @@ export const Menu: FC<{ isSignedIn: boolean }> = ({ isSignedIn }) => {
 					<span className="my-auto hidden xl:inline">Messages</span>
 				</Link>
 			</MenuItem>
-			<MenuItem>
+			<MenuItem onClick={() => setQuotePopUp(true)}>
 				<div>
 					<AddPostIcon />
-					<span className="my-auto hidden xl:inline">New post</span>
+					<span className="my-auto hidden cursor-pointer xl:inline">New post</span>
 				</div>
 			</MenuItem>
+
+			{quotePopUp && isSignedIn && (
+				<Dialog open={isSignedIn ?? false} onClose={() => setQuotePopUp(false)}>
+					<ConnectorCreatePost profileImageUrl={user.profileImageUrl} />
+				</Dialog>
+			)}
 		</ul>
 	)
 }
