@@ -24,7 +24,7 @@ export const useGetPostReplies = (postId: string, ulHeightInPx: number | null) =
 
 	useEffect(() => {
 		if (loadNextPosts) {
-			fetchNextPage().catch(() => console.error("Can't fetch more data!"))
+			fetchNextPage()
 		}
 	}, [fetchNextPage, loadNextPosts])
 
