@@ -24,7 +24,9 @@ export const useGetPostReplies = (postId: string, ulHeightInPx: number | null) =
 
 	useEffect(() => {
 		if (loadNextPosts) {
-			fetchNextPage()
+			fetchNextPage().catch(() => {
+				return
+			})
 		}
 	}, [fetchNextPage, loadNextPosts])
 

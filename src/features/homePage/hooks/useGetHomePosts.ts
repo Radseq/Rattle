@@ -23,7 +23,9 @@ export const useGetHomePosts = (ulHeightInPx: number | null) => {
 
 	useEffect(() => {
 		if (loadNextPosts) {
-			fetchNextPage()
+			fetchNextPage().catch(() => {
+				return
+			})
 		}
 	}, [fetchNextPage, loadNextPosts])
 
