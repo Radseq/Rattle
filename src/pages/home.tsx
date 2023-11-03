@@ -76,6 +76,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 					<h1 className="p-2 text-2xl font-semibold">Who to follow</h1>
 				</WhoToFollow>
 			}
+			onCreatePostClick={() => setRefetch(true)}
 		>
 			<section className="pt-2">
 				<ConnectorCreatePost
