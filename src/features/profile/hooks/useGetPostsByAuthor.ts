@@ -23,7 +23,9 @@ export const useGetPostsByAuthor = (authorId: string, ulHeightInPx: number | nul
 
 	useEffect(() => {
 		if (loadNextPosts) {
-			fetchNextPage().catch(() => console.error("Can't fetch more data!"))
+			fetchNextPage().catch(() => {
+				return
+			})
 		}
 	}, [fetchNextPage, loadNextPosts])
 

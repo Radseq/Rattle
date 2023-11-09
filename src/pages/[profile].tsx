@@ -238,7 +238,6 @@ const ProfilePage: NextPage<{
 								author={quotePopUp.author}
 								createdAt={quotePopUp.post.createdAt}
 								message={quotePopUp.post.content}
-								onCloseModal={() => setQuotePopUp(null)}
 								onPostQuote={() => {
 									quotePost.mutate({
 										content: quoteMessage ?? "",

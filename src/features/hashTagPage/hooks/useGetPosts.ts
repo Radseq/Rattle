@@ -24,7 +24,9 @@ export const useGetPosts = (ulHeightInPx: number | null, tag: string) => {
 
 	useEffect(() => {
 		if (loadNextPosts) {
-			fetchNextPage().catch(() => console.error("Can't fetch more data!"))
+			fetchNextPage().catch(() => {
+				return
+			})
 		}
 	}, [fetchNextPage, loadNextPosts])
 

@@ -62,7 +62,7 @@ const CreatePost: FC<CreatePostProps> = ({
 	)
 }
 
-export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch: () => void }> = ({
+export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch?: () => void }> = ({
 	profileImageUrl,
 	refetch,
 }) => {
@@ -100,7 +100,7 @@ export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch: () => v
 
 	const { mutate } = api.posts.createPost.useMutation({
 		onSuccess: () => {
-			refetch()
+			refetch && refetch()
 		},
 		onError: () => {
 			toast.error("Failed to create post! Please try again later", {
