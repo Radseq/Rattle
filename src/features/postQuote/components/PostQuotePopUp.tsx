@@ -1,6 +1,6 @@
 import { type FC } from "react"
-import { PostQuoteItem } from "./PostQuoteItem"
 import { type PostAuthor, ProfileAvatarImageUrl } from "~/features/profile"
+import { PostQuoteItem } from "./PostQuoteItem"
 
 export const PostQuotePopUp: FC<{
 	author: PostAuthor
