@@ -180,7 +180,7 @@ export const postsRouter = createTRPCRouter({
 				})
 			}
 
-			const returnPost = createPostOfPrismaPost(createdPost)
+			const returnPost = await getPostById(createdPost.id)
 
 			const postCacheKey: CacheSpecialKey = { id: returnPost.id, type: "post" }
 			void setCacheData(postCacheKey, returnPost, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
