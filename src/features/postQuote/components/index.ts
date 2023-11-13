@@ -1,1 +1,1 @@
-export * from "./PostQuotePopUp"
+export * from "./PostQuote"
