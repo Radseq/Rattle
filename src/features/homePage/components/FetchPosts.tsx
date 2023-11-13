@@ -1,4 +1,4 @@
-import { type FC, useEffect, useRef } from "react"
+import { type FC, useEffect, useRef, useState } from "react"
 import { useGetHomePosts } from "../hooks"
 import { type ClickCapture, PostItem } from "~/components/post/PostItem"
 import { PostFooter } from "~/components/postsPage/PostFooter"
@@ -10,19 +10,22 @@ import { CONFIG } from "~/config"
 import { api } from "~/utils/api"
 import { LoadingPage } from "~/components/LoadingPage"
 import { useRouter } from "next/router"
+import { Dialog } from "~/components/dialog/Dialog"
+import { PostQuote } from "~/features/postQuote"
 
 export const FetchPosts: FC<{
 	signInUserId: string
 	forceRefetch: boolean
-	postQuote: (quotedPost: PostWithAuthor) => void
 	refetchComplete: () => void
-}> = ({ signInUserId, forceRefetch, postQuote, refetchComplete }) => {
+}> = ({ signInUserId, forceRefetch, refetchComplete }) => {
 	const ulRef = useRef<HTMLUListElement>(null)
 	const router = useRouter()
 
 	const { isLoading, posts, refetch } = useGetHomePosts(
 		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
 	)
+
+	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 
 	useEffect(() => {
 		const asyncRefetch = async () => {
@@ -143,59 +146,72 @@ export const FetchPosts: FC<{
 	}
 
 	return (
-		<ul ref={ulRef}>
-			{posts?.map(({ author, post, signInUser }) => (
-				<PostItem
-					key={post.id}
-					postWithUser={{ author, post, signInUser }}
-					onClickCapture={(clickCapture) => {
-						handlePostClick(clickCapture, { author, post, signInUser })
-					}}
-					menuItemsType={getPostProfileType(
-						signInUser?.authorFollowed ?? false,
-						signInUserId,
-						author.id
-					)}
-					footer={
-						<PostFooter
-							isForwarded={signInUser?.isForwarded ?? false}
-							onForwardClick={() => {
-								if (signInUser?.isForwarded ?? false) {
-									removePostForward.mutate(post.id)
-								} else {
-									forwardPost.mutate(post.id)
-								}
-							}}
-							onLikeClick={() => {
-								if (signInUser?.isLiked ?? false) {
-									unlikePost.mutate(post.id)
-								} else {
-									likePost.mutate(post.id)
-								}
-							}}
-							onQuoteClick={() => {
-								postQuote({ author, post, signInUser })
-							}}
-							sharedCount={post.quotedCount + post.forwardsCount}
-							isLiked={signInUser?.isLiked ?? false}
-							likeCount={post.likeCount}
-							username={author.username}
-							replyCount={post.replyCount}
-							postId={post.id}
-						/>
-					}
-				>
-					<PostContentSelector
-						post={post}
-						pollVote={(choiceId) =>
-							pollVote.mutate({
-								postId: post.id,
-								choiceId,
-							})
+		<>
+			<ul ref={ulRef}>
+				{posts?.map(({ author, post, signInUser }) => (
+					<PostItem
+						key={post.id}
+						postWithUser={{ author, post, signInUser }}
+						onClickCapture={(clickCapture) => {
+							handlePostClick(clickCapture, { author, post, signInUser })
+						}}
+						menuItemsType={getPostProfileType(
+							signInUser?.authorFollowed ?? false,
+							signInUserId,
+							author.id
+						)}
+						footer={
+							<PostFooter
+								isForwarded={signInUser?.isForwarded ?? false}
+								onForwardClick={() => {
+									if (signInUser?.isForwarded ?? false) {
+										removePostForward.mutate(post.id)
+									} else {
+										forwardPost.mutate(post.id)
+									}
+								}}
+								onLikeClick={() => {
+									if (signInUser?.isLiked ?? false) {
+										unlikePost.mutate(post.id)
+									} else {
+										likePost.mutate(post.id)
+									}
+								}}
+								onQuoteClick={() => {
+									setQuotePopUp({ author, post, signInUser })
+								}}
+								sharedCount={post.quotedCount + post.forwardsCount}
+								isLiked={signInUser?.isLiked ?? false}
+								likeCount={post.likeCount}
+								username={author.username}
+								replyCount={post.replyCount}
+								postId={post.id}
+							/>
 						}
+					>
+						<PostContentSelector
+							post={post}
+							pollVote={(choiceId) =>
+								pollVote.mutate({
+									postId: post.id,
+									choiceId,
+								})
+							}
+						/>
+					</PostItem>
+				))}
+			</ul>
+			{quotePopUp && (
+				<Dialog open={true} onClose={() => setQuotePopUp(null)}>
+					<PostQuote
+						onPostQuoted={async () => {
+							setQuotePopUp(null)
+							await refetch()
+						}}
+						quotedPost={quotePopUp}
 					/>
-				</PostItem>
-			))}
-		</ul>
+				</Dialog>
+			)}
+		</>
 	)
 }
