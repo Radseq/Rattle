@@ -8,11 +8,11 @@ import { useState } from "react"
 import { type UserToFollow, WhoToFollow } from "~/features/whoToFollow"
 import { whoToFollow } from "~/server/features/whoToFollow"
 import { type PostWithAuthor } from "~/components/post/types"
-import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { ConnectorCreatePost } from "~/features/homePage"
 import { FetchPosts } from "~/features/homePage/components/FetchPosts"
 import { Dialog } from "~/components/dialog/Dialog"
 import { Layout } from "~/features/layout"
+import { PostQuotePopUp } from "~/features/postQuote"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)

@@ -11,8 +11,8 @@ import { api } from "~/utils/api"
 import { getPostProfileType } from "~/utils/helpers"
 import { useGetPosts } from "../hooks"
 import { Dialog } from "~/components/dialog/Dialog"
-import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { LoadingPage } from "~/components/LoadingPage"
+import { PostQuotePopUp } from "~/features/postQuote"
 
 export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 	const ulRef = useRef<HTMLUListElement>(null)

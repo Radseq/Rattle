@@ -7,7 +7,6 @@ import { CONFIG } from "~/config"
 import { useRouter } from "next/router"
 import { LoadingPage } from "~/components/LoadingPage"
 import { useRef, useState } from "react"
-import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { PostPoll } from "~/components/postsPage/PostPoll"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
@@ -24,6 +23,7 @@ import { useAuth } from "@clerk/nextjs"
 import { Dialog } from "~/components/dialog/Dialog"
 import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
 import { Layout } from "~/features/layout"
+import { PostQuotePopUp } from "~/features/postQuote"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const username = props.params?.username as string

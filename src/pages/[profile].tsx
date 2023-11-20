@@ -24,9 +24,9 @@ import {
 } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
 import { type PostWithAuthor } from "~/components/post/types"
-import { PostQuotePopUp } from "~/components/postsPage/PostQuotePopUp"
 import { Dialog } from "~/components/dialog/Dialog"
 import { Layout } from "~/features/layout"
+import { PostQuotePopUp } from "~/features/postQuote"
 
 dayjs.extend(relativeTime)
 
