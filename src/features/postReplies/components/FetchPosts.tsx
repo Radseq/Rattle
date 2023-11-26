@@ -153,7 +153,8 @@ export const FetchPosts = forwardRef<RefetchPostHandle, Props>((props, ref) => {
 				{postReplies?.map((reply) => (
 					<PostItem
 						key={reply.post.id}
-						postWithUser={reply}
+						createdPostTime={reply.post.createdAt}
+						postAuthor={reply.author}
 						onClickCapture={(clickCapture) => {
 							handlePostClick(clickCapture, reply)
 						}}
@@ -162,34 +163,6 @@ export const FetchPosts = forwardRef<RefetchPostHandle, Props>((props, ref) => {
 							authorId,
 							user.userId
 						)}
-						footer={
-							<PostFooter
-								isForwarded={reply.signInUser?.isForwarded ?? false}
-								onForwardClick={() => {
-									if (reply.signInUser?.isForwarded ?? false) {
-										removePostForward.mutate(reply.post.id)
-									} else {
-										forwardPost.mutate(reply.post.id)
-									}
-								}}
-								onLikeClick={() => {
-									if (reply.signInUser?.isLiked ?? false) {
-										unlikePost.mutate(reply.post.id)
-									} else {
-										likePost.mutate(reply.post.id)
-									}
-								}}
-								onQuoteClick={() => {
-									setQuotePopUp(reply)
-								}}
-								sharedCount={reply.post.quotedCount + reply.post.forwardsCount}
-								isLiked={reply.signInUser?.isLiked ?? false}
-								likeCount={reply.post.likeCount}
-								username={reply.author.username}
-								replyCount={reply.post.replyCount}
-								postId={reply.post.id}
-							/>
-						}
 					>
 						<PostContentSelector
 							post={reply.post}
@@ -199,6 +172,32 @@ export const FetchPosts = forwardRef<RefetchPostHandle, Props>((props, ref) => {
 									choiceId,
 								})
 							}
+						/>
+						<PostFooter
+							isForwarded={reply.signInUser?.isForwarded ?? false}
+							onForwardClick={() => {
+								if (reply.signInUser?.isForwarded ?? false) {
+									removePostForward.mutate(reply.post.id)
+								} else {
+									forwardPost.mutate(reply.post.id)
+								}
+							}}
+							onLikeClick={() => {
+								if (reply.signInUser?.isLiked ?? false) {
+									unlikePost.mutate(reply.post.id)
+								} else {
+									likePost.mutate(reply.post.id)
+								}
+							}}
+							onQuoteClick={() => {
+								setQuotePopUp(reply)
+							}}
+							sharedCount={reply.post.quotedCount + reply.post.forwardsCount}
+							isLiked={reply.signInUser?.isLiked ?? false}
+							likeCount={reply.post.likeCount}
+							username={reply.author.username}
+							replyCount={reply.post.replyCount}
+							postId={reply.post.id}
 						/>
 					</PostItem>
 				))}

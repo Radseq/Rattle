@@ -151,7 +151,8 @@ export const FetchPosts: FC<{
 				{posts?.map(({ author, post, signInUser }) => (
 					<PostItem
 						key={post.id}
-						postWithUser={{ author, post, signInUser }}
+						createdPostTime={post.createdAt}
+						postAuthor={author}
 						onClickCapture={(clickCapture) => {
 							handlePostClick(clickCapture, { author, post, signInUser })
 						}}
@@ -160,34 +161,6 @@ export const FetchPosts: FC<{
 							signInUserId,
 							author.id
 						)}
-						footer={
-							<PostFooter
-								isForwarded={signInUser?.isForwarded ?? false}
-								onForwardClick={() => {
-									if (signInUser?.isForwarded ?? false) {
-										removePostForward.mutate(post.id)
-									} else {
-										forwardPost.mutate(post.id)
-									}
-								}}
-								onLikeClick={() => {
-									if (signInUser?.isLiked ?? false) {
-										unlikePost.mutate(post.id)
-									} else {
-										likePost.mutate(post.id)
-									}
-								}}
-								onQuoteClick={() => {
-									setQuotePopUp({ author, post, signInUser })
-								}}
-								sharedCount={post.quotedCount + post.forwardsCount}
-								isLiked={signInUser?.isLiked ?? false}
-								likeCount={post.likeCount}
-								username={author.username}
-								replyCount={post.replyCount}
-								postId={post.id}
-							/>
-						}
 					>
 						<PostContentSelector
 							post={post}
@@ -197,6 +170,32 @@ export const FetchPosts: FC<{
 									choiceId,
 								})
 							}
+						/>
+						<PostFooter
+							isForwarded={signInUser?.isForwarded ?? false}
+							onForwardClick={() => {
+								if (signInUser?.isForwarded ?? false) {
+									removePostForward.mutate(post.id)
+								} else {
+									forwardPost.mutate(post.id)
+								}
+							}}
+							onLikeClick={() => {
+								if (signInUser?.isLiked ?? false) {
+									unlikePost.mutate(post.id)
+								} else {
+									likePost.mutate(post.id)
+								}
+							}}
+							onQuoteClick={() => {
+								setQuotePopUp({ author, post, signInUser })
+							}}
+							sharedCount={post.quotedCount + post.forwardsCount}
+							isLiked={signInUser?.isLiked ?? false}
+							likeCount={post.likeCount}
+							username={author.username}
+							replyCount={post.replyCount}
+							postId={post.id}
 						/>
 					</PostItem>
 				))}

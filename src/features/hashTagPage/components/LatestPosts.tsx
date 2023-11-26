@@ -149,7 +149,8 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 				{posts?.map(({ author, post, signInUser }) => (
 					<PostItem
 						key={post.id}
-						postWithUser={{ author, post, signInUser }}
+						createdPostTime={post.createdAt}
+						postAuthor={author}
 						onClickCapture={(clickCapture) => {
 							handlePostClick(clickCapture, { author, post, signInUser })
 						}}
@@ -158,34 +159,6 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 							user.userId,
 							author.id
 						)}
-						footer={
-							<PostFooter
-								isForwarded={signInUser?.isForwarded ?? false}
-								onForwardClick={() => {
-									if (signInUser?.isForwarded ?? false) {
-										removePostForward.mutate(post.id)
-									} else {
-										forwardPost.mutate(post.id)
-									}
-								}}
-								onLikeClick={() => {
-									if (signInUser?.isLiked ?? false) {
-										unlikePost.mutate(post.id)
-									} else {
-										likePost.mutate(post.id)
-									}
-								}}
-								onQuoteClick={() => {
-									setQuotePopUp({ author, post, signInUser })
-								}}
-								sharedCount={post.quotedCount + post.forwardsCount}
-								isLiked={signInUser?.isLiked ?? false}
-								likeCount={post.likeCount}
-								username={author.username}
-								replyCount={post.replyCount}
-								postId={post.id}
-							/>
-						}
 					>
 						<PostContentSelector
 							post={post}
@@ -195,6 +168,32 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 									choiceId,
 								})
 							}
+						/>
+						<PostFooter
+							isForwarded={signInUser?.isForwarded ?? false}
+							onForwardClick={() => {
+								if (signInUser?.isForwarded ?? false) {
+									removePostForward.mutate(post.id)
+								} else {
+									forwardPost.mutate(post.id)
+								}
+							}}
+							onLikeClick={() => {
+								if (signInUser?.isLiked ?? false) {
+									unlikePost.mutate(post.id)
+								} else {
+									likePost.mutate(post.id)
+								}
+							}}
+							onQuoteClick={() => {
+								setQuotePopUp({ author, post, signInUser })
+							}}
+							sharedCount={post.quotedCount + post.forwardsCount}
+							isLiked={signInUser?.isLiked ?? false}
+							likeCount={post.likeCount}
+							username={author.username}
+							replyCount={post.replyCount}
+							postId={post.id}
 						/>
 					</PostItem>
 				))}

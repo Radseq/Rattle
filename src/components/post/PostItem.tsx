@@ -1,10 +1,10 @@
-import type { FC, PropsWithChildren, ReactNode } from "react"
+import type { FC, PropsWithChildren } from "react"
 
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { Icon } from "~/components/Icon"
-import type { PostProfileType, PostWithAuthor } from "./types"
-import { ProfileAvatarImageUrl } from "~/features/profile"
+import type { PostProfileType } from "./types"
+import { type PostAuthor, ProfileAvatarImageUrl } from "~/features/profile"
 import { PostTitle } from "../postsPage/PostTitle"
 import { PostOptionMenu } from "../postsPage/PostOptionMenu"
 
@@ -16,13 +16,12 @@ export type ClickCapture = {
 
 export const PostItem: FC<
 	{
-		postWithUser: PostWithAuthor
+		postAuthor: PostAuthor
+		createdPostTime: string
 		menuItemsType: PostProfileType
 		onClickCapture: (clickCapture: ClickCapture) => void
-		footer?: ReactNode
 	} & PropsWithChildren
-> = ({ postWithUser, menuItemsType, onClickCapture, footer, children }) => {
-	const { post, author } = postWithUser
+> = ({ postAuthor, createdPostTime, menuItemsType, onClickCapture, children }) => {
 	return (
 		<li
 			className="cursor-pointer rounded-lg py-2 hover:bg-gray-100"
@@ -33,15 +32,14 @@ export const PostItem: FC<
 			}}
 		>
 			<article className="flex">
-				<ProfileAvatarImageUrl src={author.profileImageUrl} />
+				<ProfileAvatarImageUrl src={postAuthor.profileImageUrl} />
 				<div className="w-full pl-2">
 					<PostTitle
-						fullName={author.fullName}
-						username={author.username}
-						createdAt={post.createdAt}
+						fullName={postAuthor.fullName}
+						username={postAuthor.username}
+						createdAt={createdPostTime}
 					/>
 					{children}
-					{footer}
 				</div>
 				{menuItemsType !== "view" && (
 					<div className="group relative flex h-12 w-1/12 justify-center rounded-full hover:bg-gray-200">
