@@ -23,10 +23,7 @@ import {
 	useGetProfile,
 } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
-import { type PostWithAuthor } from "~/components/post/types"
-import { Dialog } from "~/components/dialog/Dialog"
 import { Layout } from "~/features/layout"
-import { PostQuotePopUp } from "~/features/postQuote"
 
 dayjs.extend(relativeTime)
 
@@ -70,9 +67,6 @@ const ProfilePage: NextPage<{
 	username: string
 }> = ({ username }) => {
 	const [showModal, setShowModal] = useState<boolean>()
-
-	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
-	const [quoteMessage, setQuoteMessage] = useState<string>()
 
 	const user = useAuth()
 	const { profile, isUserFollowProfile, watchedWatchingCount, setWatchedWatching } =
@@ -127,18 +121,6 @@ const ProfilePage: NextPage<{
 				})
 			},
 		})
-
-	const quotePost = api.posts.createQuotedPost.useMutation({
-		onSuccess: () => {
-			setQuotePopUp(null)
-			window.location.reload()
-		},
-		onError: () => {
-			toast.error("Failed to quote post! Please try again later", {
-				duration: CONFIG.TOAST_ERROR_DURATION_MS,
-			})
-		},
-	})
 
 	return (
 		<>
@@ -224,30 +206,7 @@ const ProfilePage: NextPage<{
 							<ProfileWatchedWatching watchedWatchingCount={watchedWatchingCount} />
 						)}
 					</article>
-					<FetchPosts
-						userId={user.userId}
-						authorId={profile.id}
-						postQuote={(post) => setQuotePopUp(post)}
-					/>
-					{quotePopUp && user && (
-						<Dialog
-							open={quotePopUp != null && user != null}
-							onClose={() => setQuotePopUp(null)}
-						>
-							<PostQuotePopUp
-								author={quotePopUp.author}
-								createdAt={quotePopUp.post.createdAt}
-								message={quotePopUp.post.content}
-								onPostQuote={() => {
-									quotePost.mutate({
-										content: quoteMessage ?? "",
-										quotedPostId: quotePopUp.post.id,
-									})
-								}}
-								onMessageChange={(message) => setQuoteMessage(message)}
-							/>
-						</Dialog>
-					)}
+					<FetchPosts userId={user.userId} authorId={profile.id} />
 				</section>
 			</Layout>
 		</>
