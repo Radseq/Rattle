@@ -2,7 +2,7 @@ import { type FC } from "react"
 import Link from "next/link"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { type Post } from "./types"
-import { PostQuoteItem } from "../postsPage/PostQuoteItem"
+import { PostQuoteItem } from "../../features/postQuote/components/PostQuoteItem"
 import { PostPoll } from "../postsPage/PostPoll"
 import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
 

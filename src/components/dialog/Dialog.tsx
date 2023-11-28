@@ -16,6 +16,9 @@ export const Dialog: FC<{ open: boolean; onClose: () => void } & PropsWithChildr
 	}, [canOpen])
 
 	const handleClose = () => {
+		if (modalRef.current) {
+			modalRef.current.close()
+		}
 		setCanOpen(false)
 		onClose()
 	}

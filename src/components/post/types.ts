@@ -10,7 +10,7 @@ export type PostWithAuthor = {
 
 export type PostProfileType = "view" | "followedAuthor" | "notFollowedAuthor" | "own"
 
-type UserPollVotes = {
+export type UserPollVotes = {
 	id: number
 	choice: string
 	voteCount: number

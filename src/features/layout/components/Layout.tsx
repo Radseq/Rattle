@@ -22,7 +22,7 @@ export const Layout = (props: LayoutProps) => {
 						}}
 					/>
 				</header>
-				<main className="h-full w-full grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
+				<main className="h-full w-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
 					{props.children}
 				</main>
 				<aside className="hidden grow-0 md:block md:w-96">

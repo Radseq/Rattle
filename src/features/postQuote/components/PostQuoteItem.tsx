@@ -1,7 +1,7 @@
 import { type FC } from "react"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { PostTitle } from "./PostTitle"
+import { PostTitle } from "../../../components/postsPage/PostTitle"
 import { type PostAuthor, ProfileAvatarImageUrl } from "~/features/profile"
 import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
 dayjs.extend(relativeTime)
