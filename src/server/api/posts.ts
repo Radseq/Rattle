@@ -296,22 +296,23 @@ export const deletePollFromPost = async (postId: string) => {
 	}
 
 	const [deletePoll, deletePollChoices] = await Promise.all([
-		prisma.postPoll.delete({
-			where: {
-				postId,
-			},
-		}),
-		prisma.postPollChoices.deleteMany({
+		await prisma.postPollChoices.deleteMany({
 			where: {
 				pollId: poll.id,
 			},
 		}),
-		prisma.userPollVote.deleteMany({
+		await prisma.userPollVote.deleteMany({
 			where: {
 				postId,
 			},
 		}),
 	])
+
+	await prisma.postPoll.delete({
+		where: {
+			postId,
+		},
+	})
 
 	return deletePoll && deletePollChoices.count > 0
 }

@@ -13,6 +13,7 @@ import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type Post } from "~/components/post/types"
 import { type ProfileExtend } from "~/features/profile"
+import { getPostPollById } from "../posts"
 
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -135,7 +136,6 @@ export const profileRouter = createTRPCRouter({
 
 				result.newChoiceId = null
 				result.oldChoiceId = alreadyVoted.choiceId
-				return result
 			} else if (alreadyVoted) {
 				const updateVote = await ctx.prisma.userPollVote.update({
 					where: {
@@ -147,18 +147,33 @@ export const profileRouter = createTRPCRouter({
 				})
 				result.newChoiceId = updateVote.choiceId
 				result.oldChoiceId = alreadyVoted.choiceId
-				return result
-			}
-			const addVote = await ctx.prisma.userPollVote.create({
-				data: {
-					userId: ctx.authUserId,
-					choiceId: input.choiceId,
-					postId: input.postId,
-				},
-			})
+			} else {
+				const addVote = await ctx.prisma.userPollVote.create({
+					data: {
+						userId: ctx.authUserId,
+						choiceId: input.choiceId,
+						postId: input.postId,
+					},
+				})
 
-			result.newChoiceId = addVote.choiceId
-			result.oldChoiceId = null
+				result.newChoiceId = addVote.choiceId
+				result.oldChoiceId = null
+			}
+
+			const postCacheKey: CacheSpecialKey = { id: input.postId, type: "post" }
+			const post = await getCacheData<Post>(postCacheKey)
+			if (post) {
+				const poll = await getPostPollById(input.postId)
+				if (poll) {
+					post.poll = {
+						choiceVotedBySignInUser: undefined,
+						endDate: poll?.endDate,
+						userVotes: poll?.userVotes,
+					}
+				}
+				void setCacheData(postCacheKey, post, MAX_CACHE_POST_LIFETIME_IN_SECONDS)
+			}
+
 			return result
 		}),
 	setPostLiked: privateProcedure
