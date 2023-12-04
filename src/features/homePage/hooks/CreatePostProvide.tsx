@@ -1,0 +1,35 @@
+import React, {
+	type Dispatch,
+	type PropsWithChildren,
+	type SetStateAction,
+	useContext,
+	useMemo,
+	useState,
+} from "react"
+
+export type CreatePost = {
+	isCreatedPost: boolean
+	setIsCreatedPost: Dispatch<SetStateAction<boolean>>
+}
+
+const CreatePostContext = React.createContext<CreatePost>({
+	isCreatedPost: false,
+	setIsCreatedPost: (prevState: SetStateAction<boolean>) => prevState,
+})
+
+const CreatePostProvider = (props: PropsWithChildren) => {
+	const [isCreatedPost, setIsCreatedPost] = useState<boolean>(false)
+
+	const value = useMemo(
+		() => ({ isCreatedPost, setIsCreatedPost }),
+		[isCreatedPost, setIsCreatedPost]
+	)
+
+	return <CreatePostContext.Provider value={value}>{props.children}</CreatePostContext.Provider>
+}
+
+const CreatePostConsumer = CreatePostContext.Consumer
+
+const useCreatePost = () => useContext(CreatePostContext)
+
+export { CreatePostProvider, CreatePostConsumer, useCreatePost }

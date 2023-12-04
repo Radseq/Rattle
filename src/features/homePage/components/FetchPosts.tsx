@@ -1,5 +1,5 @@
 import { type FC, useEffect, useRef, useState } from "react"
-import { useGetHomePosts } from "../hooks"
+import { useCreatePost, useGetHomePosts } from "../hooks"
 import { type ClickCapture, PostItem } from "~/components/post/PostItem"
 import { PostFooter } from "~/components/postsPage/PostFooter"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
@@ -15,9 +15,7 @@ import { PostQuote } from "~/features/postQuote"
 
 export const FetchPosts: FC<{
 	signInUserId: string
-	forceRefetch: boolean
-	refetchComplete: () => void
-}> = ({ signInUserId, forceRefetch, refetchComplete }) => {
+}> = ({ signInUserId }) => {
 	const ulRef = useRef<HTMLUListElement>(null)
 	const router = useRouter()
 
@@ -25,18 +23,20 @@ export const FetchPosts: FC<{
 		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
 	)
 
+	const { isCreatedPost, setIsCreatedPost } = useCreatePost()
+
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)
 
 	useEffect(() => {
 		const asyncRefetch = async () => {
-			if (forceRefetch) {
+			if (isCreatedPost) {
 				await refetch()
-				refetchComplete()
+				setIsCreatedPost(false)
 			}
 		}
 
-		asyncRefetch().catch(() => refetchComplete())
-	}, [forceRefetch, refetchComplete, refetch])
+		asyncRefetch().catch(() => setIsCreatedPost(false))
+	}, [isCreatedPost, setIsCreatedPost, refetch])
 
 	const handleNavigateToPost = (postId: string, authorUsername: string) => {
 		// preventing navigate when user selecting text e.g post content text

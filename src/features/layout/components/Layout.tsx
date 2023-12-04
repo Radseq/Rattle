@@ -1,5 +1,5 @@
 import { SignUp, useUser } from "@clerk/nextjs"
-import type { PropsWithChildren, ReactNode } from "react"
+import { type PropsWithChildren, type ReactNode } from "react"
 import { Panel } from "../../../components/Panel"
 import { ProfilePanel } from "~/features/profile"
 import { Menu } from "./Menu"
@@ -16,11 +16,7 @@ export const Layout = (props: LayoutProps) => {
 		<div className="flex">
 			<div className="m-auto flex">
 				<header className="w-16 min-w-[40px] xl:w-72">
-					<Menu
-						onCreatePostClick={() => {
-							props.onCreatePostClick && props.onCreatePostClick()
-						}}
-					/>
+					<Menu />
 				</header>
 				<main className="h-full w-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
 					{props.children}

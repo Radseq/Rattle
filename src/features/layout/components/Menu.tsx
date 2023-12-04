@@ -1,14 +1,14 @@
 import Link from "next/link"
-import { type FC, useState } from "react"
+import { useState } from "react"
 import { HomeIcon } from "./HomeIcon"
 import { MenuItem } from "./MenuItem"
 import { MessageIcon } from "./MessageIcon"
 import { AddPostIcon } from "./AddPostIcon"
 import { Dialog } from "~/components/dialog/Dialog"
 import { useUser } from "@clerk/nextjs"
-import { ConnectorCreatePost } from "~/features/homePage"
+import { CreatePost } from "~/features/homePage"
 
-export const Menu: FC<{ onCreatePostClick?: () => void }> = ({ onCreatePostClick }) => {
+export const Menu = () => {
 	const { user, isSignedIn } = useUser()
 	const homeUrl = isSignedIn ? "/home" : "/"
 	const [quotePopUp, setQuotePopUp] = useState(false)
@@ -36,12 +36,7 @@ export const Menu: FC<{ onCreatePostClick?: () => void }> = ({ onCreatePostClick
 
 			{quotePopUp && isSignedIn && (
 				<Dialog open={isSignedIn ?? false} onClose={() => setQuotePopUp(false)}>
-					<ConnectorCreatePost
-						refetch={() => {
-							onCreatePostClick && onCreatePostClick()
-						}}
-						profileImageUrl={user.profileImageUrl}
-					/>
+					<CreatePost profileImageUrl={user.profileImageUrl} />
 				</Dialog>
 			)}
 		</ul>
