@@ -1,18 +1,13 @@
 import React, {
-	type Dispatch,
 	type PropsWithChildren,
 	type SetStateAction,
 	useContext,
 	useMemo,
 	useState,
 } from "react"
+import { type CreatedPost } from "../types"
 
-export type CreatePost = {
-	isCreatedPost: boolean
-	setIsCreatedPost: Dispatch<SetStateAction<boolean>>
-}
-
-const CreatePostContext = React.createContext<CreatePost>({
+const CreatePostContext = React.createContext<CreatedPost>({
 	isCreatedPost: false,
 	setIsCreatedPost: (prevState: SetStateAction<boolean>) => prevState,
 })

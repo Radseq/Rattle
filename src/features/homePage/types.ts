@@ -1,3 +1,5 @@
+import type { Dispatch, SetStateAction } from "react"
+
 export type PollLength = {
 	days: number
 	hours: number
@@ -12,4 +14,9 @@ export type Poll = {
 export type PostContent = {
 	message: string
 	poll?: Poll
+}
+
+export type CreatedPost = {
+	isCreatedPost: boolean
+	setIsCreatedPost: Dispatch<SetStateAction<boolean>>
 }
