@@ -1,5 +1,5 @@
 import { type FC, useEffect, useRef, useState } from "react"
-import { useCreatePost, useGetHomePosts } from "../hooks"
+import { useGetHomePosts } from "../hooks"
 import { type ClickCapture, PostItem } from "~/components/post/PostItem"
 import { PostFooter } from "~/components/postsPage/PostFooter"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
@@ -12,6 +12,7 @@ import { LoadingPage } from "~/components/LoadingPage"
 import { useRouter } from "next/router"
 import { Dialog } from "~/components/dialog/Dialog"
 import { PostQuote } from "~/features/postQuote"
+import { useCreatePost } from "./CreatePostProvide"
 
 export const FetchPosts: FC<{
 	signInUserId: string
