@@ -54,7 +54,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 						users={usersToFollow}
 						onFollowClick={(id) => addUserToFollow.mutate(id)}
 					>
-						<h1 className="p-2 text-2xl font-semibold">Who to follow</h1>
+						<h1 className="px-2 pb-2 text-2xl font-semibold">Who to follow</h1>
 					</WhoToFollow>
 				}
 			>
