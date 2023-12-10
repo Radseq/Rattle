@@ -10,7 +10,6 @@ export const PostContentSelector: FC<{
 	post: Post
 	pollVote: (id: number) => void
 }> = ({ post, pollVote }) => {
-	const useTime = useTimeLeft(post.createdAt.toString(), post.poll?.endDate)
 	if (post.quotedPost) {
 		return (
 			<div>
@@ -28,6 +27,7 @@ export const PostContentSelector: FC<{
 			</div>
 		)
 	} else if (post.poll) {
+		const useTime = useTimeLeft(post.createdAt.toString(), post.poll.endDate)
 		return (
 			<div>
 				<PostMessageRenderer message={post.content} />
