@@ -24,12 +24,12 @@ export const Layout = (props: LayoutProps) => {
 				<aside className="hidden grow-0 md:block md:w-96">
 					<SearchInput />
 					<Panel>
-						<div className="sticky top-0 w-full md:p-2 lg:p-4">
+						<div className="sticky">
 							{!isSignedIn && (
 								<SignUp
 									appearance={{
 										elements: {
-											rootBox: "mx-auto pl-4 max-w-full bg-gray-200",
+											rootBox: "mx-auto max-w-full bg-gray-200",
 											card: "p-1 shadow-none max-w-full bg-gray-200",
 										},
 									}}
