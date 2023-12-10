@@ -17,7 +17,7 @@ export const WhoToFollow: FC<WhoToFollow> = (props) => {
 			<ul className="hover:bg-gray-300">
 				{props.users &&
 					props.users.map((user) => (
-						<li key={user.id} className="flex md:p-0 lg:p-4">
+						<li key={user.id} className="flex">
 							<Link className="w-full" href={`/${user.username}`}>
 								<ProfileSimple
 									profileImageUrl={user.profileImageUrl}
@@ -39,7 +39,7 @@ export const WhoToFollow: FC<WhoToFollow> = (props) => {
 					))}
 			</ul>
 			<Link
-				className="flex w-full rounded-xl p-4 font-bold text-blue-500 hover:bg-gray-300"
+				className="flex w-full rounded-xl p-2 font-bold text-blue-500 hover:bg-gray-300"
 				href={"/trends"}
 			>
 				Show more
