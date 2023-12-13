@@ -1,7 +1,7 @@
 import { type FC, useRef, useState } from "react"
 import { api } from "~/utils/api"
 import { LoadingPage } from "../../../components/LoadingPage"
-import { type ClickCapture, PostItem } from "../../../components/post/PostItem"
+import { type ClickCapture, PostItemForm } from "../../../components/post/PostItemForm"
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
@@ -139,7 +139,7 @@ export const FetchPosts: FC<{
 		<>
 			<ul ref={ulRef}>
 				{posts?.map(({ author, post, signInUser }) => (
-					<PostItem
+					<PostItemForm
 						key={post.id}
 						createdPostTime={post.createdAt}
 						postAuthor={author}
@@ -187,7 +187,7 @@ export const FetchPosts: FC<{
 							replyCount={post.replyCount}
 							postId={post.id}
 						/>
-					</PostItem>
+					</PostItemForm>
 				))}
 			</ul>
 			{quotePopUp && (

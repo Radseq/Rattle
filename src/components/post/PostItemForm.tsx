@@ -14,7 +14,7 @@ export type ClickCapture = {
 	action: "deletePost" | "navigation"
 }
 
-export const PostItem: FC<
+export const PostItemForm: FC<
 	{
 		postAuthor: PostAuthor
 		createdPostTime: string

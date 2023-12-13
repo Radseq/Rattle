@@ -2,7 +2,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react"
 import { useGetPostReplies } from "../hooks"
 import { useAuth } from "@clerk/nextjs"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
-import { type ClickCapture, PostItem } from "~/components/post/PostItem"
+import { type ClickCapture, PostItemForm } from "~/components/post/PostItemForm"
 import { PostFooter } from "~/components/postsPage/PostFooter"
 import { getPostProfileType } from "~/utils/helpers"
 import toast from "react-hot-toast"
@@ -151,7 +151,7 @@ export const FetchPosts = forwardRef<RefetchPostHandle, Props>((props, ref) => {
 		<>
 			<ul className="">
 				{postReplies?.map((reply) => (
-					<PostItem
+					<PostItemForm
 						key={reply.post.id}
 						createdPostTime={reply.post.createdAt}
 						postAuthor={reply.author}
@@ -199,7 +199,7 @@ export const FetchPosts = forwardRef<RefetchPostHandle, Props>((props, ref) => {
 							replyCount={reply.post.replyCount}
 							postId={reply.post.id}
 						/>
-					</PostItem>
+					</PostItemForm>
 				))}
 			</ul>
 			{quotePopUp && (

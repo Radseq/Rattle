@@ -3,7 +3,7 @@ import router from "next/router"
 import { type FC, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { PostContentSelector } from "~/components/post/PostContentSelector"
-import { type ClickCapture, PostItem } from "~/components/post/PostItem"
+import { type ClickCapture, PostItemForm } from "~/components/post/PostItemForm"
 import { type PostWithAuthor } from "~/components/post/types"
 import { PostFooter } from "~/components/postsPage/PostFooter"
 import { CONFIG } from "~/config"
@@ -147,7 +147,7 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 
 			<ul ref={ulRef}>
 				{posts?.map(({ author, post, signInUser }) => (
-					<PostItem
+					<PostItemForm
 						key={post.id}
 						createdPostTime={post.createdAt}
 						postAuthor={author}
@@ -195,7 +195,7 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 							replyCount={post.replyCount}
 							postId={post.id}
 						/>
-					</PostItem>
+					</PostItemForm>
 				))}
 			</ul>
 		</>
