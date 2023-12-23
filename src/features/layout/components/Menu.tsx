@@ -16,19 +16,19 @@ export const Menu = () => {
 	return (
 		<ul className="my-2 rounded-xl border bg-gray-200">
 			<MenuItem>
-				<Link href={homeUrl}>
+				<Link href={homeUrl} className="w-full p-2">
 					<HomeIcon />
 					<span className="my-auto hidden xl:inline">Home</span>
 				</Link>
 			</MenuItem>
 			<MenuItem>
-				<Link href={"/messages"}>
+				<Link href={"/messages"} className="w-full p-2">
 					<MessageIcon />
 					<span className="my-auto hidden xl:inline">Messages</span>
 				</Link>
 			</MenuItem>
 			<MenuItem onClick={() => setQuotePopUp(true)}>
-				<div>
+				<div className="w-full p-2">
 					<AddPostIcon />
 					<span className="my-auto hidden cursor-pointer xl:inline">New post</span>
 				</div>

@@ -6,7 +6,7 @@ export const MenuItem: FC<{ children: ReactNode; onClick?: () => void }> = ({
 }) => (
 	<li
 		onClick={onClick}
-		className="flex rounded-lg border-none p-2 text-lg  hover:bg-gray-300 xl:m-2"
+		className="flex rounded-lg border-none text-lg  hover:bg-gray-300 xl:m-2"
 	>
 		{children}
 	</li>
