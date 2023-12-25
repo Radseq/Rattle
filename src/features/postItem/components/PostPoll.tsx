@@ -1,5 +1,5 @@
 import { type FC } from "react"
-import { type Poll } from "../post/types"
+import { type Poll } from "../types"
 import { percentageOfTotalValue } from "~/utils/helpers"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
