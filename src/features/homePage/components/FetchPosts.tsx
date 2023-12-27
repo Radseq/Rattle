@@ -4,7 +4,7 @@ import { type PostWithAuthor } from "~/components/post/types"
 import { LoadingPage } from "~/components/LoadingPage"
 import { Dialog } from "~/components/dialog/Dialog"
 import { PostQuote } from "~/features/postQuote"
-import { PostItem } from "./PostItem"
+import { PostItem } from "~/features/postItem"
 
 export const FetchPosts: FC<{
 	signInUserId: string

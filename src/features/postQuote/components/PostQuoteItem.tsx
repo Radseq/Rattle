@@ -3,7 +3,8 @@ import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { type PostAuthor, ProfileAvatarImageUrl } from "~/features/profile"
 import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
-import { PostTitle } from "~/features/postItem"
+import { PostTitle } from "~/features/postItem/components/PostTitle"
+
 dayjs.extend(relativeTime)
 
 export const PostQuoteItem: FC<{ author: PostAuthor; createdAt: string; message: string }> = ({

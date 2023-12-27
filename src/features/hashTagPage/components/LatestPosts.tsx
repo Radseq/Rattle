@@ -2,10 +2,8 @@ import { useAuth } from "@clerk/nextjs"
 import router from "next/router"
 import { type FC, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { PostContentSelector } from "~/components/post/PostContentSelector"
 import { type ClickCapture, PostItemForm } from "~/components/post/PostItemForm"
 import { type PostWithAuthor } from "~/components/post/types"
-import { PostFooter } from "~/components/postsPage/PostFooter"
 import { CONFIG } from "~/config"
 import { api } from "~/utils/api"
 import { getPostProfileType } from "~/utils/helpers"
@@ -13,6 +11,7 @@ import { useGetPosts } from "../hooks"
 import { Dialog } from "~/components/dialog/Dialog"
 import { LoadingPage } from "~/components/LoadingPage"
 import { PostQuote } from "~/features/postQuote"
+import { PostContentSelector, PostFooter } from "~/features/postItem"
 
 export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 	const ulRef = useRef<HTMLUListElement>(null)

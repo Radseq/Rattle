@@ -1,10 +1,10 @@
 import { type FC } from "react"
 import Link from "next/link"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
-import { type Post } from "../types"
 import { PostPoll } from "./PostPoll"
-import PostMessageRenderer from "./PostMessageRenderer"
 import { PostQuoteItem } from "~/features/postQuote/components/PostQuoteItem"
+import { type Post } from "~/components/post/types"
+import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
 
 export const PostContentSelector: FC<{
 	post: Post

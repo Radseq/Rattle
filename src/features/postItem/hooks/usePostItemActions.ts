@@ -1,8 +1,8 @@
 import { useRouter } from "next/router"
 import toast from "react-hot-toast"
-import { type ClickCapture } from "~/components/post/PostItemForm"
 import { CONFIG } from "~/config"
 import { api } from "~/utils/api"
+import { type ClickCapture } from "../components"
 
 export const usePostItemActions = (refetch: () => Promise<void>) => {
 	const router = useRouter()
