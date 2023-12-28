@@ -1,8 +1,12 @@
 import { type FC } from "react"
-import { type PostWithAuthor } from "~/components/post/types"
 import { usePostItemActions } from "../hooks/usePostItemActions"
 import { getPostProfileType } from "~/utils/helpers"
-import { PostContentSelector, PostFooter, PostItemForm } from "~/features/postItem"
+import {
+	PostContentSelector,
+	PostFooter,
+	PostItemForm,
+	type PostWithAuthor,
+} from "~/features/postItem"
 
 export const PostItem: FC<{
 	signInUserId: string

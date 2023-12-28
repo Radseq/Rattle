@@ -3,7 +3,7 @@ import { getPostById } from "~/server/api/posts"
 import { getPostAuthorByUsername } from "~/server/api/profile"
 import { useRef, useState } from "react"
 
-import type { Poll, Post, UserPollVotes } from "~/components/post/types"
+import type { Poll, Post, UserPollVotes } from "~/features/postItem"
 import {
 	CreatePostReplyConnector,
 	FetchPosts,

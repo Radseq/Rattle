@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { type PostWithAuthor } from "~/components/post/types"
 import { useCreatePost, useLoadNextPage } from "~/features/homePage"
+import { type PostWithAuthor } from "~/features/postItem"
 import { api } from "~/utils/api"
 
 //todo move to config

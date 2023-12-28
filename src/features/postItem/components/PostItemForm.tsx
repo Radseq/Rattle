@@ -3,10 +3,10 @@ import type { FC, PropsWithChildren } from "react"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { Icon } from "~/components/Icon"
-import { type PostProfileType } from "~/components/post/types"
 import { type PostAuthor, ProfileAvatarImageUrl } from "~/features/profile"
 import { PostOptionMenu } from "./PostOptionMenu"
 import { PostTitle } from "./PostTitle"
+import { type PostProfileType } from "../types"
 
 dayjs.extend(relativeTime)
 

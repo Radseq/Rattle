@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
-import type { PostWithAuthor } from "~/components/post/types"
 import { CONFIG } from "~/config"
+import { type PostWithAuthor } from "~/features/postItem"
 import { type PostAuthor } from "~/features/profile"
 import { getUserFollowList } from "~/server/api/follow"
 import { getPostById } from "~/server/api/posts"

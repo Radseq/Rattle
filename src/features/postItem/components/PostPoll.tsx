@@ -1,9 +1,9 @@
 import { type FC } from "react"
-import { type Poll } from "../types"
 import { percentageOfTotalValue } from "~/utils/helpers"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { type TimeLeft } from "~/hooks/useTimeLeft"
+import { type Poll } from "../types"
 dayjs.extend(relativeTime)
 
 const printTime = (word: "day" | "hour" | "minute", value: number) => {

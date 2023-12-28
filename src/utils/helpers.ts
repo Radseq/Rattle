@@ -1,7 +1,7 @@
 import { type User } from "@clerk/nextjs/dist/api"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { type PostProfileType } from "~/components/post/types"
+import { type PostProfileType } from "~/features/postItem"
 import { type PostAuthor } from "~/features/profile"
 
 dayjs.extend(relativeTime)

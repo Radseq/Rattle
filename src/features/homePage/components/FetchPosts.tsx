@@ -1,10 +1,9 @@
 import { type FC, useRef, useState } from "react"
 import { useGetHomePosts } from "../hooks"
-import { type PostWithAuthor } from "~/components/post/types"
 import { LoadingPage } from "~/components/LoadingPage"
 import { Dialog } from "~/components/dialog/Dialog"
 import { PostQuote } from "~/features/postQuote"
-import { PostItem } from "~/features/postItem"
+import { PostItem, type PostWithAuthor } from "~/features/postItem"
 
 export const FetchPosts: FC<{
 	signInUserId: string

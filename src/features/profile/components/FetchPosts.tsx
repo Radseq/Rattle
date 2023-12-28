@@ -1,7 +1,7 @@
 import { type FC, useRef, useState } from "react"
 import { LoadingPage } from "../../../components/LoadingPage"
 import { PostItem } from "../../postItem/components/PostItem"
-import { type PostWithAuthor } from "../../../components/post/types"
+import { type PostWithAuthor } from "../../postItem/types"
 import { useGetPostsByAuthor } from "../hooks"
 import { PostQuote } from "~/features/postQuote"
 import { Dialog } from "~/components/dialog/Dialog"

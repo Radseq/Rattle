@@ -1,9 +1,9 @@
 import { type FC, useState } from "react"
 import { PostQuotePopUp } from "./PostQuotePopUp"
-import { type PostWithAuthor } from "~/components/post/types"
 import { api } from "~/utils/api"
 import { CONFIG } from "~/config"
 import toast from "react-hot-toast"
+import { type PostWithAuthor } from "~/features/postItem"
 
 export const PostQuote: FC<{
 	quotedPost: PostWithAuthor

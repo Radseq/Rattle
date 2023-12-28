@@ -3,8 +3,8 @@ import Link from "next/link"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
 import { PostPoll } from "./PostPoll"
 import { PostQuoteItem } from "~/features/postQuote/components/PostQuoteItem"
-import { type Post } from "~/components/post/types"
 import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
+import { type Post } from "../types"
 
 export const PostContentSelector: FC<{
 	post: Post
