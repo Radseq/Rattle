@@ -1,9 +1,9 @@
 import Link from "next/link"
 import type { FC, PropsWithChildren } from "react"
 import { Panel } from "~/components/Panel"
-import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 import { type UserToFollow } from "../types"
+import { ProfileSimple } from "~/features/profile"
 
 type WhoToFollow = PropsWithChildren & {
 	onFollowClick: (id: string) => void

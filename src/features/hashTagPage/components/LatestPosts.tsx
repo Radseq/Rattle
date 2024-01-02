@@ -5,7 +5,6 @@ import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
 import { api } from "~/utils/api"
 import { getPostProfileType } from "~/utils/helpers"
-import { useGetPosts } from "../hooks"
 import { Dialog } from "~/components/dialog/Dialog"
 import { LoadingPage } from "~/components/LoadingPage"
 import { PostQuote } from "~/features/postQuote"
@@ -16,6 +15,7 @@ import {
 	PostItemForm,
 	type PostWithAuthor,
 } from "~/features/postItem"
+import { useGetPosts } from "../hooks/useGetPosts"
 
 export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 	const ulRef = useRef<HTMLUListElement>(null)

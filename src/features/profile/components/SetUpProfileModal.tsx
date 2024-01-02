@@ -79,7 +79,7 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel
 									side="right"
 									htmlFor="bannerImageUrl"
-								>{`${BANNER_MAX_LETTERS}/${bannerInput.charsleft}`}</StyledLabel>
+								>{`${BANNER_MAX_LETTERS}/${bannerInput.charsLeft}`}</StyledLabel>
 							</div>
 						</div>
 						<div className="mt-2">
@@ -95,7 +95,7 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel
 									side="right"
 									htmlFor="profileImageUrl"
-								>{`${PROFILE_MAX_LETTERS}/${profileInput.charsleft}`}</StyledLabel>
+								>{`${PROFILE_MAX_LETTERS}/${profileInput.charsLeft}`}</StyledLabel>
 							</div>
 						</div>
 						<div className="mt-2">
@@ -107,7 +107,7 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel
 									side="right"
 									htmlFor="webpageUrl"
-								>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsleft}`}</StyledLabel>
+								>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsLeft}`}</StyledLabel>
 							</div>
 						</div>
 						<div className="mt-2 flex-auto">
@@ -119,7 +119,7 @@ export const SetUpProfileModal: FC<{
 								<StyledLabel
 									side="right"
 									htmlFor="bio"
-								>{`${BIO_MAX_LETTERS}/${bioTextArea.charsleft}`}</StyledLabel>
+								>{`${BIO_MAX_LETTERS}/${bioTextArea.charsLeft}`}</StyledLabel>
 							</div>
 						</div>
 					</div>

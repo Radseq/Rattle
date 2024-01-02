@@ -1,9 +1,9 @@
 import { type FC } from "react"
 import { Icon } from "../../../components/Icon"
 import { ListItem } from "../../../components/styledHTMLElements/StyledListItem"
-import { HeartIcon } from "../../../components/post/HeartIcon"
-import { ReplyCountIcon } from "../../../components/post/ReplyCountIcon"
-import { SharedIcon } from "../../../components/post/SharedIcon"
+import { HeartIcon } from "./HeartIcon"
+import { ReplyCountIcon } from "./ReplyCountIcon"
+import { SharedIcon } from "./SharedIcon"
 
 export const PostFooter: FC<{
 	isForwarded: boolean

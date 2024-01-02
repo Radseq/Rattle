@@ -1,9 +1,8 @@
 import { type FC } from "react"
 import { Icon } from "~/components/Icon"
-import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
 import { PostSummary } from "./PostSummary"
-import { type PostAuthor } from "~/features/profile"
+import { type PostAuthor, ProfileSimple } from "~/features/profile"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { CONFIG } from "~/config"
@@ -58,7 +57,7 @@ export const OriginalPost: FC<{
 				) : (
 					<div>
 						<PostMessageRenderer message={post.content} />
-						<PostSummary postCreateDate={post.createdAt} />
+						<PostSummary postCreateDate={post.createdAt} viewCount={/*todo*/ 45322} />
 					</div>
 				)}
 			</div>

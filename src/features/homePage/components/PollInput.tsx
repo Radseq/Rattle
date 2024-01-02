@@ -2,14 +2,14 @@ import { type FC } from "react"
 import { StyledInput, StyledLabel } from "~/components/styledHTMLElements/FloatingStyles"
 import { useRestrictedInput } from "~/hooks/useRestrictedInput"
 
-const MAX_CHOISE_LENGTH = 25
+const MAX_CHOICE_LENGTH = 25
 
 export const PollInput: FC<{
 	index: number
 	initValue: string
 	onUpdateInput: (value: string) => void
 }> = ({ index, initValue, onUpdateInput }) => {
-	const inputPoll = useRestrictedInput(MAX_CHOISE_LENGTH, initValue)
+	const inputPoll = useRestrictedInput(MAX_CHOICE_LENGTH, initValue)
 	const pollOptionId = `pollOption${index}`
 	return (
 		<div className="relative my-2">
@@ -19,7 +19,7 @@ export const PollInput: FC<{
 				value={inputPoll.value}
 				onChange={(e) => {
 					inputPoll.onChange(e)
-					if (inputPoll.charsleft) {
+					if (inputPoll.charsLeft) {
 						onUpdateInput(e.target.value)
 					}
 				}}
@@ -30,7 +30,7 @@ export const PollInput: FC<{
 			<StyledLabel
 				side="right"
 				htmlFor={pollOptionId}
-			>{`${MAX_CHOISE_LENGTH}/${inputPoll.charsleft}`}</StyledLabel>
+			>{`${MAX_CHOICE_LENGTH}/${inputPoll.charsLeft}`}</StyledLabel>
 		</div>
 	)
 }
