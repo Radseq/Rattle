@@ -57,7 +57,7 @@ export const OriginalPost: FC<{
 				) : (
 					<div>
 						<PostMessageRenderer message={post.content} />
-						<PostSummary postCreateDate={post.createdAt} />
+						<PostSummary postCreateDate={post.createdAt} viewCount={/*todo*/ 45322} />
 					</div>
 				)}
 			</div>
