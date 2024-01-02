@@ -30,10 +30,10 @@ import {
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { fetchHomePosts } from "~/server/features/homePage"
 import { type Post as PrismaPost } from "@prisma/client"
-import type { Post, PostWithAuthor } from "~/components/post/types"
 import { isFollowed } from "../follow"
 import { type PostAuthor } from "~/features/profile"
 import { fetchProfilePosts } from "~/server/features/profile"
+import type { Post, PostWithAuthor } from "~/features/postItem"
 
 const postRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 

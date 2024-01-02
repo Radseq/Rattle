@@ -1,6 +1,6 @@
 import { type FC } from "react"
 import { DangerButton, PrimaryButton } from "../../../components/styledHTMLElements/StyledButtons"
-import { type PostProfileType } from "~/components/post/types"
+import { type PostProfileType } from "~/features/postItem"
 
 export const ActionButtonSelector: FC<{
 	profileType: PostProfileType

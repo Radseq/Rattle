@@ -11,7 +11,7 @@ import {
 
 import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
-import { type Post } from "~/components/post/types"
+import { type Post } from "~/features/postItem"
 import { type ProfileExtend } from "~/features/profile"
 import { getPostPollById } from "../posts"
 

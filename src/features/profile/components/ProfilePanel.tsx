@@ -8,7 +8,7 @@ export const ProfilePanel: FC<{ username: string; firstName: string }> = ({
 }) => {
 	return (
 		<div>
-			<h1 className="p-2 text-2xl font-semibold">Hello {firstName}</h1>
+			<h1 className="px-2 pb-2 text-2xl font-semibold">Hello {firstName}</h1>
 			<Link
 				href={username ? `/${username}` : "/"}
 				className="mb-2 flex justify-center rounded border 

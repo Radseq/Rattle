@@ -1,7 +1,7 @@
 import type { FC } from "react"
-import { Icon } from "../Icon"
-import { type PostProfileType } from "../post/types"
-import { ListItem } from "../styledHTMLElements/StyledListItem"
+import { Icon } from "../../../components/Icon"
+import { ListItem } from "../../../components/styledHTMLElements/StyledListItem"
+import { type PostProfileType } from "../types"
 
 export const PostOptionMenu: FC<{
 	onMenuItemClick: (action: "delete") => void

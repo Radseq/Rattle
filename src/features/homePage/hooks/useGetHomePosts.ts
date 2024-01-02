@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { type PostWithAuthor } from "~/components/post/types"
-import { useLoadNextPage } from "~/features/homePage"
+import { useCreatePost, useLoadNextPage } from "~/features/homePage"
+import { type PostWithAuthor } from "~/features/postItem"
 import { api } from "~/utils/api"
 
 //todo move to config
@@ -9,6 +9,7 @@ const SCROLL_THRESHOLD_IN_PX = 400
 
 export const useGetHomePosts = (ulHeightInPx: number | null) => {
 	const [posts, setPosts] = useState<PostWithAuthor[]>()
+	const { isCreatedPost, setIsCreatedPost } = useCreatePost()
 
 	const { data, fetchNextPage, refetch, isLoading } = api.posts.getHomePosts.useInfiniteQuery(
 		{
@@ -20,6 +21,17 @@ export const useGetHomePosts = (ulHeightInPx: number | null) => {
 	)
 
 	const loadNextPosts = useLoadNextPage(SCROLL_THRESHOLD_IN_PX, ulHeightInPx)
+
+	useEffect(() => {
+		const asyncRefetch = async () => {
+			if (isCreatedPost) {
+				await refetch()
+				setIsCreatedPost(false)
+			}
+		}
+
+		asyncRefetch().catch(() => setIsCreatedPost(false))
+	}, [isCreatedPost, setIsCreatedPost, refetch])
 
 	useEffect(() => {
 		if (loadNextPosts) {

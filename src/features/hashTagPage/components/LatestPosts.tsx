@@ -2,10 +2,6 @@ import { useAuth } from "@clerk/nextjs"
 import router from "next/router"
 import { type FC, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { PostContentSelector } from "~/components/post/PostContentSelector"
-import { type ClickCapture, PostItem } from "~/components/post/PostItem"
-import { type PostWithAuthor } from "~/components/post/types"
-import { PostFooter } from "~/components/postsPage/PostFooter"
 import { CONFIG } from "~/config"
 import { api } from "~/utils/api"
 import { getPostProfileType } from "~/utils/helpers"
@@ -13,6 +9,13 @@ import { useGetPosts } from "../hooks"
 import { Dialog } from "~/components/dialog/Dialog"
 import { LoadingPage } from "~/components/LoadingPage"
 import { PostQuote } from "~/features/postQuote"
+import {
+	type ClickCapture,
+	PostContentSelector,
+	PostFooter,
+	PostItemForm,
+	type PostWithAuthor,
+} from "~/features/postItem"
 
 export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 	const ulRef = useRef<HTMLUListElement>(null)
@@ -147,7 +150,7 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 
 			<ul ref={ulRef}>
 				{posts?.map(({ author, post, signInUser }) => (
-					<PostItem
+					<PostItemForm
 						key={post.id}
 						createdPostTime={post.createdAt}
 						postAuthor={author}
@@ -195,7 +198,7 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 							replyCount={post.replyCount}
 							postId={post.id}
 						/>
-					</PostItem>
+					</PostItemForm>
 				))}
 			</ul>
 		</>

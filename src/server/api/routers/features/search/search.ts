@@ -14,7 +14,7 @@ import {
 	isPostsQuotedByUser,
 } from "~/server/api/profile"
 import { getUserFollowList } from "~/server/api/follow"
-import { type PostWithAuthor } from "~/components/post/types"
+import { type PostWithAuthor } from "~/features/postItem"
 import { getPostById } from "~/server/api/posts"
 
 const MAX_USERS_COUNT = 20

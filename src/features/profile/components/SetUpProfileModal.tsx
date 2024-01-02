@@ -74,7 +74,7 @@ export const SetUpProfileModal: FC<{
 							<div className="relative">
 								<StyledInput id="bannerImageUrl" {...bannerInput} />
 								<StyledLabel htmlFor="bannerImageUrl" side="left">
-									Profile Image URL
+									Banner Image URL
 								</StyledLabel>
 								<StyledLabel
 									side="right"
@@ -82,7 +82,6 @@ export const SetUpProfileModal: FC<{
 								>{`${BANNER_MAX_LETTERS}/${bannerInput.charsleft}`}</StyledLabel>
 							</div>
 						</div>
-
 						<div className="mt-2">
 							<div className="relative">
 								<StyledInput
@@ -111,7 +110,6 @@ export const SetUpProfileModal: FC<{
 								>{`${WEBPAGE_MAX_LETTERS}/${webPageInput.charsleft}`}</StyledLabel>
 							</div>
 						</div>
-
 						<div className="mt-2 flex-auto">
 							<div className="relative">
 								<StyledTextArea id="bio" placeholder="" {...bioTextArea} rows={4} />

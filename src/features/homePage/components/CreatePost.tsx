@@ -1,13 +1,13 @@
-import { type FC, type PropsWithChildren, useReducer, useState } from "react"
-import { Icon } from "~/components/Icon"
-import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
+import { type FC, useReducer, useState } from "react"
 import { pollChoicesReducer, pollLengthReducer } from "../hooks"
 import { api } from "~/utils/api"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
 import { type PostContent } from "../types"
 import { CreatePoll } from "./CreatePoll"
-import { ProfileAvatarImageUrl } from "~/features/profile"
+import { CreatePostForm } from "./CreatePostForm"
+import { CreatePostFooter } from "./CreatePostFooter"
+import { useCreatePost } from "./CreatePostProvide"
 
 const INIT_POLL_LENGTH = {
 	days: 1,
@@ -17,55 +17,9 @@ const INIT_POLL_LENGTH = {
 
 const INIT_POLL_CHOICES = ["", ""]
 
-const CreatePostFooter: FC<{ handleAddPollIClick: () => void; handleCreateClick: () => void }> = ({
-	handleAddPollIClick,
-	handleCreateClick,
-}) => {
-	return (
-		<footer className="ml-16 flex">
-			<div className="flex p-2" onClick={handleAddPollIClick}>
-				<Icon iconKind="poll" />
-			</div>
-			<div className="w-full"></div>
-			<div className="mr-2">
-				<PrimaryButton onClick={handleCreateClick}>Post</PrimaryButton>
-			</div>
-		</footer>
-	)
-}
+export const CreatePost: FC<{ profileImageUrl: string }> = ({ profileImageUrl }) => {
+	const { setIsCreatedPost } = useCreatePost()
 
-type CreatePostProps = {
-	profileImageUrl: string
-	onMessageChange: (msg: string) => void
-	inputMessage: string
-} & PropsWithChildren
-
-const CreatePost: FC<CreatePostProps> = ({
-	profileImageUrl,
-	onMessageChange,
-	inputMessage,
-	children,
-}) => {
-	return (
-		<header className="flex">
-			<ProfileAvatarImageUrl src={profileImageUrl} />
-			<div className="w-full pl-1">
-				<input
-					className="w-full rounded-xl border-2 border-solid p-1 text-lg outline-none"
-					placeholder={inputMessage}
-					onChange={(e) => onMessageChange(e.target.value)}
-					type="text"
-				></input>
-				{children}
-			</div>
-		</header>
-	)
-}
-
-export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch?: () => void }> = ({
-	profileImageUrl,
-	refetch,
-}) => {
 	const [postContent, setPostContent] = useState<PostContent>({
 		message: "",
 	})
@@ -100,7 +54,7 @@ export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch?: () => 
 
 	const { mutate } = api.posts.createPost.useMutation({
 		onSuccess: () => {
-			refetch && refetch()
+			setIsCreatedPost(true)
 		},
 		onError: () => {
 			toast.error("Failed to create post! Please try again later", {
@@ -111,7 +65,7 @@ export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch?: () => 
 
 	return (
 		<article>
-			<CreatePost
+			<CreatePostForm
 				profileImageUrl={profileImageUrl}
 				onMessageChange={(msg) => setPostContent({ ...postContent, message: msg })}
 				inputMessage={postContent.poll ? "Ask a question!" : "What is happening?!"}
@@ -125,7 +79,7 @@ export const ConnectorCreatePost: FC<{ profileImageUrl: string; refetch?: () => 
 						choices={pollChoicesState}
 					/>
 				)}
-			</CreatePost>
+			</CreatePostForm>
 			<CreatePostFooter
 				handleAddPollIClick={handlePollIconClick}
 				handleCreateClick={() =>

@@ -1,15 +1,14 @@
 import { type FC } from "react"
 import { Icon } from "~/components/Icon"
 import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
-import { PostPoll } from "~/components/postsPage/PostPoll"
 import PostMessageRenderer from "~/features/postMessage/components/PostMessageRenderer"
 import { PostSummary } from "./PostSummary"
 import { type PostAuthor } from "~/features/profile"
-import { type Post } from "~/components/post/types"
 import toast from "react-hot-toast"
 import { api } from "~/utils/api"
 import { CONFIG } from "~/config"
 import { useTimeLeft } from "~/hooks/useTimeLeft"
+import { type Post, PostPoll } from "~/features/postItem"
 
 export const OriginalPost: FC<{
 	author: PostAuthor
