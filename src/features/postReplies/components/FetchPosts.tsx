@@ -1,10 +1,10 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react"
-import { useGetPostReplies } from "../hooks"
 import { LoadingPage } from "~/components/LoadingPage"
 import { Dialog } from "~/components/dialog/Dialog"
 import { PostQuote } from "~/features/postQuote"
 import { PostItem } from "./PostItem"
 import { type PostWithAuthor } from "~/features/postItem"
+import { useGetPostReplies } from "../hooks/useGetPostReplies"
 
 export type RefetchPostHandle = {
 	Refetch: () => void
