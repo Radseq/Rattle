@@ -3,7 +3,6 @@ import Head from "next/head"
 import { api } from "~/utils/api"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { FetchPosts } from "~/features/profile/components/FetchPosts"
 import { LoadingSpinner } from "~/components/LoadingPage"
 import toast from "react-hot-toast"
 
@@ -17,6 +16,7 @@ import { createProxySSGHelpers } from "@trpc/react-query/ssg"
 import { useAuth } from "@clerk/nextjs"
 import {
 	ActionButtonSelector,
+	FetchPosts,
 	ProfileAvatarImageUrl,
 	ProfileWatchedWatching,
 	SetUpProfileModal,
