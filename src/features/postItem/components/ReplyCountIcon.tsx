@@ -1,6 +1,6 @@
 import Link from "next/link"
-import { Icon } from "../Icon"
 import { type FC } from "react"
+import { Icon } from "~/components/Icon";
 
 export const ReplyCountIcon: FC<{ count: number; url: string }> = ({ count, url }) => {
 	return (

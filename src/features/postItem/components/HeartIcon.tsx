@@ -1,5 +1,5 @@
 import { type FC } from "react"
-import { Heart } from "../Icons/Heart"
+import { Heart } from "~/components/Icons/Heart"
 
 export const HeartIcon: FC<{
 	filledRed: boolean

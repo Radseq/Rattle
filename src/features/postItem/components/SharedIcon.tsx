@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react"
-import { Icon } from "../Icon"
+import { Icon } from "~/components/Icon"
 
 type Props = PropsWithChildren & {
 	sharedCount: number
