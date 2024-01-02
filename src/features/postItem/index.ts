@@ -3,6 +3,7 @@ export * from "./components/PostFooter"
 export * from "./components/PostPoll"
 export * from "./components/PostItemForm"
 export * from "./components/PostItem"
+export * from "./components/PostTitle"
 
 export * from "./hooks/usePostItemActions"
 export * from "./types"
