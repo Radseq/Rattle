@@ -1,5 +1,4 @@
 import { type FC, useReducer, useState } from "react"
-import { pollChoicesReducer, pollLengthReducer } from "../hooks"
 import { api } from "~/utils/api"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
@@ -8,6 +7,8 @@ import { CreatePoll } from "./CreatePoll"
 import { CreatePostForm } from "./CreatePostForm"
 import { CreatePostFooter } from "./CreatePostFooter"
 import { useCreatePost } from "./CreatePostProvide"
+import { pollLengthReducer } from "../hooks/pollLengthReducer"
+import { pollChoicesReducer } from "../hooks/pollChoicesReducer"
 
 const INIT_POLL_LENGTH = {
 	days: 1,

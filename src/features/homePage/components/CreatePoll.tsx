@@ -3,7 +3,8 @@ import { PollChoices } from "./PollChoices"
 import { PollTimeLength } from "./PollTimeLength"
 import { DangerOutlineButton } from "../../../components/styledHTMLElements/StyledButtons"
 import { type PollLength } from "../types"
-import type { PollChoicesAction, PollLengthAction } from "../hooks"
+import { type PollLengthAction } from "../hooks/pollLengthReducer"
+import { type PollChoicesAction } from "../hooks/pollChoicesReducer"
 
 export const CreatePoll: FC<{
 	pollLengthDispatch: Dispatch<PollLengthAction>

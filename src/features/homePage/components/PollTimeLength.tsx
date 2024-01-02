@@ -3,7 +3,7 @@ import { createAndIncrementFill } from "~/utils/helpers"
 import React from "react"
 import { type PollLength } from "../types"
 import { StyledLabel, StyledSelect } from "~/components/styledHTMLElements/FloatingStyles"
-import { type PollLengthAction } from "../hooks"
+import { PollLengthAction } from "../hooks/pollLengthReducer"
 
 const PollLengthOptions: FC<{ length: number; minLength?: number }> = ({
 	length,
