@@ -1,13 +1,12 @@
 import Link from "next/link"
 import { type FC } from "react"
-import { ProfileSimple } from "~/components/postRepliesPage/ProfileSimple"
 import { PrimaryButton } from "~/components/styledHTMLElements/StyledButtons"
 import { useGetPeoples } from "../hooks/useGetPeoples"
 import { LoadingPage } from "~/components/LoadingPage"
 import { api } from "~/utils/api"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
-import { type Profile } from "~/features/profile"
+import { type Profile, ProfileSimple } from "~/features/profile"
 
 const PeopleItem: FC<{ people: Profile; onFollowClick: (id: string) => void }> = ({
 	people,
