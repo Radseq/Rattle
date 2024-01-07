@@ -24,6 +24,15 @@ model Post {
     @@index([authorId])
 }
 
+model PrivateMessages {
+    id              String   @id @default(cuid())
+    createdAt       DateTime @default(now())
+    authorId        String   @db.VarChar(64)
+    destUserId      String   @db.VarChar(64)
+    text            String   @db.VarChar(150)
+    imageUrl        String?  @db.VarChar(200)
+}
+
 model PostPoll {
     id          Int     @id @default(autoincrement())
     postId      String  @db.VarChar(32) @unique
