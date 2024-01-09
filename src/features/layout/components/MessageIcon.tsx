@@ -1,11 +1,12 @@
 import Image from "next/image"
+import { FC } from "react"
 
-export const MessageIcon = () => (
+export const MessageIcon: FC<{ width: number; height: number }> = ({ height = 10, width = 10 }) => (
 	<Image
-		width={10}
-		height={10}
+		width={width}
+		height={height}
+		className="flex"
 		src="https://cdn.jsdelivr.net/npm/heroicons@1.0.1/outline/mail.svg"
-		className="flex w-12 xl:inline "
 		alt={"message icon"}
 	/>
 )

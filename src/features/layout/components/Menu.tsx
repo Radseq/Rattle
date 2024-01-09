@@ -22,8 +22,8 @@ export const Menu = () => {
 				</Link>
 			</MenuItem>
 			<MenuItem>
-				<Link href={"/messages"} className="w-full p-2">
-					<MessageIcon />
+				<Link href={"/messages"} className="flex p-2">
+					<MessageIcon width={48} height={48} />
 					<span className="my-auto hidden xl:inline">Messages</span>
 				</Link>
 			</MenuItem>
