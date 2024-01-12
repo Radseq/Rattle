@@ -1,9 +1,12 @@
-import { useRef } from "react"
+import { type FC, useRef } from "react"
 import { useGetPrivateMessagesAuthors } from "../hooks/useGetPrivateMessagesAuthors"
 import { LoadingPage } from "~/components/LoadingPage"
 import { Person } from "./Person"
+import { type Profile } from "~/features/profile"
 
-export const FetchMessagesAuthors = () => {
+export const FetchAuthors: FC<{ OnSelectAuthor: (author: Profile) => void }> = ({
+	OnSelectAuthor,
+}) => {
 	const ulRef = useRef<HTMLUListElement>(null)
 
 	const { isLoading, authors, refetch } = useGetPrivateMessagesAuthors(
@@ -19,9 +22,9 @@ export const FetchMessagesAuthors = () => {
 	}
 
 	return (
-		<ul ref={ulRef}>
+		<ul className="w-full" ref={ulRef}>
 			{authors?.map((author) => (
-				<li className="flex py-2">
+				<li className="flex py-2" key={author.id} onClick={() => OnSelectAuthor(author)}>
 					<Person
 						username={author.username}
 						fullName={author.fullName}
