@@ -3,10 +3,12 @@ import { type FC } from "react"
 import { ProfileAvatarImageUrl } from "~/features/profile"
 
 export const Person: FC<{ username: string; fullName: string; profileImageUrl: string }> = ({
-    username, fullName, profileImageUrl
+	username,
+	fullName,
+	profileImageUrl,
 }) => {
 	return (
-		<div className="flex w-96">
+		<div className="flex">
 			<ProfileAvatarImageUrl src={profileImageUrl} />
 			<div className="w-full pl-2">
 				<div className="text-lg font-semibold">
