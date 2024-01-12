@@ -4,15 +4,9 @@ import { type User } from "@clerk/nextjs/dist/api"
 import { Menu } from "~/features/layout/components/Menu"
 import { Icon } from "~/components/Icon"
 import { MessageIcon } from "~/features/layout/components/MessageIcon"
-import { getFullName } from "~/utils/helpers"
-import { Picture } from "~/components/Icons/Picture"
-import { Emoji } from "~/components/Icons/Emoji"
-import {
-	FetchMessagesAuthors,
-	MessageItem,
-	Person,
-	Search,
-} from "~/features/privateMessagePage"
+import { FetchAuthors, Search, SelectedAuthorMessages } from "~/features/privateMessagePage"
+import { useState } from "react"
+import { type Profile } from "~/features/profile"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)
@@ -35,8 +29,8 @@ export const getServerSideProps: GetServerSideProps = async (props) => {
 	}
 }
 
-const Messages: NextPage<{ user: User }> = ({ user }) => {
-	const fullName = getFullName(user.firstName, user.lastName)
+const Messages: NextPage<{ user: User }> = () => {
+	const [selectedAuthor, setSelectedAuthor] = useState<Profile | null>(null)
 
 	return (
 		<div className="flex">
@@ -52,29 +46,20 @@ const Messages: NextPage<{ user: User }> = ({ user }) => {
 							<MessageIcon width={25} height={25} />
 						</div>
 					</div>
-					<div className="w-96">
+					<div className="w-full">
 						<Search />
-						<FetchMessagesAuthors />
+						<FetchAuthors OnSelectAuthor={(authorId) => setSelectedAuthor(authorId)} />
 					</div>
 				</main>
-				<aside className="h-full w-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
-					<Person
-						username={user.username ?? ""}
-						fullName={fullName ?? ""}
-						profileImageUrl={user.profileImageUrl}
-					/>
-					<ul>
-						<MessageItem message={"test message"} />
-					</ul>
-					<div className="flex gap-1 rounded-xl bg-slate-300 pl-1">
-						<Picture />
-						<Emoji />
-						<textarea
-							className="text-wrap block h-full w-full overflow-hidden bg-transparent p-2 pl-2 text-sm text-gray-900 focus:outline-none"
-							placeholder="Start a new message"
-							required
+				<aside className="block h-full w-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3  lg:flex lg:p-4">
+					{selectedAuthor && (
+						<SelectedAuthorMessages
+							username={selectedAuthor.username}
+							fullName={selectedAuthor.fullName}
+							profileImageUrl={selectedAuthor.profileImageUrl}
+							authorId={selectedAuthor.id}
 						/>
-					</div>
+					)}
 				</aside>
 			</div>
 		</div>

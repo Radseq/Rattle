@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useLoadNextPage } from "~/features/homePage"
-import { Profile } from "~/features/profile"
+import { type Profile } from "~/features/profile"
 import { api } from "~/utils/api"
 
 //todo move to config
