@@ -1,4 +1,4 @@
-import { type GetServerSideProps, type NextPage } from "next"
+import { type GetServerSidePropsContext, type NextPage, type PreviewData } from "next"
 import { getAuth } from "@clerk/nextjs/server"
 import { Menu } from "~/features/layout/components/Menu"
 import { Icon } from "~/components/Icon"
@@ -6,8 +6,11 @@ import { FetchAuthors, Search, SelectedAuthorMessages } from "~/features/private
 import { useState } from "react"
 import { type Profile } from "~/features/profile"
 import { MessageIcon } from "~/features/layout"
+import { type ParsedUrlQuery } from "querystring"
 
-export const getServerSideProps: GetServerSideProps = (props) => {
+export const getServerSideProps = (
+	props: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>,
+) => {
 	const { userId } = getAuth(props.req)
 
 	if (!userId) {
