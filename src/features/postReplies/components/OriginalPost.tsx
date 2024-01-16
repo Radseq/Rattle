@@ -41,7 +41,7 @@ export const OriginalPost: FC<{
 					<Icon iconKind="optionDots" />
 				</div>
 			</ProfileSimple>
-			<div className="mt-2 ml-2">
+			<div className="ml-2 mt-2">
 				{post.poll ? (
 					<div>
 						<PostMessageRenderer message={post.content} />

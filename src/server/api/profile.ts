@@ -111,7 +111,7 @@ export const getPostAuthorByUsername = async (username: string) => {
 
 export const getUserVotedAnyPostsPoll = async (
 	userId: string,
-	postsId: string[]
+	postsId: string[],
 ): Promise<{ postId: string; choiceId: number }[]> => {
 	const pollVoted = await prisma.userPollVote.findMany({
 		where: {
@@ -261,7 +261,7 @@ export const removeForwardedPostFromUser = async (authorId: string, postId: stri
 		void setCacheData(
 			userCacheKey,
 			getForwardedPostsIds.filter((id) => id !== postId),
-			MAX_CACHE_USER_LIFETIME_IN_SECONDS
+			MAX_CACHE_USER_LIFETIME_IN_SECONDS,
 		)
 	}
 

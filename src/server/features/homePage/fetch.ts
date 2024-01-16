@@ -22,7 +22,7 @@ export const fetchHomePosts = async (
 	signInUserId: string,
 	limit: number,
 	cursor: string | null | undefined,
-	skip: number | undefined
+	skip: number | undefined,
 ) => {
 	const followedAuthorsByUser = await getUserFollowList(signInUserId)
 
@@ -104,7 +104,7 @@ export const fetchHomePosts = async (
 	const posts = await Promise.all(postIds.map((id) => getPostById(id)))
 
 	const sortedPosts = posts.sort(
-		(postA, postB) => new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
+		(postA, postB) => new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime(),
 	)
 	const result: PostWithAuthor[] = []
 	for (const sortedPost of sortedPosts) {
@@ -119,7 +119,7 @@ export const fetchHomePosts = async (
 				isLiked: postsLikedByUser.some((post) => post === sortedPost.id),
 				isQuoted: postsQuotedByUser.some((post) => post === sortedPost.id),
 				isVotedChoiceId: postsPollVotedByUser.filter(
-					(vote) => vote.postId === sortedPost.id
+					(vote) => vote.postId === sortedPost.id,
 				)[0]?.choiceId,
 				authorFollowed: followedUsers.some((authorId) => authorId === author?.id),
 			},

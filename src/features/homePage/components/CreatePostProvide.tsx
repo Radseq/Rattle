@@ -17,7 +17,7 @@ const CreatePostProvider = (props: PropsWithChildren) => {
 
 	const value = useMemo(
 		() => ({ isCreatedPost, setIsCreatedPost }),
-		[isCreatedPost, setIsCreatedPost]
+		[isCreatedPost, setIsCreatedPost],
 	)
 
 	return <CreatePostContext.Provider value={value}>{props.children}</CreatePostContext.Provider>

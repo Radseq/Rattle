@@ -23,7 +23,7 @@ export const useGetProfile = (username: string) => {
 				}
 			},
 			enabled: !!profile.data,
-		}
+		},
 	)
 
 	return {

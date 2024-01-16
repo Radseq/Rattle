@@ -11,7 +11,7 @@ export const FetchPosts: FC<{
 	const ulRef = useRef<HTMLUListElement>(null)
 
 	const { isLoading, posts, refetch } = useGetHomePosts(
-		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop,
 	)
 
 	const [quotePopUp, setQuotePopUp] = useState<PostWithAuthor | null>(null)

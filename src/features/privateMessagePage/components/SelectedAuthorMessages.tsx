@@ -14,9 +14,9 @@ export const SelectedAuthorMessages: FC<{
 }> = ({ username, fullName, profileImageUrl, authorId }) => {
 	const ulRef = useRef<HTMLUListElement>(null)
 
-	const { isLoading, messages, refetch } = useGetAuthorMessages(
+	const { isLoading, messages } = useGetAuthorMessages(
 		authorId,
-		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop,
 	)
 
 	if (isLoading) {
@@ -31,15 +31,13 @@ export const SelectedAuthorMessages: FC<{
 		<div>
 			<Person username={username} fullName={fullName} profileImageUrl={profileImageUrl} />
 			<ul ref={ulRef}>
-				{messages?.map((message) => (
-					<MessageItem key={message.id} message={message} />
-				))}
+				{messages?.map((message) => <MessageItem key={message.id} message={message} />)}
 			</ul>
 			<div className="flex gap-1 rounded-xl bg-slate-300 pl-1">
 				<Picture />
 				<Emoji />
 				<textarea
-					className="block h-full w-full overflow-hidden bg-transparent p-2 text-sm text-gray-900 focus:outline-none"
+					className="block size-full overflow-hidden bg-transparent p-2 text-sm text-gray-900 focus:outline-none"
 					placeholder="Start a new message"
 					required
 				/>

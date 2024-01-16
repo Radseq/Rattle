@@ -9,7 +9,7 @@ export const HeartIcon: FC<{
 	return (
 		<div className="group flex" onClick={onClick}>
 			<Heart
-				className={`h-9 w-9 rounded-full p-1 ${
+				className={`size-9 rounded-full p-1 ${
 					filledRed ? "group-hover:bg-gray-500" : "group-hover:bg-red-500"
 				}`}
 				fillColor={filledRed ? "red" : ""}

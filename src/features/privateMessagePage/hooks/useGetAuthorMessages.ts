@@ -18,7 +18,7 @@ export const useGetAuthorMessages = (authorId: string, ulHeightInPx: number | nu
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
-			}
+			},
 		)
 	const loadNextMessages = useLoadNextPage(SCROLL_THRESHOLD_IN_PX, ulHeightInPx)
 

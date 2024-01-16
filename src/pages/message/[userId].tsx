@@ -60,7 +60,7 @@ const MessagesLink: NextPage<{
 				<header className="sticky top-0 h-screen w-16 min-w-[40px] xl:w-72">
 					<Menu />
 				</header>
-				<main className="h-full w-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
+				<main className="size-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
 					<div className="flex justify-between">
 						<h1>Messages</h1>
 						<div className="flex space-x-2">
@@ -76,7 +76,7 @@ const MessagesLink: NextPage<{
 						/>
 					</div>
 				</main>
-				<aside className="block h-full w-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3  lg:flex lg:p-4">
+				<aside className="block size-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3  lg:flex lg:p-4">
 					{selectedAuthor && (
 						<SelectedAuthorMessages
 							username={selectedAuthor.username}

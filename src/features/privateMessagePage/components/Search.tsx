@@ -4,7 +4,7 @@ import { SearchForm } from "./SearchForm"
 
 const debounceTimeout = 200
 
-export const Search: FC<{}> = () => {
+export const Search: FC = () => {
 	const [searchValue, setSearchValue] = useState("")
 
 	const debouncedValue = useDebounce(searchValue, debounceTimeout)

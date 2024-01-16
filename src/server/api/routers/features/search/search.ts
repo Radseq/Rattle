@@ -60,7 +60,7 @@ export const searchRouter = createTRPCRouter({
 			z.object({
 				limit: z.number(),
 				tag: z.string().min(3),
-			})
+			}),
 		)
 		.query(async ({ input }) => {
 			const { limit, tag } = input
@@ -95,7 +95,7 @@ export const searchRouter = createTRPCRouter({
 				cursor: z.string().nullish(),
 				skip: z.number().optional(),
 				tag: z.string().min(3),
-			})
+			}),
 		)
 		.query(async ({ ctx, input }) => {
 			const { limit, tag, cursor, skip } = input
@@ -163,12 +163,12 @@ export const searchRouter = createTRPCRouter({
 
 			const posts = await Promise.all(postsIds.map((id) => getPostById(id)))
 			const postAuthors = await Promise.all(
-				postsDb.map(({ authorId }) => getPostAuthor(authorId))
+				postsDb.map(({ authorId }) => getPostAuthor(authorId)),
 			)
 
 			const sortedPosts = posts.sort(
 				(postA, postB) =>
-					new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
+					new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime(),
 			)
 
 			const result: PostWithAuthor[] = []
@@ -185,7 +185,7 @@ export const searchRouter = createTRPCRouter({
 						isLiked: postsLikedByUser.some((postId) => postId === sortedPost.id),
 						isQuoted: postsQuotedByUser.some((postId) => postId === sortedPost.id),
 						isVotedChoiceId: postsPollVotedByUser.filter(
-							(vote) => vote.postId === sortedPost.id
+							(vote) => vote.postId === sortedPost.id,
 						)[0]?.choiceId,
 						authorFollowed: followedUsers.some((authorId) => authorId === author?.id),
 					},

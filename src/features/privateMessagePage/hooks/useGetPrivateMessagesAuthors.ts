@@ -17,7 +17,7 @@ export const useGetPrivateMessagesAuthors = (ulHeightInPx: number | null) => {
 			},
 			{
 				getNextPageParam: (lastPage) => lastPage.nextCursor,
-			}
+			},
 		)
 	const loadNextAuthors = useLoadNextPage(SCROLL_THRESHOLD_IN_PX, ulHeightInPx)
 

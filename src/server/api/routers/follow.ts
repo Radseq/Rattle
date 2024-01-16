@@ -55,7 +55,7 @@ export const followRouter = createTRPCRouter({
 					void setCacheData(
 						cacheKey,
 						[followingCache, following.id],
-						MAX_CACHE_USER_LIFETIME_IN_SECONDS
+						MAX_CACHE_USER_LIFETIME_IN_SECONDS,
 					)
 				}
 
@@ -107,7 +107,7 @@ export const followRouter = createTRPCRouter({
 					void setCacheData(
 						cacheKey,
 						followingCache.filter((userId) => userId != followed),
-						MAX_CACHE_USER_LIFETIME_IN_SECONDS
+						MAX_CACHE_USER_LIFETIME_IN_SECONDS,
 					)
 				}
 

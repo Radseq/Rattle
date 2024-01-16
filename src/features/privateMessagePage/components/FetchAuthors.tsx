@@ -10,8 +10,8 @@ export const FetchAuthors: FC<{
 }> = ({ OnSelectAuthor, initProfile }) => {
 	const ulRef = useRef<HTMLUListElement>(null)
 
-	const { isLoading, authors, refetch } = useGetPrivateMessagesAuthors(
-		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+	const { isLoading, authors } = useGetPrivateMessagesAuthors(
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop,
 	)
 
 	if (isLoading) {

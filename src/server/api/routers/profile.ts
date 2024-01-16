@@ -53,7 +53,7 @@ export const profileRouter = createTRPCRouter({
 					.url({ message: "Profile Image Url is not valid!" })
 					.max(100, { message: "Profile Image Url is too large, max 100 characters" })
 					.nullable(),
-			})
+			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const authorId = ctx.authUserId
@@ -91,7 +91,7 @@ export const profileRouter = createTRPCRouter({
 			z.object({
 				postId: z.string().min(25, { message: "wrong postId" }),
 				choiceId: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const getPostAlreadyVoted = ctx.prisma.userPollVote.findFirst({

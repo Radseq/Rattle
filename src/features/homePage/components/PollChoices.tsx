@@ -29,7 +29,7 @@ export const PollChoices: FC<{
 								onClick={() => {
 									dispatch({ type: "remove", index, value: "" })
 								}}
-								className="my-auto ml-2 h-10 w-10"
+								className="my-auto ml-2 size-10"
 							>
 								X
 							</DangerButton>

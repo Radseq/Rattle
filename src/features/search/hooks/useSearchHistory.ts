@@ -64,7 +64,7 @@ const observedHistory = (() => {
 			const copiedValue = copySearchResult(value)
 			if (typeof entry === "object") {
 				copiedValue.searchedProfiles = value.searchedProfiles.filter(
-					(it) => it.id !== entry.id
+					(it) => it.id !== entry.id,
 				)
 			} else {
 				copiedValue.searchedTags = value.searchedTags.filter((it) => it !== entry)

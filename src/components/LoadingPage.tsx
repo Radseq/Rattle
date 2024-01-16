@@ -28,7 +28,7 @@ export const LoadingSpinner: FC<{ size?: number }> = ({ size = 40 }) => {
 
 export const LoadingPage = () => {
 	return (
-		<div className="absolute top-0 right-0 flex w-full items-center justify-center">
+		<div className="absolute right-0 top-0 flex w-full items-center justify-center">
 			<LoadingSpinner />
 		</div>
 	)

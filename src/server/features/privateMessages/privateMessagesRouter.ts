@@ -12,7 +12,7 @@ export const privateMessagesRouter = createTRPCRouter({
 				limit: z.number(),
 				cursor: z.string().nullish(),
 				skip: z.number().optional(),
-			})
+			}),
 		)
 		.query(async ({ ctx, input }) => {
 			const take = input.limit ?? 10 // todo move to config
@@ -73,7 +73,7 @@ export const privateMessagesRouter = createTRPCRouter({
 				limit: z.number(),
 				cursor: z.string().nullish(),
 				skip: z.number().optional(),
-			})
+			}),
 		)
 		.query(async ({ ctx, input }) => {
 			const take = input.limit ?? 10 // todo move to config

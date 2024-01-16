@@ -186,7 +186,7 @@ export const isPostExists = async (postId: string): Promise<boolean> => {
 
 export const replacementPostInArray = (
 	replacement: PostWithAuthor,
-	array: PostWithAuthor[] | undefined
+	array: PostWithAuthor[] | undefined,
 ) => {
 	if (array) {
 		const result = array.map((postWithAuthor) => {

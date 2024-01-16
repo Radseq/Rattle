@@ -82,7 +82,7 @@ export const setWatchingCountCache = async (userId: string, type: "add" | "remov
 		void setCacheData(
 			cacheWatchedWatchingKey,
 			watchedWatchingCache,
-			MAX_CACHE_USER_LIFETIME_IN_SECONDS
+			MAX_CACHE_USER_LIFETIME_IN_SECONDS,
 		)
 	}
 }
@@ -99,7 +99,7 @@ export const setWatchedCountCache = async (userId: string, type: "add" | "remove
 		void setCacheData(
 			cacheWatchedWatchingKey,
 			watchedWatchingCache,
-			MAX_CACHE_USER_LIFETIME_IN_SECONDS
+			MAX_CACHE_USER_LIFETIME_IN_SECONDS,
 		)
 	}
 }

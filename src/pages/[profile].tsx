@@ -140,10 +140,10 @@ const ProfilePage: NextPage<{
 							<div className="relative w-full">
 								<ProfileAvatarImageUrl
 									src={profile.profileImageUrl}
-									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white"
+									className="absolute -top-16 size-32 rounded-full border-4 border-white"
 								/>
 								<span
-									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white
+									className="absolute -top-16 size-32 rounded-full border-4 border-white
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
@@ -160,10 +160,10 @@ const ProfilePage: NextPage<{
 									profileType={getPostProfileType(
 										isUserFollowProfile,
 										profile.id,
-										user.userId
+										user.userId,
 									)}
 									onClick={(
-										actionType: "signUp" | "follow" | "unfollow" | null
+										actionType: "signUp" | "follow" | "unfollow" | null,
 									) => {
 										if (actionType === "unfollow") {
 											stopFollowing(profile.id)

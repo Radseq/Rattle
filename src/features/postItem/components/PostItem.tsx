@@ -29,7 +29,7 @@ export const PostItem: FC<{
 			menuItemsType={getPostProfileType(
 				signInUser?.authorFollowed ?? false,
 				signInUserId,
-				author.id
+				author.id,
 			)}
 		>
 			<PostContentSelector

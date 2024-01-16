@@ -17,7 +17,7 @@ export const useGetPostsByAuthor = (authorId: string, ulHeightInPx: number | nul
 		},
 		{
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
-		}
+		},
 	)
 	const loadNextPosts = useLoadNextPage(SCROLL_THRESHOLD_IN_PX, ulHeightInPx)
 
