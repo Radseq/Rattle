@@ -45,7 +45,7 @@ export const searchRouter = createTRPCRouter({
 					id: user.id,
 					username: user.username,
 					fullName,
-					imageUrl: user.profileImageUrl,
+					imageUrl: user.imageUrl,
 				})
 			}
 		})
@@ -80,7 +80,7 @@ export const searchRouter = createTRPCRouter({
 						id: user.id,
 						username: user.username,
 						fullName,
-						profileImageUrl: user.profileImageUrl,
+						profileImageUrl: user.imageUrl,
 						createdAt: user.createdAt,
 						extended,
 					})

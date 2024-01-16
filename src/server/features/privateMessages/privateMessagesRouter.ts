@@ -53,7 +53,7 @@ export const privateMessagesRouter = createTRPCRouter({
 				const result = {
 					id: user.id,
 					username: user.username ?? "",
-					profileImageUrl: user.profileImageUrl,
+					profileImageUrl: user.imageUrl,
 					fullName,
 					createdAt: user.createdAt,
 				} as Profile

@@ -18,7 +18,7 @@ export const filterClarkClientToAuthor = (user: User) => {
 	return {
 		id: user.id,
 		username: user.username ?? "",
-		profileImageUrl: user.profileImageUrl,
+		profileImageUrl: user.imageUrl,
 		fullName: getFullName(user.firstName, user.lastName),
 	} as PostAuthor
 }

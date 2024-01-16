@@ -35,7 +35,7 @@ export const getProfileByUserId = async (userId: string) => {
 	const result = {
 		id: author.id,
 		username: author.username ?? "",
-		profileImageUrl: author.profileImageUrl,
+		profileImageUrl: author.imageUrl,
 		fullName,
 		createdAt: author.createdAt,
 		extended,
@@ -73,7 +73,7 @@ export const getProfileByUserName = async (userName: string) => {
 	const result = {
 		id: author.id,
 		username: author.username ?? "",
-		profileImageUrl: author.profileImageUrl,
+		profileImageUrl: author.imageUrl,
 		fullName,
 		createdAt: author.createdAt,
 		extended,

@@ -58,7 +58,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 				}
 			>
 				<section className="pt-2">
-					<CreatePost profileImageUrl={user.profileImageUrl} />
+					<CreatePost profileImageUrl={user.imageUrl} />
 					<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
 					<FetchPosts signInUserId={user.id} />
 				</section>
