@@ -1,4 +1,4 @@
-import { type User } from "@clerk/nextjs/dist/api"
+import { User } from "@clerk/nextjs/dist/types/server"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { type PostProfileType } from "~/features/postItem"
@@ -77,7 +77,7 @@ export const calculateSkip = (skip: number | undefined, cursor: string | null | 
 export const getPostProfileType = (
 	isFollowed: boolean | undefined,
 	authorId: string | null | undefined,
-	userId: string | null | undefined
+	userId: string | null | undefined,
 ): PostProfileType => {
 	if (!userId || !authorId) {
 		return "view"
