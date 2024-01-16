@@ -23,7 +23,8 @@ import {
 	useGetProfile,
 } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
-import { Layout } from "~/features/layout"
+import { Layout, MessageIcon } from "~/features/layout"
+import Link from "next/link"
 
 dayjs.extend(relativeTime)
 
@@ -146,7 +147,15 @@ const ProfilePage: NextPage<{
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
-							<div className="mt-4 h-14">
+							<div className="mt-4 flex h-14">
+								{profile.id !== user.userId && (
+									<Link
+										href={`/message/${profile.id}`}
+										className="m-2 flex rounded-full border p-1"
+									>
+										<MessageIcon width={48} height={48} />
+									</Link>
+								)}
 								<ActionButtonSelector
 									profileType={getPostProfileType(
 										isUserFollowProfile,

@@ -7,6 +7,44 @@ import type { PostAuthor, Profile, ProfileExtend } from "~/features/profile"
 
 const MAX_CACHE_USER_LIFETIME_IN_SECONDS = 600
 
+export const getProfileByUserId = async (userId: string) => {
+	const userCacheKey: CacheSpecialKey = { id: userId, type: "profileUserId" }
+	const profile = await getCacheData<Profile>(userCacheKey)
+	if (profile) {
+		return profile
+	}
+
+	const authors = await clerkClient.users.getUserList({
+		userId: [userId],
+	})
+
+	if (authors.length > 1 || !authors[0]) {
+		return null
+	}
+
+	const author = authors[0]
+
+	const extended = author.publicMetadata.extended as ProfileExtend | null
+
+	const fullName = getFullName(author.firstName, author.lastName)
+
+	if (!author.username) {
+		return null
+	}
+
+	const result = {
+		id: author.id,
+		username: author.username ?? "",
+		profileImageUrl: author.profileImageUrl,
+		fullName,
+		createdAt: author.createdAt,
+		extended,
+	} as Profile
+
+	void setCacheData(userCacheKey, result, MAX_CACHE_USER_LIFETIME_IN_SECONDS)
+	return result
+}
+
 export const getProfileByUserName = async (userName: string) => {
 	const userCacheKey: CacheSpecialKey = { id: userName, type: "profileUserName" }
 	const profile = await getCacheData<Profile>(userCacheKey)

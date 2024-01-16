@@ -9,11 +9,11 @@ import {
 	isUserLikedPost,
 } from "../profile"
 
-import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type Post } from "~/features/postItem"
 import { type ProfileExtend } from "~/features/profile"
 import { getPostPollById } from "../posts"
+import { clerkClient } from "@clerk/nextjs"
 
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
