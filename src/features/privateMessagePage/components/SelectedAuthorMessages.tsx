@@ -6,6 +6,9 @@ import { type FC, useRef, ChangeEvent, useState } from "react"
 import { useGetAuthorMessages } from "../hooks/useGetAuthorMessages"
 import { LoadingPage } from "~/components/LoadingPage"
 import TextareaAutosize from "react-textarea-autosize"
+import { ArrowCircleRight } from "~/components/Icons/ArrowCircleRight"
+import { api } from "~/utils/api"
+import toast from "react-hot-toast"
 
 export const SelectedAuthorMessages: FC<{
 	username: string
@@ -16,10 +19,18 @@ export const SelectedAuthorMessages: FC<{
 	const ulRef = useRef<HTMLUListElement>(null)
 	const [text, setText] = useState<string>("")
 
-	const { isLoading, messages } = useGetAuthorMessages(
+	const { isLoading, messages, refetch } = useGetAuthorMessages(
 		authorId,
 		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop,
 	)
+
+	const { mutate: createMessage } = api.privateMessages.createPrivateMessage.useMutation({
+		onSuccess: () => {
+			toast.success(`Sended message to ${fullName}`)
+			refetch()
+			setText("")
+		},
+	})
 
 	if (isLoading) {
 		return (
@@ -30,7 +41,7 @@ export const SelectedAuthorMessages: FC<{
 	}
 
 	return (
-		<div>
+		<div className="w-full">
 			<Person username={username} fullName={fullName} profileImageUrl={profileImageUrl} />
 			<ul ref={ulRef}>
 				{messages?.map((message) => <MessageItem key={message.id} message={message} />)}
@@ -45,6 +56,12 @@ export const SelectedAuthorMessages: FC<{
 					placeholder="Start a new message"
 					required
 				/>
+				<button
+					className="size-10"
+					onClick={() => createMessage({ destUserId: authorId, message: text })}
+				>
+					<ArrowCircleRight />
+				</button>
 			</div>
 		</div>
 	)
