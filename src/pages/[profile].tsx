@@ -12,7 +12,6 @@ import { Icon } from "~/components/Icon"
 import { appRouter } from "~/server/api/root"
 import { prisma } from "~/server/db"
 import superjson from "superjson"
-import { createProxySSGHelpers } from "@trpc/react-query/ssg"
 import { useAuth } from "@clerk/nextjs"
 import {
 	ActionButtonSelector,
@@ -25,11 +24,12 @@ import {
 import { getPostProfileType } from "~/utils/helpers"
 import { Layout, MessageIcon } from "~/features/layout"
 import Link from "next/link"
+import { createServerSideHelpers } from '@trpc/react-query/server';
 
 dayjs.extend(relativeTime)
 
 export const getStaticProps: GetStaticProps = async (context) => {
-	const ssg = createProxySSGHelpers({
+	const ssg = createServerSideHelpers({
 		router: appRouter,
 		ctx: { prisma, authUserId: null, opts: undefined },
 		transformer: superjson, // optional - adds superjson serialization
