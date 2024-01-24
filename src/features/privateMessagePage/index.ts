@@ -1,6 +1,5 @@
 export * from "./components/Person"
 export * from "./components/MessageItem"
-export * from "./components/Search"
 export * from "./hooks/useGetPrivateMessagesAuthors"
 export * from "./components/FetchAuthors"
 export * from "./components/SelectedAuthorMessages"

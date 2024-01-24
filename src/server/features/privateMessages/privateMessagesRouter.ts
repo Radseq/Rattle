@@ -46,6 +46,7 @@ export const privateMessagesRouter = createTRPCRouter({
 		.input(
 			z.object({
 				limit: z.number(),
+				searchedValue: z.string().optional(),
 				cursor: z.string().nullish(),
 				skip: z.number().optional(),
 			}),
@@ -53,9 +54,23 @@ export const privateMessagesRouter = createTRPCRouter({
 		.query(async ({ ctx, input }) => {
 			const take = input.limit ?? 10 // todo move to config
 
+			let searchedAuthor: string[] | [] = []
+			if (input.searchedValue) {
+				const users = await clerkClient.users.getUserList({
+					query: input.searchedValue,
+				})
+				searchedAuthor = users.map((usr) => usr.id)
+			}
+
+			if (searchedAuthor.length == 0) {
+				searchedAuthor = [ctx.authUserId]
+			}
+
 			const incomeMessages = await ctx.prisma.privateMessages.findMany({
 				where: {
-					destUserId: ctx.authUserId,
+					destUserId: {
+						in: searchedAuthor,
+					},
 				},
 				orderBy: { createdAt: "desc" },
 				skip: calculateSkip(input.skip, input.cursor),
@@ -142,4 +157,52 @@ export const privateMessagesRouter = createTRPCRouter({
 				nextCursor,
 			}
 		}),
+	// getSearchedPrivateMessageAuthor: privateProcedure
+	// 	.input(
+	// 		z.object({
+	// 			authorId: z.string(),
+	// 			limit: z.number(),
+	// 			cursor: z.string().nullish(),
+	// 			skip: z.number().optional(),
+	// 			searchedAuthor: z.string(),
+	// 		}),
+	// 	)
+	// 	.query(async ({ ctx, input }) => {
+	// 		const take = input.limit ?? 10 // todo move to config
+
+	// 		const searchedAuthor = await getProfileByUserName(input.searchedAuthor)
+
+	// 		if (!searchedAuthor) {
+	// 			return null
+	// 		}
+
+	// 		const incomeMessages = await ctx.prisma.privateMessages.findMany({
+	// 			where: {
+	// 				destUserId: searchedAuthor.id,
+	// 				authorId:
+	// 			},
+	// 			orderBy: { createdAt: "desc" },
+	// 			skip: calculateSkip(input.skip, input.cursor),
+	// 			take: take + 1,
+	// 			cursor: input.cursor ? { id: input.cursor } : undefined,
+	// 		})
+
+	// 		let nextCursor: typeof input.cursor | undefined = undefined
+	// 		if (incomeMessages.length > input.limit) {
+	// 			const nextItem = incomeMessages.pop()
+	// 			nextCursor = nextItem?.destUserId
+	// 		}
+
+	// 		return {
+	// 			result: incomeMessages.map((message) => {
+	// 				return {
+	// 					createAt: message.createdAt,
+	// 					imageUrl: message.imageUrl,
+	// 					text: message.text,
+	// 					id: message.id,
+	// 				} as PrivateMessage
+	// 			}),
+	// 			nextCursor,
+	// 		}
+	// 	}),
 })

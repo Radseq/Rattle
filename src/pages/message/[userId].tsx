@@ -6,7 +6,7 @@ import { MessageIcon } from "~/features/layout"
 import { getAuth } from "@clerk/nextjs/server"
 import { Icon } from "~/components/Icon"
 import { Menu } from "~/features/layout/components/Menu"
-import { FetchAuthors, Search, SelectedAuthorMessages } from "~/features/privateMessagePage"
+import { FetchAuthors, SelectedAuthorMessages } from "~/features/privateMessagePage"
 
 export const getServerSideProps: GetServerSideProps = async (props) => {
 	const { userId } = getAuth(props.req)
@@ -60,7 +60,7 @@ const MessagesLink: NextPage<{
 				<header className="sticky top-0 h-screen w-16 min-w-[40px] xl:w-72">
 					<Menu />
 				</header>
-				<main className="size-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
+				<main className="size-full min-w-56  max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
 					<div className="flex justify-between">
 						<h1>Messages</h1>
 						<div className="flex space-x-2">
@@ -68,15 +68,13 @@ const MessagesLink: NextPage<{
 							<MessageIcon width={25} height={25} />
 						</div>
 					</div>
-					<div className="w-full">
-						<Search />
-						<FetchAuthors
-							initProfile={selectedAuthor}
-							OnSelectAuthor={(authorId) => setSelectedAuthor(authorId)}
-						/>
-					</div>
+
+					<FetchAuthors
+						initProfile={selectedAuthor}
+						OnSelectAuthor={(authorId) => setSelectedAuthor(authorId)}
+					/>
 				</main>
-				<aside className="block size-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3  lg:flex lg:p-4">
+				<aside className="block size-full min-w-56 max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3  lg:flex lg:p-4">
 					{selectedAuthor && (
 						<SelectedAuthorMessages
 							username={selectedAuthor.username}
