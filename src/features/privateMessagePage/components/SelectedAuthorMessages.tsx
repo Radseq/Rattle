@@ -2,7 +2,7 @@ import { Emoji } from "~/components/Icons/Emoji"
 import { MessageItem } from "./MessageItem"
 import { Person } from "./Person"
 import { Picture } from "~/components/Icons/Picture"
-import { type FC, useRef, ChangeEvent, useState } from "react"
+import { type FC, useRef, useState } from "react"
 import { useGetAuthorMessages } from "../hooks/useGetAuthorMessages"
 import { LoadingPage } from "~/components/LoadingPage"
 import TextareaAutosize from "react-textarea-autosize"
@@ -25,9 +25,9 @@ export const SelectedAuthorMessages: FC<{
 	)
 
 	const { mutate: createMessage } = api.privateMessages.createPrivateMessage.useMutation({
-		onSuccess: () => {
+		onSuccess: async () => {
 			toast.success(`Sended message to ${fullName}`)
-			refetch()
+			await refetch()
 			setText("")
 		},
 	})
