@@ -24,7 +24,7 @@ import {
 import { getPostProfileType } from "~/utils/helpers"
 import { Layout, MessageIcon } from "~/features/layout"
 import Link from "next/link"
-import { createServerSideHelpers } from '@trpc/react-query/server';
+import { createServerSideHelpers } from "@trpc/react-query/server"
 
 dayjs.extend(relativeTime)
 
