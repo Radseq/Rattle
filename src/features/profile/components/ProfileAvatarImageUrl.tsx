@@ -6,7 +6,7 @@ type ImageProps = Omit<NextJsImageProps, "alt"> & {
 }
 
 export const ProfileAvatarImageUrl = (props: ImageProps) => {
-	const styledClassName = props.className ? props.className : "h-16 w-16 rounded-full"
+	const styledClassName = props.className ? props.className : "size-12 lg:size-16 rounded-full"
 	const width = props.size ?? props.width
 	const height = props.size ?? props.height
 	return (
