@@ -57,7 +57,7 @@ const MessagesLink: NextPage<{
 	return (
 		<div className="flex">
 			<div className="m-auto flex">
-				<header className="sticky top-0 h-screen w-16 min-w-[40px] xl:w-72">
+				<header className="sticky top-0 h-screen min-w-12 xl:min-w-44">
 					<Menu />
 				</header>
 				<main className="size-full min-w-56  max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
