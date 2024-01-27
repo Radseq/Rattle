@@ -16,7 +16,7 @@ export const getCacheData = async <T>(key: CacheSpecialKey) => {
 export const setCacheData = async <T>(
 	key: CacheSpecialKey,
 	value: T,
-	ttlInSeconds: number | null = null
+	ttlInSeconds: number | null = null,
 ) => {
 	const redis = Redis.fromEnv()
 	if (redis) {

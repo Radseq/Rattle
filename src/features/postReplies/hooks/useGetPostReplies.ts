@@ -17,7 +17,7 @@ export const useGetPostReplies = (postId: string, ulHeightInPx: number | null) =
 		},
 		{
 			getNextPageParam: (lastPage) => lastPage.nextCursor,
-		}
+		},
 	)
 
 	const loadNextPosts = useLoadNextPage(SCROLL_THRESHOLD_IN_PX, ulHeightInPx)

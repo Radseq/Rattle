@@ -23,7 +23,7 @@ export const fetchProfilePosts = async (
 	authorId: string,
 	limit: number,
 	cursor: string | null | undefined,
-	skip: number | undefined
+	skip: number | undefined,
 ) => {
 	const postIds: string[] = []
 
@@ -103,7 +103,7 @@ export const fetchProfilePosts = async (
 	const posts = await Promise.all(postIds.map((id) => getPostById(id)))
 
 	const sortedPosts = posts.sort(
-		(postA, postB) => new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime()
+		(postA, postB) => new Date(postB.createdAt).getTime() - new Date(postA.createdAt).getTime(),
 	)
 	const result: PostWithAuthor[] = []
 	for (const sortedPost of sortedPosts) {
@@ -117,7 +117,7 @@ export const fetchProfilePosts = async (
 				isLiked: postsLikedBySignInUser.some((post) => post === sortedPost.id),
 				isQuoted: postsQuotedByUser.some((post) => post === sortedPost.id),
 				isVotedChoiceId: postsPollVotedByUser.filter(
-					(vote) => vote.postId === sortedPost.id
+					(vote) => vote.postId === sortedPost.id,
 				)[0]?.choiceId,
 				authorFollowed: followedUsers.some((authorId) => authorId === author?.id),
 			},
@@ -125,7 +125,7 @@ export const fetchProfilePosts = async (
 		} as PostWithAuthor
 		if (postWithAuthor.post.poll) {
 			postWithAuthor.post.poll.choiceVotedBySignInUser = postsPollVotedByUser.find(
-				(value) => value.postId === sortedPost.id
+				(value) => value.postId === sortedPost.id,
 			)?.choiceId
 		}
 		result.push(postWithAuthor)

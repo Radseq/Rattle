@@ -16,7 +16,7 @@ export const PostQuoteItem: FC<{ author: PostAuthor; createdAt: string; message:
 		<div className="m-1 rounded-lg border-2 border-b-gray-300 p-2">
 			<div className="flex">
 				<ProfileAvatarImageUrl
-					className="h-8 w-8 rounded-full"
+					className="size-8 rounded-full"
 					size={32}
 					src={author.profileImageUrl}
 				/>

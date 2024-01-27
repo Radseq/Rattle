@@ -9,11 +9,11 @@ import {
 	isUserLikedPost,
 } from "../profile"
 
-import { clerkClient } from "@clerk/nextjs/dist/server/clerk"
 import { type CacheSpecialKey, getCacheData, setCacheData } from "~/server/cache"
 import { type Post } from "~/features/postItem"
 import { type ProfileExtend } from "~/features/profile"
 import { getPostPollById } from "../posts"
+import { clerkClient } from "@clerk/nextjs"
 
 const updateProfileRateLimit = CreateRateLimit({ requestCount: 1, requestCountPer: "1 m" })
 
@@ -53,7 +53,7 @@ export const profileRouter = createTRPCRouter({
 					.url({ message: "Profile Image Url is not valid!" })
 					.max(100, { message: "Profile Image Url is too large, max 100 characters" })
 					.nullable(),
-			})
+			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const authorId = ctx.authUserId
@@ -91,7 +91,7 @@ export const profileRouter = createTRPCRouter({
 			z.object({
 				postId: z.string().min(25, { message: "wrong postId" }),
 				choiceId: z.number(),
-			})
+			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const getPostAlreadyVoted = ctx.prisma.userPollVote.findFirst({

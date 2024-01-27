@@ -24,7 +24,7 @@ export const FetchPosts = forwardRef<RefetchPostHandle, Props>((props, ref) => {
 
 	const { isLoading, postReplies, refetch } = useGetPostReplies(
 		postId,
-		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop,
 	)
 
 	useImperativeHandle(ref, () => ({

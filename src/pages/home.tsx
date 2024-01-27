@@ -2,8 +2,7 @@ import { type GetServerSideProps, type NextPage } from "next"
 import { api } from "~/utils/api"
 import toast from "react-hot-toast"
 import { CONFIG } from "~/config"
-import { clerkClient, getAuth } from "@clerk/nextjs/server"
-import { type User } from "@clerk/nextjs/dist/api"
+import { clerkClient, getAuth, type User } from "@clerk/nextjs/server"
 import { type UserToFollow, WhoToFollow } from "~/features/whoToFollow"
 import { whoToFollow } from "~/server/features/whoToFollow"
 import { CreatePost, CreatePostProvider } from "~/features/homePage"
@@ -59,7 +58,7 @@ const Home: NextPage<{ user: User; usersToFollow: UserToFollow[] }> = ({ user, u
 				}
 			>
 				<section className="pt-2">
-					<CreatePost profileImageUrl={user.profileImageUrl} />
+					<CreatePost profileImageUrl={user.imageUrl} />
 					<h1 className="p-2 text-2xl font-semibold">Your last posts:</h1>
 					<FetchPosts signInUserId={user.id} />
 				</section>

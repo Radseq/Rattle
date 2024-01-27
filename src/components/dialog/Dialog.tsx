@@ -28,7 +28,7 @@ export const Dialog: FC<{ open: boolean; onClose: () => void } & PropsWithChildr
 			<article onClick={(e) => e.stopPropagation()}>
 				<header>
 					<button
-						className="h-8 w-8 p-1"
+						className="size-8 p-1"
 						onClick={(e) => {
 							e.stopPropagation()
 							handleClose()

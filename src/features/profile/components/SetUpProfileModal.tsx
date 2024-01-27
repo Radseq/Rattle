@@ -44,7 +44,7 @@ export const SetUpProfileModal: FC<{
 			className="fixed inset-0 z-50 flex items-center justify-center 
 							overflow-y-auto overflow-x-hidden outline-none focus:outline-none"
 		>
-			<div className="relative my-6 mx-auto w-auto max-w-3xl">
+			<div className="relative mx-auto my-6 w-auto max-w-3xl">
 				<div
 					className="relative flex w-full flex-col rounded-lg border-0 
 									bg-white shadow-lg outline-none focus:outline-none"
@@ -62,7 +62,7 @@ export const SetUpProfileModal: FC<{
 							}}
 						>
 							<span
-								className="block h-6 w-6 bg-transparent text-2xl 
+								className="block size-6 bg-transparent text-2xl 
 												text-black outline-none focus:outline-none"
 							>
 								×

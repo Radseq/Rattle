@@ -11,7 +11,7 @@ export const PrimaryButton = (props: ButtonProps) => (
 
 export const PrimaryOutlineButton = (props: ButtonProps) => (
 	<button
-		className="rounded border border-blue-500 bg-transparent py-2 px-4 font-semibold
+		className="rounded border border-blue-500 bg-transparent px-4 py-2 font-semibold
 		 text-blue-700 hover:border-transparent hover:bg-blue-500 hover:text-white"
 		{...props}
 	></button>
@@ -22,7 +22,7 @@ export const DangerButton = (props: ButtonProps) => {
 	return (
 		<button
 			{...props}
-			className={`${styledClassName} rounded-full bg-red-500 py-2 px-4 
+			className={`${styledClassName} rounded-full bg-red-500 px-4 py-2 
 			font-bold text-white hover:bg-red-700`}
 		></button>
 	)
@@ -31,7 +31,7 @@ export const DangerButton = (props: ButtonProps) => {
 export const DangerOutlineButton = (props: ButtonProps) => (
 	<button
 		{...props}
-		className="rounded border border-red-500 bg-transparent py-2 px-4 font-semibold
+		className="rounded border border-red-500 bg-transparent px-4 py-2 font-semibold
 		 	text-red-700 hover:border-transparent hover:bg-red-500 hover:text-white"
 	></button>
 )

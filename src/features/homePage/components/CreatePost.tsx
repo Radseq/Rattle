@@ -28,7 +28,7 @@ export const CreatePost: FC<{ profileImageUrl: string }> = ({ profileImageUrl })
 	const [pollLengthState, pollLengthDispatch] = useReducer(pollLengthReducer, INIT_POLL_LENGTH)
 	const [pollChoicesState, pollChoicesDispatch] = useReducer(
 		pollChoicesReducer,
-		INIT_POLL_CHOICES
+		INIT_POLL_CHOICES,
 	)
 
 	const handleRemovePoll = () => {

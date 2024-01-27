@@ -33,7 +33,7 @@ export const PostFooter: FC<{
 			<ReplyCountIcon count={replyCount} url={`/post/${username}/status/${postId}`} />
 			<SharedIcon sharedCount={sharedCount}>
 				<ul
-					className="absolute top-8 left-0 z-10 w-44 flex-col rounded-lg 
+					className="absolute left-0 top-8 z-10 w-44 flex-col rounded-lg 
 								bg-white shadow-[0px_0px_3px_1px_#00000024] group-hover:flex"
 				>
 					<ListItem

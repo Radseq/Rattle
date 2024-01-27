@@ -3,6 +3,7 @@ import { postsRouter } from "~/server/api/routers/posts"
 import { profileRouter } from "./routers/profile"
 import { followRouter } from "./routers/follow"
 import { searchRouter } from "./routers/features"
+import { privateMessagesRouter } from "../features/privateMessages"
 
 /**
  * This is the primary router for your server.
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
 	profile: profileRouter,
 	follow: followRouter,
 	search: searchRouter,
+	privateMessages: privateMessagesRouter,
 })
 
 // export type definition of API

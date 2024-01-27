@@ -24,7 +24,7 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 
 	const { isLoading, posts, refetch } = useGetPosts(
 		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop,
-		tag
+		tag,
 	)
 
 	const handleNavigateToPost = (postId: string, authorUsername: string) => {
@@ -160,7 +160,7 @@ export const LatestPosts: FC<{ tag: string }> = ({ tag }) => {
 						menuItemsType={getPostProfileType(
 							signInUser?.authorFollowed ?? false,
 							user.userId,
-							author.id
+							author.id,
 						)}
 					>
 						<PostContentSelector

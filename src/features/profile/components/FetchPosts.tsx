@@ -16,7 +16,7 @@ export const FetchPosts: FC<{
 
 	const { isLoading, posts, refetch } = useGetPostsByAuthor(
 		authorId,
-		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop
+		ulRef.current && ulRef.current.scrollHeight - ulRef.current.offsetTop,
 	)
 
 	if (isLoading) {

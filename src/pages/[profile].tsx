@@ -12,7 +12,6 @@ import { Icon } from "~/components/Icon"
 import { appRouter } from "~/server/api/root"
 import { prisma } from "~/server/db"
 import superjson from "superjson"
-import { createProxySSGHelpers } from "@trpc/react-query/ssg"
 import { useAuth } from "@clerk/nextjs"
 import {
 	ActionButtonSelector,
@@ -23,12 +22,14 @@ import {
 	useGetProfile,
 } from "~/features/profile"
 import { getPostProfileType } from "~/utils/helpers"
-import { Layout } from "~/features/layout"
+import { Layout, MessageIcon } from "~/features/layout"
+import Link from "next/link"
+import { createServerSideHelpers } from "@trpc/react-query/server"
 
 dayjs.extend(relativeTime)
 
 export const getStaticProps: GetStaticProps = async (context) => {
-	const ssg = createProxySSGHelpers({
+	const ssg = createServerSideHelpers({
 		router: appRouter,
 		ctx: { prisma, authUserId: null, opts: undefined },
 		transformer: superjson, // optional - adds superjson serialization
@@ -139,22 +140,30 @@ const ProfilePage: NextPage<{
 							<div className="relative w-full">
 								<ProfileAvatarImageUrl
 									src={profile.profileImageUrl}
-									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white"
+									className="absolute -top-16 size-32 rounded-full border-4 border-white"
 								/>
 								<span
-									className="absolute -top-16 h-32 w-32 rounded-full border-4 border-white
+									className="absolute -top-16 size-32 rounded-full border-4 border-white
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
-							<div className="mt-4 h-14">
+							<div className="mt-4 flex h-14">
+								{profile.id !== user.userId && (
+									<Link
+										href={`/message/${profile.id}`}
+										className="m-2 flex rounded-full border p-1"
+									>
+										<MessageIcon width={48} height={48} />
+									</Link>
+								)}
 								<ActionButtonSelector
 									profileType={getPostProfileType(
 										isUserFollowProfile,
 										profile.id,
-										user.userId
+										user.userId,
 									)}
 									onClick={(
-										actionType: "signUp" | "follow" | "unfollow" | null
+										actionType: "signUp" | "follow" | "unfollow" | null,
 									) => {
 										if (actionType === "unfollow") {
 											stopFollowing(profile.id)

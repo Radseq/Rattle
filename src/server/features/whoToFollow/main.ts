@@ -28,7 +28,7 @@ export const whoToFollow = async (userId: string | null) => {
 			id: user.id,
 			username: user.username,
 			fullName,
-			profileImageUrl: user.profileImageUrl,
+			profileImageUrl: user.imageUrl,
 			bio: extended?.bio ?? null,
 		}
 	})

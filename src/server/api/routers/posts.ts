@@ -48,7 +48,7 @@ export const postsRouter = createTRPCRouter({
 				cursor: z.string().nullish(),
 				skip: z.number().optional(),
 				authorId: z.string(),
-			})
+			}),
 		)
 		.query(async ({ ctx, input }) => {
 			return fetchProfilePosts(
@@ -56,7 +56,7 @@ export const postsRouter = createTRPCRouter({
 				input.authorId,
 				input.limit,
 				input.cursor,
-				input.skip
+				input.skip,
 			)
 		}),
 	getHomePosts: privateProcedure
@@ -65,7 +65,7 @@ export const postsRouter = createTRPCRouter({
 				limit: z.number(),
 				cursor: z.string().nullish(),
 				skip: z.number().optional(),
-			})
+			}),
 		)
 		.query(async ({ ctx, input }) => {
 			return fetchHomePosts(ctx.authUserId, input.limit, input.cursor, input.skip)
@@ -117,7 +117,7 @@ export const postsRouter = createTRPCRouter({
 						}),
 					})
 					.optional(),
-			})
+			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const authorId = ctx.authUserId
@@ -197,7 +197,7 @@ export const postsRouter = createTRPCRouter({
 						message: `Message is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
 					}),
 				quotedPostId: z.string().min(25, { message: "wrong quotedPostId" }),
-			})
+			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const authorId = ctx.authUserId
@@ -230,7 +230,7 @@ export const postsRouter = createTRPCRouter({
 				void setCacheData(
 					quotedPostCacheKey,
 					quotedPost,
-					MAX_CACHE_POST_LIFETIME_IN_SECONDS
+					MAX_CACHE_POST_LIFETIME_IN_SECONDS,
 				)
 			}
 
@@ -246,7 +246,7 @@ export const postsRouter = createTRPCRouter({
 						message: `Reply is too large, max ${CONFIG.MAX_POST_MESSAGE_LENGTH} characters`,
 					}),
 				replyPostId: z.string().cuid(),
-			})
+			}),
 		)
 		.mutation(async ({ ctx, input }) => {
 			const authorId = ctx.authUserId
@@ -301,7 +301,7 @@ export const postsRouter = createTRPCRouter({
 				limit: z.number(),
 				cursor: z.string().nullish(),
 				skip: z.number().optional(),
-			})
+			}),
 		)
 		.query(async ({ input, ctx }) => {
 			const { limit, postId, cursor, skip } = input
@@ -320,7 +320,7 @@ export const postsRouter = createTRPCRouter({
 			})
 
 			const postReplies = await Promise.all(
-				getPostReplies.map((post) => getPostById(post.id))
+				getPostReplies.map((post) => getPostById(post.id)),
 			)
 
 			let nextCursor: typeof cursor | undefined = undefined
@@ -347,7 +347,7 @@ export const postsRouter = createTRPCRouter({
 			}
 
 			const postAuthors = await Promise.all(
-				getPostReplies.map((post) => getPostAuthor(post.authorId))
+				getPostReplies.map((post) => getPostAuthor(post.authorId)),
 			)
 
 			const result = postReplies.map((postReply) => {
