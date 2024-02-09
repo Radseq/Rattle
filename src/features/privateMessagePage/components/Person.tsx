@@ -11,8 +11,8 @@ export const Person: FC<{ username: string; fullName: string; profileImageUrl: s
 		<div className="flex">
 			<ProfileAvatarImageUrl src={profileImageUrl} />
 			<div className="w-full pl-2">
-				<div className="text-lg font-semibold">
-					<span className="pr-1">{`${fullName}`}</span>
+				<div className="text-lg font-semibold break-all">
+					<span className="pr-1 w-full text-wrap">{`${fullName}ssssssssss`}</span>
 					<span>
 						<Link
 							onClick={(e) => e.stopPropagation()}
