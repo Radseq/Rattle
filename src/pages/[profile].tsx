@@ -132,7 +132,11 @@ const ProfilePage: NextPage<{
 				<section>
 					<article className="flex flex-col pb-4">
 						{profile.extended?.bannerImgUrl ? (
-							<img src={profile.extended?.bannerImgUrl} alt={"banner"}></img>
+							<img
+								className="w-auto"
+								src={profile.extended?.bannerImgUrl}
+								alt={"banner"}
+							></img>
 						) : (
 							<div className="h-52 w-full bg-black"></div>
 						)}
@@ -147,7 +151,7 @@ const ProfilePage: NextPage<{
 									 bg-black bg-opacity-0 transition-all duration-200 hover:bg-opacity-10"
 								></span>
 							</div>
-							<div className="mt-4 flex h-14">
+							<div className="mt-4 flex h-16">
 								{profile.id !== user.userId && (
 									<Link
 										href={`/message/${profile.id}`}
