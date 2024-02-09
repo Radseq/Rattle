@@ -36,7 +36,7 @@ const Messages: NextPage = () => {
 				<header className="sticky top-0 h-screen min-w-12 xl:min-w-44">
 					<Menu />
 				</header>
-				<main className="size-full min-w-56 max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3 lg:mx-4 lg:p-4">
+				<main className="size-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full md:w-2/3 md:min-w-56 lg:mx-4 lg:min-w-72 lg:border-x-2 lg:p-4">
 					<div className="flex justify-between">
 						<h1>Messages</h1>
 						<div className="flex space-x-2">
@@ -47,7 +47,7 @@ const Messages: NextPage = () => {
 
 					<FetchAuthors OnSelectAuthor={(authorId) => setSelectedAuthor(authorId)} />
 				</main>
-				<aside className="block size-full min-w-56 max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full sm:border-x-2 md:w-2/3  lg:flex lg:p-4">
+				<aside className="block size-full max-w-3xl grow border-gray-200 sm:mx-1 sm:w-full md:w-2/3 md:min-w-56 lg:flex lg:min-w-72  lg:border-x-2 lg:p-4">
 					{selectedAuthor && (
 						<SelectedAuthorMessages
 							username={selectedAuthor.username}
