@@ -36,7 +36,10 @@ export const Menu = () => {
 
 			{quotePopUp && isSignedIn && (
 				<Dialog open={isSignedIn ?? false} onClose={() => setQuotePopUp(false)}>
-					<CreatePost profileImageUrl={user.profileImageUrl} />
+					<CreatePost
+						profileImageUrl={user.imageUrl}
+						onCreatedPost={() => setQuotePopUp(false)}
+					/>
 				</Dialog>
 			)}
 		</ul>

@@ -18,7 +18,10 @@ const INIT_POLL_LENGTH = {
 
 const INIT_POLL_CHOICES = ["", ""]
 
-export const CreatePost: FC<{ profileImageUrl: string }> = ({ profileImageUrl }) => {
+export const CreatePost: FC<{ profileImageUrl: string; onCreatedPost?: () => void }> = ({
+	profileImageUrl,
+	onCreatedPost,
+}) => {
 	const { setIsCreatedPost } = useCreatePost()
 
 	const [postContent, setPostContent] = useState<PostContent>({
@@ -56,6 +59,7 @@ export const CreatePost: FC<{ profileImageUrl: string }> = ({ profileImageUrl })
 	const { mutate } = api.posts.createPost.useMutation({
 		onSuccess: () => {
 			setIsCreatedPost(true)
+			onCreatedPost && onCreatedPost()
 		},
 		onError: () => {
 			toast.error("Failed to create post! Please try again later", {
@@ -83,7 +87,7 @@ export const CreatePost: FC<{ profileImageUrl: string }> = ({ profileImageUrl })
 			</CreatePostForm>
 			<CreatePostFooter
 				handleAddPollIClick={handlePollIconClick}
-				handleCreateClick={() =>
+				handleCreateClick={() => {
 					mutate({
 						message: postContent.message,
 						poll: postContent.poll && {
@@ -95,7 +99,7 @@ export const CreatePost: FC<{ profileImageUrl: string }> = ({ profileImageUrl })
 							length: pollLengthState,
 						},
 					})
-				}
+				}}
 			/>
 		</article>
 	)
